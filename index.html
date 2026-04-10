@@ -1,111 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Fitness App</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Chat UI</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body{
+*{
 margin:0;
-font-family:Inter,sans-serif;
-background:linear-gradient(135deg,#0f5132,#20c997);
+padding:0;
+box-sizing:border-box;
+font-family:Inter;
+}
+
+body{
+background:#0b0f19;
 color:#fff;
 height:100vh;
 display:flex;
-justify-content:center;
-align-items:center;
-flex-direction:column;
 }
 
-.box{
-width:90%;
-max-width:600px;
-background:rgba(0,0,0,0.3);
+/* SIDEBAR */
+.sidebar{
+width:260px;
+background:#0f172a;
 padding:20px;
-border-radius:15px;
-backdrop-filter:blur(10px);
+display:flex;
+flex-direction:column;
+gap:15px;
+border-right:1px solid rgba(255,255,255,0.08);
 }
 
-textarea,input,select{
-width:100%;
+.logo{
+font-size:18px;
+font-weight:800;
+color:#00ff9c;
+}
+
+.new-chat{
 padding:10px;
-margin:10px 0;
-border-radius:8px;
+background:#111827;
+border:1px solid rgba(255,255,255,0.1);
+border-radius:10px;
+cursor:pointer;
+text-align:center;
+transition:.3s;
+}
+.new-chat:hover{
+background:#1f2937;
+}
+
+/* CHAT AREA */
+.chat-area{
+flex:1;
+display:flex;
+flex-direction:column;
+height:100vh;
+}
+
+/* TOP BAR */
+.topbar{
+padding:15px;
+border-bottom:1px solid rgba(255,255,255,0.08);
+background:#0f172a;
+}
+
+/* MESSAGES */
+.messages{
+flex:1;
+padding:20px;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.msg{
+max-width:70%;
+padding:12px 15px;
+border-radius:12px;
+line-height:1.4;
+}
+
+.user{
+background:#00ff9c;
+color:#000;
+align-self:flex-end;
+}
+
+.ai{
+background:#111827;
+border:1px solid rgba(255,255,255,0.1);
+align-self:flex-start;
+}
+
+/* INPUT */
+.input-box{
+display:flex;
+padding:15px;
+border-top:1px solid rgba(255,255,255,0.08);
+background:#0f172a;
+}
+
+input{
+flex:1;
+padding:12px;
+border-radius:10px;
 border:none;
 outline:none;
+background:#111827;
+color:#fff;
 }
 
 button{
-padding:10px 15px;
+margin-left:10px;
+padding:12px 18px;
 border:none;
-border-radius:8px;
-cursor:pointer;
+border-radius:10px;
 background:#00ff9c;
+cursor:pointer;
 font-weight:bold;
-margin-top:5px;
 }
-
-.result{
-margin-top:10px;
-white-space:pre-wrap;
-background:rgba(0,0,0,0.4);
-padding:10px;
-border-radius:8px;
+button:hover{
+transform:scale(1.05);
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<!-- SIDEBAR -->
+<div class="sidebar">
+<div class="logo">⚡ MY AI</div>
 
-<h2>🤖 AI Fitness App</h2>
+<div class="new-chat">+ New Chat</div>
+
+<p style="opacity:0.5;font-size:12px;margin-top:10px">
+Chat UI like ChatGPT
+</p>
+</div>
 
 <!-- CHAT -->
-<textarea id="chatInput" placeholder="Ask anything..."></textarea>
-<button onclick="sendChat()">Send</button>
-<div class="result" id="chatResult"></div>
+<div class="chat-area">
 
-<hr>
+<div class="topbar">
+AI Assistant
+</div>
 
-<!-- WORKOUT -->
-<h3>💪 Workout Generator</h3>
-<input id="goal" placeholder="Goal (muscle, fat loss...)">
-<select id="level">
-<option value="beginner">Beginner</option>
-<option value="intermediate">Intermediate</option>
-<option value="advanced">Advanced</option>
-</select>
-<button onclick="generateWorkout()">Generate</button>
-<div class="result" id="workoutResult"></div>
+<div class="messages" id="messages">
+<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
+</div>
 
-<hr>
-
-<!-- MEAL -->
-<h3>🍎 Meal Plan</h3>
-<input id="calories" placeholder="Calories (e.g. 2500)">
-<select id="diet">
-<option value="balanced">Balanced</option>
-<option value="keto">Keto</option>
-<option value="vegetarian">Vegetarian</option>
-<option value="high protein">High Protein</option>
-</select>
-<button onclick="generateMeal()">Generate</button>
-<div class="result" id="mealResult"></div>
+<div class="input-box">
+<input id="input" placeholder="Type your message..." />
+<button onclick="send()">Send</button>
+</div>
 
 </div>
 
 <script>
 
-const OPENAI_API_KEY = "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"; // 🔥 بدّل هنا فقط
+const OPENAI_API_KEY = "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"; 
+// 👈 هنا دير API ديالك
 
-async function callOpenAI(prompt){
+async function send(){
 
-const res = await fetch("https://api.openai.com/v1/chat/completions", {
+const input = document.getElementById("input");
+const text = input.value.trim();
+if(!text) return;
+
+addMessage(text,"user");
+input.value="";
+
+try{
+
+const res = await fetch("https://api.openai.com/v1/chat/completions",{
 method:"POST",
 headers:{
 "Content-Type":"application/json",
@@ -114,50 +185,33 @@ headers:{
 body:JSON.stringify({
 model:"gpt-4o-mini",
 messages:[
-{role:"system",content:"You are a helpful fitness assistant."},
-{role:"user",content:prompt}
-],
-temperature:0.7
+{role:"system",content:"You are a helpful assistant."},
+{role:"user",content:text}
+]
 })
 });
 
 const data = await res.json();
+const reply = data.choices[0].message.content;
 
-return data.choices?.[0]?.message?.content || "Error";
+addMessage(reply,"ai");
+
+}catch(err){
+addMessage("Error: "+err.message,"ai");
 }
 
-// CHAT
-async function sendChat(){
-let input = document.getElementById("chatInput").value;
-document.getElementById("chatResult").innerText = "Loading...";
-let res = await callOpenAI(input);
-document.getElementById("chatResult").innerText = res;
 }
 
-// WORKOUT
-async function generateWorkout(){
-let goal = document.getElementById("goal").value;
-let level = document.getElementById("level").value;
+function addMessage(text,type){
 
-let prompt = `Create workout plan for goal ${goal}, level ${level}`;
-document.getElementById("workoutResult").innerText = "Loading...";
+const div = document.createElement("div");
+div.className = "msg " + type;
+div.innerText = text;
 
-let res = await callOpenAI(prompt);
-document.getElementById("workoutResult").innerText = res;
+document.getElementById("messages").appendChild(div);
+document.getElementById("messages").scrollTop = 999999;
+
 }
-
-// MEAL
-async function generateMeal(){
-let calories = document.getElementById("calories").value;
-let diet = document.getElementById("diet").value;
-
-let prompt = `Create meal plan for ${calories} calories, diet ${diet}`;
-document.getElementById("mealResult").innerText = "Loading...";
-
-let res = await callOpenAI(prompt);
-document.getElementById("mealResult").innerText = res;
-}
-
 </script>
 
 </body>
