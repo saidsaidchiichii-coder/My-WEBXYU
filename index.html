@@ -2,148 +2,279 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale =1.0">
-    <title>ShortenCashout - نفس ستايل shortencashout.com</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenDash - لوحة تحكم فخمة</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@next/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="bg-gradient-to-br from-purple-900 via-black to-blue-900 min-h-screen overflow-x-hidden">
+<body class="bg-gradient-to-br from-emerald-900 via-green-900 to-teal-900 min-h-screen overflow-hidden">
 
-    <!-- Video Background -->
-    <video autoplay muted loop class="absolute inset-0 w-full h-full object-cover opacity-30">
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-neon-lines-background-12166-large.mp4" type="video/mp4">
-    </video>
+    <!-- Particles Background -->
+    <div id="particles-js" class="absolute inset-0 z-0"></div>
 
-    <!-- Particles Overlay -->
-    <div id="particles-js" class="absolute inset-0 z-10"></div>
-
-    <!-- Navbar -->
-    <nav class="fixed top-0 w-full z-50 backdrop-blur-xl bg-black/30 border-b border-white/20">
+    <!-- Navigation -->
+    <nav id="nav" class="fixed top-0 w-full z-50 backdrop-blur-xl bg-white/10 border-b border-white/20 hidden">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-3xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                Shorten<span class="text-white">Cashout</span>
+            <h1 class="text-3xl font-black bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
+                🌿 GreenDash
             </h1>
-            <div class="flex space-x-4 space-x-reverse">
-                <a href="#features" class="text-white/80 hover:text-cyan-400 font-medium transition-all duration-300">المميزات</a>
-                <a href="#pricing" class="text-white/80 hover:text-cyan-400 font-medium transition-all duration-300">الأسعار</a>
-                <button class="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-8 py-3 rounded-full font-bold hover:scale-105 shadow-2xl shadow-cyan-500/25 transition-all duration-300">
-                    ابدأ الآن
-                </button>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <span id="user-name" class="font-semibold text-white hidden"></span>
+                <div class="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold">U</div>
+                <button onclick="logout()" class="text-white/80 hover:text-emerald-400 font-medium">خروج</button>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="min-h-screen flex items-center justify-center relative z-20 pt-24">
-        <div class="text-center max-w-4xl mx-auto px-6" data-aos="fade-up">
-            <h1 class="text-7xl md:text-9xl font-black mb-8 bg-gradient-to-r from-cyan-400 via-white to-purple-400 bg-clip-text text-transparent drop-shadow-2xl leading-tight">
-                اختصر روابطك<br>
-                <span class="text-5xl md:text-7xl">واکسب <span class="text-yellow-400">فلوس</span></span>
-            </h1>
-            <p class="text-2xl md:text-3xl text-white/80 mb-12 font-light max-w-2xl mx-auto leading-relaxed" data-aos="fade-up" data-aos-delay="200">
-                احصل على دفعات فورية لكل نقرة • لا حدود • دعم 24/7
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center" data-aos="zoom-in" data-aos-delay="400">
-                <input type="text" placeholder="ضع رابطك هنا..." 
-                       class="w-full sm:w-96 px-8 py-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-white placeholder-white/60 font-medium text-lg focus:outline-none focus:ring-4 focus:ring-cyan-500/30 transition-all duration-300">
-                <button class="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-12 py-6 rounded-3xl font-black text-xl hover:scale-105 shadow-2xl shadow-cyan-500/50 transition-all duration-300">
-                    اختصر الآن 🚀
-                </button>
+    <!-- Login Form -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center relative z-20 pt-24">
+        <div class="max-w-md w-full mx-auto px-6" data-aos="fade-up">
+            <!-- Logo -->
+            <div class="text-center mb-12">
+                <div class="w-24 h-24 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-emerald-500/25">
+                    <span class="text-3xl font-black text-white">🌿</span>
+                </div>
+                <h1 class="text-5xl font-black bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent mb-4">
+                    GreenDash
+                </h1>
+                <p class="text-white/80 text-xl">لوحة تحكم فخمة</p>
             </div>
-        </div>
-    </section>
 
-    <!-- Features Section -->
-    <section id="features" class="py-40 relative z-20">
-        <div class="max-w-6xl mx-auto px-6">
-            <h2 class="text-6xl font-black text-center mb-24 text-white" data-aos="fade-up">لماذا تختارنا؟</h2>
-            
-            <div class="grid md:grid-cols-3 gap-12">
-                <!-- Feature 1 -->
-                <div class="group relative p-12 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/20 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:-translate-y-4 cursor-pointer" data-aos="fade-up" data-aos-delay="100">
-                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative">
-                        <div class="w-24 h-24 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:rotate-12 transition-transform duration-500">
-                            <span class="text-3xl font-black text-white">💰</span>
-                        </div>
-                        <h3 class="text-3xl font-black mb-6 text-white text-center">دفع فوري</h3>
-                        <p class="text-white/80 text-center leading-relaxed">احصل على فلوسك كل يوم بدون تأخير</p>
+            <!-- Login Form -->
+            <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-10 shadow-2xl shadow-emerald-500/10">
+                <div id="email-login" class="space-y-6">
+                    <div>
+                        <input id="email" type="email" placeholder="البريد الإلكتروني" 
+                               class="w-full px-6 py-4 bg-white/20 border border-white/30 rounded-2xl text-white placeholder-white/60 font-medium text-lg focus:outline-none focus:ring-4 focus:ring-emerald-400/30 transition-all duration-300">
                     </div>
+                    <div>
+                        <input id="password" type="password" placeholder="كلمة المرور" 
+                               class="w-full px-6 py-4 bg-white/20 border border-white/30 rounded-2xl text-white placeholder-white/60 font-medium text-lg focus:outline-none focus:ring-4 focus:ring-emerald-400/30 transition-all duration-300">
+                    </div>
+                    <button onclick="login()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 rounded-2xl font-black text-xl hover:scale-105 shadow-2xl shadow-emerald-500/25 transition-all duration-300">
+                        دخول
+                    </button>
                 </div>
 
-                <!-- Feature 2 -->
-                <div class="group relative p-12 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/20 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:-translate-y-4 cursor-pointer" data-aos="fade-up" data-aos-delay="200">
-                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative">
-                        <div class="w-24 h-24 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:rotate-12 transition-transform duration-500">
-                            <span class="text-3xl font-black text-white">⚡</span>
-                        </div>
-                        <h3 class="text-3xl font-black mb-6 text-white text-center">سرعة فائقة</h3>
-                        <p class="text-white/80 text-center leading-relaxed">أسرع من المنافسين بـ 10x</p>
-                    </div>
+                <!-- Google/Facebook Buttons -->
+                <div class="mt-8 space-y-4">
+                    <button onclick="googleLogin()" class="w-full bg-white/20 hover:bg-white/30 border border-white/30 py-4 px-6 rounded-2xl flex items-center justify-center space-x-3 space-x-reverse transition-all duration-300">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/></svg>
+                        <span class="font-semibold text-white">تسجيل الدخول بـ Google</span>
+                    </button>
+                    <button onclick="facebookLogin()" class="w-full bg-white/20 hover:bg-white/30 border border-white/30 py-4 px-6 rounded-2xl flex items-center justify-center space-x-3 space-x-reverse transition-all duration-300">
+                        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <span class="font-semibold text-white">تسجيل الدخول بـ Facebook</span>
+                    </button>
                 </div>
 
-                <!-- Feature 3 -->
-                <div class="group relative p-12 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/20 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:-translate-y-4 cursor-pointer" data-aos="fade-up" data-aos-delay="300">
-                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative">
-                        <div class="w-24 h-24 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:rotate-12 transition-transform duration-500">
-                            <span class="text-3xl font-black text-white">📱</span>
-                        </div>
-                        <h3 class="text-3xl font-black mb-6 text-white text-center">متوافق مع الهواتف</h3>
-                        <p class="text-white/80 text-center leading-relaxed">يعمل مثالياً على كل الأجهزة</p>
-                    </div>
+                <div class="mt-8 text-center">
+                    <button onclick="showSignup()" class="text-emerald-400 hover:text-emerald-300 font-medium">
+                        ليس لديك حساب؟ إنشاء حساب جديد
+                    </button>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden min-h-screen relative z-20 pt-24">
+        <!-- Sidebar Navigation -->
+        <div class="fixed left-0 top-24 h-screen w-64 bg-white/5 backdrop-blur-xl border-r border-white/20">
+            <nav class="p-8 space-y-4">
+                <a href="#" onclick="showPage('home')" class="nav-item flex items-center space-x-3 space-x-reverse p-4 bg-white/10 rounded-2xl text-white font-semibold hover:bg-white/20 transition-all duration-300">
+                    <span class="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">🏠</span>
+                    <span>الرئيسية</span>
+                </a>
+                <a href="#" onclick="showPage('buy')" class="nav-item flex items-center space-x-3 space-x-reverse p-4 bg-white/10 rounded-2xl text-white font-semibold hover:bg-white/20 transition-all duration-300">
+                    <span class="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">🛒</span>
+                    <span>الشراء</span>
+                </a>
+                <a href="#" onclick="showPage('settings')" class="nav-item flex items-center space-x-3 space-x-reverse p-4 bg-white/10 rounded-2xl text-white font-semibold hover:bg-white/20 transition-all duration-300">
+                    <span class="w-10 h-10 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">⚙️</span>
+                    <span>الإعدادات</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <main class="ml-64 p-12">
+            <!-- Home Page -->
+            <div id="home-page" class="page">
+                <h1 class="text-6xl font-black bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent mb-12" data-aos="fade-up">
+                    مرحباً بك في GreenDash 🌿
+                </h1>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20" data-aos="fade-up" data-aos-delay="100">
+                        <h3 class="text-3xl font-bold text-white mb-6">الإحصائيات</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between"><span class="text-white/80">النقرات</span><span class="text-2xl font-black text-emerald-400">1,247</span></div>
+                            <div class="flex justify-between"><span class="text-white/80">الأرباح</span><span class="text-2xl font-black text-emerald-400">$247</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buy Page -->
+            <div id="buy-page" class="page hidden">
+                <h1 class="text-6xl font-black bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent mb-12" data-aos="fade-up">
+                    الشراء 🛒
+                </h1>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20" data-aos="fade-up">
+                        <h3 class="text-2xl font-bold text-white mb-6">اختر الفئة</h3>
+                        <select class="w-full px-6 py-4 bg-white/20 border border-white/30 rounded-2xl text-white font-medium text-lg">
+                            <option>التسويق التابع</option>
+                            <option>الألعاب</option>
+                            <option>التطبيقات</option>
+                            <option>الاستطلاعات</option>
+                            <option>التنزيلات</option>
+                        </select>
+                        <textarea class="w-full mt-6 px-6 py-4 bg-white/20 border border-white/30 rounded-2xl text-white placeholder-white/60 font-medium text-lg h-32" placeholder="اكتب رابطك هنا..."></textarea>
+                        <button class="w-full mt-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 rounded-2xl font-black text-xl hover:scale-105 shadow-2xl shadow-emerald-500/25 transition-all duration-300">
+                            اختصر الرابط
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings-page" class="page hidden">
+                <h1 class="text-6xl font-black bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent mb-12" data-aos="fade-up">
+                    الإعدادات ⚙️
+                </h1>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Theme Settings -->
+                    <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20" data-aos="fade-up">
+                        <h3 class="text-2xl font-bold text-white mb-8">الثيمات</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <button class="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl hover:scale-110 shadow-2xl shadow-emerald-500/25 transition-all duration-300">افتراضي</button>
+                            <button class="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl hover:scale-110 shadow-2xl shadow-blue-500/25 transition-all duration-300">أزرق</button>
+                            <button class="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl hover:scale-110 shadow-2xl shadow-purple-500/25 transition-all duration-300">بنفسجي</button>
+                        </div>
+                    </div>
+
+                    <!-- Animation Settings -->
+                    <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20" data-aos="fade-up" data-aos-delay="100">
+                        <h3 class="text-2xl font-bold text-white mb-8">الأنيميشن</h3>
+                        <div class="space-y-4">
+                            <label class="flex items-center space-x-3 space-x-reverse">
+                                <input type="checkbox" class="w-5 h-5 bg-white/20 border-white/30 rounded">
+                                <span class="text-white font-medium">Particles</span>
+                            </label>
+                            <label class="flex items-center space-x-3 space-x-reverse">
+                                <input type="checkbox" class="w-5 h-5 bg-white/20 border-white/30 rounded">
+                                <span class="text-white font-medium">Smooth Scroll</span>
+                            </label>
+                            <label class="flex items-center space-x-3 space-x-reverse">
+                                <input type="checkbox" class="w-5 h-5 bg-white/20 border-white/30 rounded">
+                                <span class="text-white font-medium">3D Effects</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
-        // AOS
-        AOS.init({ duration: 1200, once: true });
-
-        // Particles
+        // Particles.js - Green Theme
         particlesJS('particles-js', {
             particles: {
-                number: { value: 100 },
-                color: { value: ['#00f5ff', '#ff00ff', '#ffff00'] },
+                number: { value: 120 },
+                color: { value: ['#10b981', '#059669', '#047857'] },
                 shape: { type: 'circle' },
-                opacity: { value: 0.3, random: true },
+                opacity: { value: 0.4, random: true },
                 size: { value: 4, random: true },
-                move: { speed: 1, direction: 'none', random: true }
+                move: { speed: 1.5, direction: 'none', random: true }
             },
             interactivity: {
-                events: { onhover: { enable: true, mode: 'repulse' } }
+                events: { 
+                    onhover: { enable: true, mode: 'repulse' },
+                    onclick: { enable: true, mode: 'push' }
+                }
             }
         });
 
-        // GSAP Scroll Animations
-        gsap.registerPlugin(ScrollTrigger);
-        
-        gsap.from(".group", {
-            y: 100,
-            opacity: 0,
-            duration: 1,
-            stagger: 0.2,
-            scrollTrigger: {
-                trigger: "#features",
-                start: "top 80%"
-            }
-        });
+        // AOS Animation
+        AOS.init({ duration: 1200, once: true });
 
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('nav');
-            if (window.scrollY > 100) {
-                navbar.style.background = 'rgba(0,0,0,0.4)';
+        // Navigation & Auth State
+        let currentUser = null;
+
+        function showLogin() {
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('nav').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('nav').classList.remove('hidden');
+        }
+
+        // Fake Login (Demo)
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (email && password) {
+                currentUser = { name: email.split('@')[0] };
+                document.getElementById('user-name').textContent = currentUser.name;
+                showDashboard();
+                showPage('home');
             } else {
-                navbar.style.background = 'rgba(0,0,0,0.3)';
+                alert('اكمل البيانات!');
             }
-        });
-    </script>
-</body>
-</html>
+        }
+
+        function googleLogin() {
+            // Google OAuth (استبدل بـ Client ID حقيقي)
+            alert('Google Login - Demo Mode');
+            currentUser = { name: 'Google User' };
+            document.getElementById('user-name').textContent = currentUser.name;
+            showDashboard();
+            showPage('home');
+        }
+
+        function facebookLogin() {
+            // Facebook OAuth
+            alert('Facebook Login - Demo Mode');
+            currentUser = { name: 'Facebook User' };
+            document.getElementById('user-name').textContent = currentUser.name;
+            showDashboard();
+            showPage('home');
+        }
+
+        function showSignup() {
+            alert('Sign Up - سيتم إضافة قريباً!');
+        }
+
+        function logout() {
+            currentUser = null;
+            showLogin();
+        }
+
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            // Show selected
+            document.getElementById(page + '-page').classList.remove('hidden');
+            
+            // Active nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-white/20');
+            });
+            event.target.classList.add('bg-white/20');
+        }
+
+        // GSAP Animations
+        gsap.from('.page', {
+            opacity: 0,
+            y: 50,
+            duration: 0.
