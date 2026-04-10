@@ -1,458 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenFlow - Modern Landing Page</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tsparticles/preset-links@2.12.0/tsparticles.preset.links.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreenFlow Pro</title>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-            height: 100vh;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-        /* Full-screen gradient background */
-        .gradient-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, 
-                #0f5132 0%, 
-                #117743 25%, 
-                #20c997 50%, 
-                #10b981 75%, 
-                #047857 100%);
-            z-index: -2;
-        }
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
 
-        /* Animated overlay shapes */
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-            animation: float 20s ease-in-out infinite;
-        }
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,sans-serif;height:100vh;overflow:hidden;color:#fff}
 
-        .shape:nth-child(1) { width: 200px; height: 200px; top: 10%; left: 10%; animation-delay: 0s; }
-        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 10%; animation-delay: -5s; }
-        .shape:nth-child(3) { width: 100px; height: 100px; bottom: 20%; left: 20%; animation-delay: -10s; }
+/* 🔥 REALISTIC GREEN LIKE YOUR IMAGE */
+.gradient-bg{
+position:fixed;width:100%;height:100%;
+background:linear-gradient(135deg,#0a2e1d,#0f5132,#198754,#20c997);
+z-index:-2;
+}
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
+/* PARTICLES */
+#tsparticles{position:absolute;width:100%;height:100%;z-index:-1}
 
-        /* Sticky Navbar */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 1rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
+/* CENTER */
+.center{
+display:flex;justify-content:center;align-items:center;
+height:100vh;flex-direction:column;text-align:center;
+}
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #10b981, #20c997);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+/* BUTTONS */
+.btn{
+padding:14px 30px;
+border-radius:50px;
+border:none;
+cursor:pointer;
+font-weight:600;
+transition:.3s;
+}
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
+.btn-main{
+background:linear-gradient(135deg,#00ff9c,#00c97b);
+color:#000;
+box-shadow:0 10px 30px rgba(0,255,156,.4);
+}
 
-        .nav-links a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-        }
+.btn-main:hover{
+transform:translateY(-3px) scale(1.05);
+}
 
-        .nav-links a:hover {
-            color: #10b981;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
+/* GLASS LOGIN */
+.login-box{
+display:none;
+position:absolute;
+top:50%;left:50%;
+transform:translate(-50%,-50%);
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(20px);
+padding:30px;
+border-radius:20px;
+width:300px;
+animation:fade .4s ease;
+}
 
-        /* Main Content */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem;
-            position: relative;
-            z-index: 10;
-        }
+@keyframes fade{
+from{opacity:0;transform:translate(-50%,-40%)}
+to{opacity:1;transform:translate(-50%,-50%)}
+}
 
-        .hero h1 {
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 900;
-            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1.5rem;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-        }
+.input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border-radius:10px;
+border:none;
+outline:none;
+}
 
-        .hero p {
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 400;
-            max-width: 600px;
-            margin-bottom: 3rem;
-            line-height: 1.6;
-        }
+/* GOOGLE BUTTON */
+.google{
+background:#fff;color:#000;
+display:flex;align-items:center;justify-content:center;
+gap:10px;
+}
 
-        /* Glassmorphism Input & Buttons Container */
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
-            max-width: 500px;
-            width: 100%;
-            margin: 0 auto;
-        }
+/* DASHBOARD */
+.dashboard{
+display:none;
+height:100vh;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+}
 
-        .input-field {
-            width: 100%;
-            padding: 1.5rem 2rem;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 3rem;
-            font-size: 1.1rem;
-            color: white;
-            font-weight: 500;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .input-field::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .input-field:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* Main CTA Button */
-        .cta-button {
-            padding: 1.5rem 3rem;
-            background: linear-gradient(135deg, #10b981 0%, #20c997 100%);
-            color: white;
-            border: none;
-            border-radius: 3rem;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-4px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.6);
-        }
-
-        /* Secondary Buttons */
-        .secondary-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .secondary-btn {
-            padding: 0.8rem 2rem;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 1rem 3%;
-            }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            .input-group {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .secondary-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .secondary-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 1px;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-            40% { transform: translateX(-50%) translateY(-10px); }
-            60% { transform: translateX(-50%) translateY(-5px); }
-        }
-    </style>
+/* TITLE */
+h1{
+font-size:3rem;
+margin-bottom:20px;
+}
+</style>
 </head>
+
 <body>
-    <!-- Animated Background Shapes -->
-    <div class="gradient-bg">
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-    </div>
 
-    <!-- Sticky Navbar -->
-    <nav class="navbar">
-        <div class="logo">GreenFlow</div>
-        <ul class="nav-links">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </nav>
+<div class="gradient-bg"></div>
+<div id="tsparticles"></div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div id="tsparticles" style="position: absolute; width: 100%; height: 100%; z-index: 1;"></div>
-        
-        <div class="input-group">
-            <h1 data-scroll data-scroll-speed="1">Transform Your Links</h1>
-            <p data-scroll data-scroll-speed="2">Shorten URLs, track analytics, and boost your marketing with our intelligent link management platform.</p>
-            
-            <div style="position: relative; width: 100%;">
-                <input 
-                    type="text" 
-                    class="input-field" 
-                    placeholder="Paste your long URL here..." 
-                    data-scroll data-scroll-speed="3"
-                >
-            </div>
-            
-            <a href="#" class="cta-button" data-scroll data-scroll-speed="4">
-                ✨ Shorten Now
-            </a>
-            
-            <div class="secondary-buttons">
-                <a href="#" class="secondary-btn">Login</a>
-                <a href="#" class="secondary-btn">Sign Up</a>
-            </div>
-        </div>
-    </section>
+<!-- HOME -->
+<div class="center" id="home">
+<h1>GreenFlow</h1>
 
-    <!-- Scroll Indicator -->
-    <div class="scroll-indicator"></div>
+<button class="btn btn-main" onclick="openLogin()">Login</button>
+</div>
 
-    <script>
-        // Initialize tsParticles with network preset
-        async function initParticles() {
-            await tsParticles.load('tsparticles', {
-                preset: 'links',
-                background: {
-                    color: {
-                        value: "transparent"
-                    }
-                },
-                fpsLimit: 60,
-                particles: {
-                    number: {
-                        value: 80,
-                        density: {
-                            enable: true,
-                            value_area: 800
-                        }
-                    },
-                    color: {
-                           value: ["#ffffff", "#d1fae5", "#a7f3d0"]
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
 
-                    },
-                    shape: {
-                        type: "circle"
-                    },
-                    opacity: {
-                        value: 0.5,
-                        random: true,
-                        animation: {
-                            enable: true,
-                            speed: 1,
-                            opacity_min: 0.1,
-                            sync: false
-                        }
-                    },
-                    size: {
-                        value: 3,
-                        random: true
-                    },
-                    links: {
-                        enable: true,
-                        distance: 150,
-                        color: "#10b981",
-                        opacity: 0.3,
-                        width: 1
-                    },
-                    move: {
-                        direction: "none",
-                        enable: true,
-                        outModes: {
-                            default: "bounce"
-                        },
-                        random: true,
-                        speed: 1,
-                        straight: false
-                    }
-                },
-                interactivity: {
-                    events: {
-                        onHover: {
-                            enable: true,
-                            mode: ["grab", "bubble"]
-                        },
-                        onClick: {
-                            enable: true,
-                            mode: "push"
-                        }
-                    },
-                    modes: {
-                        grab: {
-                            distance: 200,
-                            links: {
-                                opacity: 0.7
-                            }
-                        },
-                        bubble: {
-                            distance: 200,
-                            size: 4,
-                            duration: 2,
-                            opacity: 0.8
-                        }
-                    }
-                },
-                detectRetina: true
-            });
-        }
+<button class="btn google" onclick="loginSuccess()">Continue with Google</button>
 
-        // Initialize particles when page loads
-        window.addEventListener('load', initParticles);
+<p style="margin:10px 0">OR</p>
 
-        // Smooth scrolling for navbar links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+<input class="input" placeholder="Email or Username">
+<input class="input" type="password" placeholder="Password">
 
-        // Navbar scroll effect
-        window.addEventListener('scroll', () => {
-            const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 50) {
-                navbar.style.background = 'rgba(255, 255, 255, 0.15)';
-                navbar.style.backdropFilter = 'blur(30px)';
-            } else {
-                navbar.style.background = 'rgba(255, 255, 255, 0.1)';
-                navbar.style.backdropFilter = 'blur(20px)';
-            }
-        });
+<button class="btn btn-main" style="width:100%" onclick="loginSuccess()">Login</button>
 
-        // CTA button click animation
-        document.querySelector('.cta-button').addEventListener('click', function(e) {
-            e.preventDefault();
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 150);
-            
-            // Simulate URL shortening
-            const input = document.querySelector('.input-field');
-            if (input.value) {
-                alert(`Shortened: https://grnflw.co/${Math.random().toString(36).substr(2, 8)}`);
-            }
-        });
+</div>
 
-        // Input focus animation
-        document.querySelector('.input-field').addEventListener('focus', function() {
-            this.parentElement.style.transform = 'scale(1.02)';
-        });
+<!-- DASHBOARD -->
+<div class="dashboard" id="dash">
+<h1>Welcome 🎉</h1>
+<p>You are logged in successfully</p>
 
-        document.querySelector('.input-field').addEventListener('blur', function() {
-            this.parentElement.style.transform = 'scale(1)';
-        });
-    </script>
+<button class="btn btn-main" onclick="logout()">Logout</button>
+</div>
+
+<script>
+// PARTICLES
+tsParticles.load("tsparticles", {
+particles:{
+number:{value:60},
+color:{value:"#00ff9c"},
+links:{enable:true,color:"#00ff9c",opacity:0.3},
+move:{enable:true,speed:1},
+size:{value:3},
+opacity:{value:0.5}
+}
+});
+
+// OPEN LOGIN
+function openLogin(){
+document.getElementById("loginBox").style.display="block";
+}
+
+// LOGIN SUCCESS
+function loginSuccess(){
+document.getElementById("home").style.display="none";
+document.getElementById("loginBox").style.display="none";
+document.getElementById("dash").style.display="flex";
+}
+
+// LOGOUT
+function logout(){
+location.reload();
+}
+</script>
+
 </body>
 </html>
