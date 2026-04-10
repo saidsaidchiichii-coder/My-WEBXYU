@@ -9,18 +9,85 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
 
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+getAuth, 
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+GoogleAuthProvider,
+signInWithPopup,
+signOut,
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_AUTH_DOMAIN",
+projectId: "YOUR_PROJECT_ID",
+appId: "YOUR_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+window.emailLogin = async function () {
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+
+try {
+await signInWithEmailAndPassword(auth, email, password);
+showDashboard();
+} catch (e) {
+alert(e.message);
+}
+};
+
+window.register = async function () {
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+
+try {
+await createUserWithEmailAndPassword(auth, email, password);
+showDashboard();
+} catch (e) {
+alert(e.message);
+}
+};
+
+window.googleLogin = async function () {
+try {
+await signInWithPopup(auth, provider);
+showDashboard();
+} catch (e) {
+alert(e.message);
+}
+};
+
+window.logout = async function () {
+await signOut(auth);
+location.reload();
+};
+
+onAuthStateChanged(auth, (user) => {
+if (user) showDashboard();
+});
+
+</script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Inter,sans-serif;height:100vh;overflow:hidden;color:#fff}
 
-/* 🔥 REALISTIC GREEN LIKE YOUR IMAGE */
+/* BACKGROUND */
 .gradient-bg{
 position:fixed;width:100%;height:100%;
 background:linear-gradient(135deg,#0a2e1d,#0f5132,#198754,#20c997);
 z-index:-2;
 }
 
-/* PARTICLES */
 #tsparticles{position:absolute;width:100%;height:100%;z-index:-1}
 
 /* CENTER */
@@ -29,7 +96,7 @@ display:flex;justify-content:center;align-items:center;
 height:100vh;flex-direction:column;text-align:center;
 }
 
-/* BUTTONS */
+/* BUTTON */
 .btn{
 padding:14px 30px;
 border-radius:50px;
@@ -45,11 +112,15 @@ color:#000;
 box-shadow:0 10px 30px rgba(0,255,156,.4);
 }
 
-.btn-main:hover{
-transform:translateY(-3px) scale(1.05);
+.btn-main:hover{transform:translateY(-3px) scale(1.05)}
+
+.google{
+background:#fff;color:#000;
+display:flex;align-items:center;justify-content:center;
+gap:10px;
 }
 
-/* GLASS LOGIN */
+/* LOGIN */
 .login-box{
 display:none;
 position:absolute;
@@ -60,12 +131,6 @@ backdrop-filter:blur(20px);
 padding:30px;
 border-radius:20px;
 width:300px;
-animation:fade .4s ease;
-}
-
-@keyframes fade{
-from{opacity:0;transform:translate(-50%,-40%)}
-to{opacity:1;transform:translate(-50%,-50%)}
 }
 
 .input{
@@ -77,13 +142,6 @@ border:none;
 outline:none;
 }
 
-/* GOOGLE BUTTON */
-.google{
-background:#fff;color:#000;
-display:flex;align-items:center;justify-content:center;
-gap:10px;
-}
-
 /* DASHBOARD */
 .dashboard{
 display:none;
@@ -93,11 +151,17 @@ align-items:center;
 flex-direction:column;
 }
 
-/* TITLE */
-h1{
-font-size:3rem;
-margin-bottom:20px;
+/* NEW SECOND FORM */
+.profile-box{
+margin-top:20px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(20px);
+padding:20px;
+border-radius:15px;
+width:320px;
 }
+
+h1{font-size:3rem;margin-bottom:20px}
 </style>
 </head>
 
@@ -109,33 +173,48 @@ margin-bottom:20px;
 <!-- HOME -->
 <div class="center" id="home">
 <h1>GreenFlow</h1>
-
 <button class="btn btn-main" onclick="openLogin()">Login</button>
 </div>
 
 <!-- LOGIN -->
 <div class="login-box" id="loginBox">
 
-<button class="btn google" onclick="loginSuccess()">Continue with Google</button>
+<button class="btn google" onclick="googleLogin()">Continue with Google</button>
 
 <p style="margin:10px 0">OR</p>
 
-<input class="input" placeholder="Email or Username">
-<input class="input" type="password" placeholder="Password">
+<input class="input" id="email" placeholder="Email">
+<input class="input" id="password" type="password" placeholder="Password">
 
-<button class="btn btn-main" style="width:100%" onclick="loginSuccess()">Login</button>
+<button class="btn btn-main" style="width:100%" onclick="emailLogin()">Login</button>
+<button class="btn" style="width:100%;margin-top:10px;background:#222;color:#fff" onclick="register()">
+Create Account
+</button>
 
 </div>
 
 <!-- DASHBOARD -->
 <div class="dashboard" id="dash">
+
 <h1>Welcome 🎉</h1>
 <p>You are logged in successfully</p>
 
-<button class="btn btn-main" onclick="logout()">Logout</button>
+<!-- 🔥 SECOND FORM -->
+<div class="profile-box">
+<h3>User Settings</h3>
+
+<input class="input" placeholder="Your Name">
+<input class="input" placeholder="Your Goal (e.g. Muscle Gain)">
+<input class="input" placeholder="Daily Calories">
+
+<button class="btn btn-main" style="width:100%">Save Profile</button>
+</div>
+
+<button class="btn btn-main" style="margin-top:20px" onclick="logout()">Logout</button>
 </div>
 
 <script>
+
 // PARTICLES
 tsParticles.load("tsparticles", {
 particles:{
@@ -148,21 +227,15 @@ opacity:{value:0.5}
 }
 });
 
-// OPEN LOGIN
+// UI
 function openLogin(){
 document.getElementById("loginBox").style.display="block";
 }
 
-// LOGIN SUCCESS
-function loginSuccess(){
+function showDashboard(){
 document.getElementById("home").style.display="none";
 document.getElementById("loginBox").style.display="none";
 document.getElementById("dash").style.display="flex";
-}
-
-// LOGOUT
-function logout(){
-location.reload();
 }
 </script>
 
