@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILYASS Pro - Fitness Tracker</title>
+<title>ILYASS Pro - Fitness Tracker with AI</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,6 +41,12 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
+// OPENAI API KEY - غير هذا برقمك من OpenAI!
+const OPENAI_API_KEY = "sk-YOUR_OPENAI_API_KEY_HERE";
+
+// AMAZON AFFILIATE SETUP
+const AMAZON_ASSOCIATE_TAG = "YOUR_ASSOCIATE_TAG";
+
 // VALIDATION FUNCTIONS
 function validateEmail(email) {
 const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,6 +80,171 @@ function showLoading(show = true) {
 document.getElementById("loading").style.display = show ? "flex" : "none";
 }
 
+// AI CHAT WITH CHATGPT
+window.sendAIMessage = async function() {
+const userInput = document.getElementById("aiInput").value.trim();
+const chatContainer = document.getElementById("chatMessages");
+
+if (!userInput) {
+showError("Please enter a message");
+return;
+}
+
+// عرض الرسالة من المستخدم
+const userMessageDiv = document.createElement("div");
+userMessageDiv.className = "chat-message user-message";
+userMessageDiv.innerHTML = `<p>${userInput}</p>`;
+chatContainer.appendChild(userMessageDiv);
+
+document.getElementById("aiInput").value = "";
+showLoading(true);
+
+try {
+// استدعاء OpenAI API
+const response = await fetch("https://api.openai.com/v1/chat/completions", {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+"Authorization": `Bearer ${OPENAI_API_KEY}`
+},
+body: JSON.stringify({
+model: "gpt-3.5-turbo",
+messages: [
+{
+role: "system",
+content: "You are a helpful fitness and health assistant. Provide advice on fitness, nutrition, and wellness. Be supportive and motivating."
+},
+{
+role: "user",
+content: userInput
+}
+],
+temperature: 0.7,
+max_tokens: 500
+})
+});
+
+const data = await response.json();
+
+if (data.choices && data.choices[0]) {
+const aiResponse = data.choices[0].message.content;
+
+// عرض الرسالة من AI
+const aiMessageDiv = document.createElement("div");
+aiMessageDiv.className = "chat-message ai-message";
+aiMessageDiv.innerHTML = `<p>🤖 ${aiResponse}</p>`;
+chatContainer.appendChild(aiMessageDiv);
+
+// scroll to bottom
+chatContainer.scrollTop = chatContainer.scrollHeight;
+} else {
+showError("Error getting AI response");
+}
+
+showLoading(false);
+} catch (error) {
+showError("Error: " + error.message);
+showLoading(false);
+}
+};
+
+// AI WORKOUT GENERATOR
+window.generateWorkout = async function() {
+const goal = document.getElementById("userGoal").value;
+const level = document.getElementById("fitnessLevel").value;
+
+if (!goal || !level) {
+showError("Please select goal and fitness level");
+return;
+}
+
+showLoading(true);
+
+try {
+const response = await fetch("https://api.openai.com/v1/chat/completions", {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+"Authorization": `Bearer ${OPENAI_API_KEY}`
+},
+body: JSON.stringify({
+model: "gpt-3.5-turbo",
+messages: [
+{
+role: "user",
+content: `Generate a complete workout plan for someone with the goal of ${goal} and fitness level ${level}. Include exercises, sets, reps, and rest time. Format as a clear list.`
+}
+],
+temperature: 0.7,
+max_tokens: 800
+})
+});
+
+const data = await response.json();
+
+if (data.choices && data.choices[0]) {
+const workoutPlan = data.choices[0].message.content;
+document.getElementById("workoutResult").innerHTML = `<pre>${workoutPlan}</pre>`;
+} else {
+showError("Error generating workout");
+}
+
+showLoading(false);
+} catch (error) {
+showError("Error: " + error.message);
+showLoading(false);
+}
+};
+
+// AI MEAL PLAN GENERATOR
+window.generateMealPlan = async function() {
+const calories = document.getElementById("userCalories").value;
+const diet = document.getElementById("dietType").value;
+
+if (!calories || !diet) {
+showError("Please fill in all fields");
+return;
+}
+
+showLoading(true);
+
+try {
+const response = await fetch("https://api.openai.com/v1/chat/completions", {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+"Authorization": `Bearer ${OPENAI_API_KEY}`
+},
+body: JSON.stringify({
+model: "gpt-3.5-turbo",
+messages: [
+{
+role: "user",
+content: `Create a daily meal plan with ${calories} calories for a ${diet} diet. Include breakfast, lunch, dinner, and snacks with nutritional info. Format clearly.`
+}
+],
+temperature: 0.7,
+max_tokens: 800
+})
+});
+
+const data = await response.json();
+
+if (data.choices && data.choices[0]) {
+const mealPlan = data.choices[0].message.content;
+document.getElementById("mealResult").innerHTML = `<pre>${mealPlan}</pre>`;
+} else {
+showError("Error generating meal plan");
+}
+
+showLoading(false);
+} catch (error) {
+showError("Error: " + error.message);
+showLoading(false);
+}
+};
+
+// AUTH FUNCTIONS
 window.emailLogin = async function () {
 const email = document.getElementById("email").value;
 const password = document.getElementById("password").value;
@@ -469,28 +640,116 @@ border-bottom:2px solid #00ff9c;
 padding-bottom:10px;
 }
 
-/* CALORIE HISTORY */
-.calorie-history{
-margin-top:20px;
-padding:15px;
-background:rgba(0,0,0,0.2);
-border-radius:10px;
-max-height:150px;
-overflow-y:auto;
-font-size:0.9rem;
+/* AI CHAT SECTION */
+.ai-chat-section{
+margin:20px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(20px);
+padding:25px;
+border-radius:15px;
+width:100%;
+max-width:500px;
+height:500px;
+display:flex;
+flex-direction:column;
 }
 
-.history-item{
+.chat-messages{
+flex:1;
+overflow-y:auto;
+margin-bottom:15px;
+background:rgba(0,0,0,0.2);
+border-radius:10px;
+padding:15px;
+}
+
+.chat-message{
+margin:10px 0;
+padding:10px;
+border-radius:8px;
+word-wrap:break-word;
+}
+
+.user-message{
+background:rgba(0,255,156,0.2);
+border-left:3px solid #00ff9c;
+text-align:right;
+}
+
+.ai-message{
+background:rgba(0,0,0,0.3);
+border-left:3px solid #FF9900;
+text-align:left;
+}
+
+.chat-input-group{
 display:flex;
-justify-content:space-between;
-margin:5px 0;
-padding:5px 0;
-border-bottom:1px solid rgba(255,255,255,0.1);
+gap:10px;
+}
+
+.chat-input-group input{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:none;
+outline:none;
+}
+
+.chat-input-group button{
+padding:10px 20px;
+background:linear-gradient(135deg,#00ff9c,#00c97b);
+color:#000;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
+}
+
+/* WORKOUT & MEAL GENERATOR */
+.ai-tools-section{
+margin:20px;
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(20px);
+padding:25px;
+border-radius:15px;
+width:100%;
+max-width:400px;
+}
+
+.ai-tools-section select{
+width:100%;
+padding:10px;
+margin:10px 0;
+border-radius:8px;
+border:none;
+outline:none;
+}
+
+.result-box{
+background:rgba(0,0,0,0.3);
+padding:15px;
+border-radius:8px;
+margin-top:15px;
+max-height:300px;
+overflow-y:auto;
+font-size:0.9rem;
+white-space:pre-wrap;
 }
 
 /* RESPONSIVE */
 @media (max-width:600px){
 .profile-box{
+max-width:90%;
+padding:15px;
+}
+
+.ai-chat-section{
+max-width:90%;
+padding:15px;
+height:400px;
+}
+
+.ai-tools-section{
 max-width:90%;
 padding:15px;
 }
@@ -530,18 +789,19 @@ h3{font-size:1.2rem}
 
 <!-- NAVIGATION -->
 <nav class="navbar" id="navbar">
-<div class="navbar-brand">🏋️ ILYASS Pro</div>
+<div class="navbar-brand">🏋️ ILYASS Pro + AI</div>
 <ul class="navbar-menu">
 <li><a onclick="scrollToSection('profile')">Profile</a></li>
-<li><a onclick="scrollToSection('about')">About</a></li>
+<li><a onclick="scrollToSection('chat')">AI Chat</a></li>
+<li><a onclick="scrollToSection('tools')">AI Tools</a></li>
 <li><a onclick="logout()">Logout</a></li>
 </ul>
 </nav>
 
 <!-- HOME -->
 <div class="center" id="home">
-<h1>💪 ILYASS Pro</h1>
-<p style="margin-bottom:20px;font-size:1.1rem;opacity:0.9">Your Personal Fitness Tracker</p>
+<h1>💪 ILYASS Pro + 🤖 AI</h1>
+<p style="margin-bottom:20px;font-size:1.1rem;opacity:0.9">Your Personal Fitness Tracker with AI Assistant</p>
 <button class="btn btn-main" onclick="openLogin()">
 <i class="fas fa-sign-in-alt"></i> Login
 </button>
@@ -577,13 +837,6 @@ h3{font-size:1.2rem}
 <!-- DASHBOARD -->
 <div class="dashboard" id="dash">
 
-<!-- NAVIGATION BAR SHOWN HERE -->
-<script>
-function updateNavbar() {
-document.getElementById("navbar").style.display = "flex";
-}
-</script>
-
 <!-- PROFILE HEADER -->
 <div class="profile-header">
 <div class="avatar" id="userAvatar">U</div>
@@ -604,22 +857,67 @@ document.getElementById("navbar").style.display = "flex";
 <button class="btn btn-main" style="width:100%;margin-top:15px" onclick="saveProfile()">
 <i class="fas fa-save"></i> Save Profile
 </button>
+</div>
 
-<div class="calorie-history">
-<strong>📊 Last Updated:</strong> Now
+<!-- AI CHAT SECTION -->
+<div class="ai-chat-section" id="chat">
+<h3 style="margin-bottom:15px">🤖 AI Fitness Assistant</h3>
+<div class="chat-messages" id="chatMessages"></div>
+<div class="chat-input-group">
+<input type="text" id="aiInput" placeholder="Ask me anything about fitness..." />
+<button onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button>
+</div>
+</div>
+
+<!-- AI TOOLS SECTION -->
+<div class="ai-tools-section" id="tools">
+<h3 style="margin-bottom:15px">🛠️ AI Generator Tools</h3>
+
+<!-- WORKOUT GENERATOR -->
+<div style="margin-bottom:20px">
+<h4 style="margin-bottom:10px">💪 Generate Workout Plan</h4>
+<select id="fitnessLevel">
+<option value="">Select Fitness Level</option>
+<option value="beginner">Beginner</option>
+<option value="intermediate">Intermediate</option>
+<option value="advanced">Advanced</option>
+</select>
+<button class="btn btn-main" style="width:100%;margin-top:10px" onclick="generateWorkout()">
+Generate Workout
+</button>
+<div class="result-box" id="workoutResult"></div>
+</div>
+
+<!-- MEAL PLAN GENERATOR -->
+<div>
+<h4 style="margin-bottom:10px">🍎 Generate Meal Plan</h4>
+<select id="dietType">
+<option value="">Select Diet Type</option>
+<option value="balanced">Balanced</option>
+<option value="keto">Keto</option>
+<option value="vegetarian">Vegetarian</option>
+<option value="vegan">Vegan</option>
+<option value="high-protein">High Protein</option>
+</select>
+<button class="btn btn-main" style="width:100%;margin-top:10px" onclick="generateMealPlan()">
+Generate Meal Plan
+</button>
+<div class="result-box" id="mealResult"></div>
 </div>
 </div>
 
 <!-- ABOUT SECTION -->
 <div class="profile-box" id="about" style="margin-bottom:30px">
-<h3>ℹ️ About ILYASS Pro</h3>
+<h3>ℹ️ About ILYASS Pro + AI</h3>
 <p style="line-height:1.6;font-size:0.95rem">
-ILYASS Pro is your personal fitness companion designed to help you track your daily nutrition and achieve your health goals. 
+ILYASS Pro is your personal fitness companion with AI-powered features!
 <br><br>
 ✨ Features:
 <br>• Secure authentication
 <br>• Personal profile management
-<br>• Calorie tracking
+<br>• 🤖 AI Chat Assistant
+<br>• 🤖 Workout Generator
+<br>• 🤖 Meal Plan Creator
 <br>• Goal monitoring
 <br>• Data persistence with Firebase
 </p>
