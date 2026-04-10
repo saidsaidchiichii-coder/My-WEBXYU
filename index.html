@@ -3,973 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILYASS Pro - Fitness Tracker with AI</title>
+<title>AI Fitness App</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-getAuth, 
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-GoogleAuthProvider,
-signInWithPopup,
-signOut,
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { 
-getFirestore,
-doc,
-setDoc,
-getDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-<script type="module">
-
-const OPENAI_API_KEY = "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"; // 👈 هنا
-
-// باقي الكود ديالك
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-// OPENAI API KEY - غير هذا برقمك من OpenAI!
-const OPENAI_API_KEY = "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";
-
-// AMAZON AFFILIATE SETUP
-const AMAZON_ASSOCIATE_TAG = "YOUR_ASSOCIATE_TAG";
-
-// VALIDATION FUNCTIONS
-function validateEmail(email) {
-const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-return re.test(email);
-}
-
-function validatePassword(password) {
-return password.length >= 6;
-}
-
-function showError(message) {
-const errorDiv = document.getElementById("errorMsg");
-errorDiv.textContent = message;
-errorDiv.style.display = "block";
-setTimeout(() => {
-errorDiv.style.display = "none";
-}, 5000);
-}
-
-function showSuccess(message) {
-const successDiv = document.getElementById("successMsg");
-successDiv.textContent = message;
-successDiv.style.display = "block";
-setTimeout(() => {
-successDiv.style.display = "none";
-}, 3000);
-}
-
-// LOADING SPINNER
-function showLoading(show = true) {
-document.getElementById("loading").style.display = show ? "flex" : "none";
-}
-
-// AI CHAT WITH CHATGPT
-window.sendAIMessage = async function() {
-const userInput = document.getElementById("aiInput").value.trim();
-const chatContainer = document.getElementById("chatMessages");
-
-if (!userInput) {
-showError("Please enter a message");
-return;
-}
-
-// عرض الرسالة من المستخدم
-const userMessageDiv = document.createElement("div");
-userMessageDiv.className = "chat-message user-message";
-userMessageDiv.innerHTML = `<p>${userInput}</p>`;
-chatContainer.appendChild(userMessageDiv);
-
-document.getElementById("aiInput").value = "";
-showLoading(true);
-
-try {
-// استدعاء OpenAI API
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-"Authorization": `Bearer ${OPENAI_API_KEY}`
-},
-body: JSON.stringify({
-model: "gpt-3.5-turbo",
-messages: [
-{
-role: "system",
-content: "You are a helpful fitness and health assistant. Provide advice on fitness, nutrition, and wellness. Be supportive and motivating."
-},
-{
-role: "user",
-content: userInput
-}
-],
-temperature: 0.7,
-max_tokens: 500
-})
-});
-
-const data = await response.json();
-
-if (data.choices && data.choices[0]) {
-const aiResponse = data.choices[0].message.content;
-
-// عرض الرسالة من AI
-const aiMessageDiv = document.createElement("div");
-aiMessageDiv.className = "chat-message ai-message";
-aiMessageDiv.innerHTML = `<p>🤖 ${aiResponse}</p>`;
-chatContainer.appendChild(aiMessageDiv);
-
-// scroll to bottom
-chatContainer.scrollTop = chatContainer.scrollHeight;
-} else {
-showError("Error getting AI response");
-}
-
-showLoading(false);
-} catch (error) {
-showError("Error: " + error.message);
-showLoading(false);
-}
-};
-
-// AI WORKOUT GENERATOR
-window.generateWorkout = async function() {
-const goal = document.getElementById("userGoal").value;
-const level = document.getElementById("fitnessLevel").value;
-
-if (!goal || !level) {
-showError("Please select goal and fitness level");
-return;
-}
-
-showLoading(true);
-
-try {
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-"Authorization": `Bearer ${OPENAI_API_KEY}`
-},
-body: JSON.stringify({
-model: "gpt-3.5-turbo",
-messages: [
-{
-role: "user",
-content: `Generate a complete workout plan for someone with the goal of ${goal} and fitness level ${level}. Include exercises, sets, reps, and rest time. Format as a clear list.`
-}
-],
-temperature: 0.7,
-max_tokens: 800
-})
-});
-
-const data = await response.json();
-
-if (data.choices && data.choices[0]) {
-const workoutPlan = data.choices[0].message.content;
-document.getElementById("workoutResult").innerHTML = `<pre>${workoutPlan}</pre>`;
-} else {
-showError("Error generating workout");
-}
-
-showLoading(false);
-} catch (error) {
-showError("Error: " + error.message);
-showLoading(false);
-}
-};
-
-// AI MEAL PLAN GENERATOR
-window.generateMealPlan = async function() {
-const calories = document.getElementById("userCalories").value;
-const diet = document.getElementById("dietType").value;
-
-if (!calories || !diet) {
-showError("Please fill in all fields");
-return;
-}
-
-showLoading(true);
-
-try {
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-"Authorization": `Bearer ${OPENAI_API_KEY}`
-},
-body: JSON.stringify({
-model: "gpt-3.5-turbo",
-messages: [
-{
-role: "user",
-content: `Create a daily meal plan with ${calories} calories for a ${diet} diet. Include breakfast, lunch, dinner, and snacks with nutritional info. Format clearly.`
-}
-],
-temperature: 0.7,
-max_tokens: 800
-})
-});
-
-const data = await response.json();
-
-if (data.choices && data.choices[0]) {
-const mealPlan = data.choices[0].message.content;
-document.getElementById("mealResult").innerHTML = `<pre>${mealPlan}</pre>`;
-} else {
-showError("Error generating meal plan");
-}
-
-showLoading(false);
-} catch (error) {
-showError("Error: " + error.message);
-showLoading(false);
-}
-};
-
-// AUTH FUNCTIONS
-window.emailLogin = async function () {
-const email = document.getElementById("email").value;
-const password = document.getElementById("password").value;
-
-if (!email || !password) {
-showError("Please fill in all fields");
-return;
-}
-
-if (!validateEmail(email)) {
-showError("Please enter a valid email");
-return;
-}
-
-showLoading(true);
-
-try {
-await signInWithEmailAndPassword(auth, email, password);
-showSuccess("Login successful!");
-showLoading(false);
-showDashboard();
-} catch (e) {
-showError(e.message);
-showLoading(false);
-}
-};
-
-window.register = async function () {
-const email = document.getElementById("email").value;
-const password = document.getElementById("password").value;
-
-if (!email || !password) {
-showError("Please fill in all fields");
-return;
-}
-
-if (!validateEmail(email)) {
-showError("Please enter a valid email");
-return;
-}
-
-if (!validatePassword(password)) {
-showError("Password must be at least 6 characters");
-return;
-}
-
-showLoading(true);
-
-try {
-await createUserWithEmailAndPassword(auth, email, password);
-showSuccess("Account created successfully!");
-showLoading(false);
-showDashboard();
-} catch (e) {
-showError(e.message);
-showLoading(false);
-}
-};
-
-window.googleLogin = async function () {
-showLoading(true);
-try {
-await signInWithPopup(auth, provider);
-showSuccess("Google login successful!");
-showLoading(false);
-showDashboard();
-} catch (e) {
-showError(e.message);
-showLoading(false);
-}
-};
-
-window.logout = async function () {
-await signOut(auth);
-location.reload();
-};
-
-// SAVE PROFILE TO FIRESTORE
-window.saveProfile = async function () {
-const user = auth.currentUser;
-if (!user) return;
-
-const name = document.getElementById("userName").value;
-const goal = document.getElementById("userGoal").value;
-const calories = document.getElementById("userCalories").value;
-
-if (!name || !goal || !calories) {
-showError("Please fill in all profile fields");
-return;
-}
-
-if (isNaN(calories) || calories <= 0) {
-showError("Please enter a valid calorie number");
-return;
-}
-
-showLoading(true);
-
-try {
-await setDoc(doc(db, "users", user.uid), {
-name: name,
-goal: goal,
-dailyCalories: parseInt(calories),
-email: user.email,
-lastUpdated: new Date(),
-calorieHistory: []
-});
-showSuccess("Profile saved successfully!");
-loadUserProfile();
-showLoading(false);
-} catch (e) {
-showError("Error saving profile: " + e.message);
-showLoading(false);
-}
-};
-
-// LOAD USER PROFILE
-async function loadUserProfile() {
-const user = auth.currentUser;
-if (!user) return;
-
-try {
-const docSnap = await getDoc(doc(db, "users", user.uid));
-if (docSnap.exists()) {
-const data = docSnap.data();
-document.getElementById("userName").value = data.name || "";
-document.getElementById("userGoal").value = data.goal || "";
-document.getElementById("userCalories").value = data.dailyCalories || "";
-document.getElementById("userEmail").textContent = user.email;
-document.getElementById("userAvatar").textContent = data.name ? data.name.charAt(0).toUpperCase() : "U";
-}
-} catch (e) {
-console.log("No profile data found");
-}
-}
-
-onAuthStateChanged(auth, (user) => {
-if (user) {
-showDashboard();
-loadUserProfile();
-}
-});
-
-</script>
-
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Inter,sans-serif;height:100vh;overflow:hidden;color:#fff}
-
-/* BACKGROUND */
-.gradient-bg{
-position:fixed;width:100%;height:100%;
-background:linear-gradient(135deg,#0a2e1d,#0f5132,#198754,#20c997);
-z-index:-2;
-}
-
-#tsparticles{position:absolute;width:100%;height:100%;z-index:-1}
-
-/* NAVIGATION */
-.navbar{
-display:none;
-position:fixed;
-top:0;width:100%;
-background:rgba(0,0,0,0.3);
-backdrop-filter:blur(10px);
-padding:15px 30px;
-z-index:100;
-justify-content:space-between;
-align-items:center;
-}
-
-.navbar-brand{
-font-size:1.5rem;
-font-weight:800;
-}
-
-.navbar-menu{
-display:flex;
-gap:20px;
-list-style:none;
-}
-
-.navbar-menu a{
+body{
+margin:0;
+font-family:Inter,sans-serif;
+background:linear-gradient(135deg,#0f5132,#20c997);
 color:#fff;
-text-decoration:none;
-transition:.3s;
-cursor:pointer;
-}
-
-.navbar-menu a:hover{
-color:#00ff9c;
-}
-
-/* LOADING SPINNER */
-#loading{
-display:none;
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,0.5);
-justify-content:center;
-align-items:center;
-z-index:200;
-}
-
-.spinner{
-border:4px solid rgba(255,255,255,0.3);
-border-top:4px solid #00ff9c;
-border-radius:50%;
-width:40px;
-height:40px;
-animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-0%{transform:rotate(0deg)}
-100%{transform:rotate(360deg)}
-}
-
-/* MESSAGES */
-#errorMsg,#successMsg{
-display:none;
-position:fixed;
-top:20px;right:20px;
-padding:15px 20px;
-border-radius:10px;
-z-index:150;
-font-weight:600;
-max-width:300px;
-}
-
-#errorMsg{
-background:#ff4757;
-color:#fff;
-}
-
-#successMsg{
-background:#2ed573;
-color:#000;
-}
-
-/* CENTER */
-.center{
-display:flex;justify-content:center;align-items:center;
-height:100vh;flex-direction:column;text-align:center;
-}
-
-/* BUTTON */
-.btn{
-padding:14px 30px;
-border-radius:50px;
-border:none;
-cursor:pointer;
-font-weight:600;
-transition:.3s;
-display:flex;
-align-items:center;
-justify-content:center;
-gap:8px;
-}
-
-.btn-main{
-background:linear-gradient(135deg,#00ff9c,#00c97b);
-color:#000;
-box-shadow:0 10px 30px rgba(0,255,156,.4);
-}
-
-.btn-main:hover{transform:translateY(-3px) scale(1.05)}
-
-.btn:disabled{
-opacity:0.5;
-cursor:not-allowed;
-}
-
-.google{
-background:#fff;color:#000;
-display:flex;align-items:center;justify-content:center;
-gap:10px;
-}
-
-/* LOGIN */
-.login-box{
-display:none;
-position:absolute;
-top:50%;left:50%;
-transform:translate(-50%,-50%);
-background:rgba(255,255,255,0.1);
-backdrop-filter:blur(20px);
-padding:30px;
-border-radius:20px;
-width:100%;
-max-width:300px;
-}
-
-.input{
-width:100%;
-padding:12px;
-margin:10px 0;
-border-radius:10px;
-border:none;
-outline:none;
-font-size:14px;
-}
-
-.input:focus{
-box-shadow:0 0 10px rgba(0,255,156,0.5);
-}
-
-.input.error{
-border:2px solid #ff4757;
-}
-
-/* FORGOT PASSWORD */
-.forgot-pwd{
-text-align:right;
-font-size:12px;
-margin:10px 0;
-}
-
-.forgot-pwd a{
-color:#00ff9c;
-text-decoration:none;
-cursor:pointer;
-}
-
-.forgot-pwd a:hover{
-text-decoration:underline;
-}
-
-/* DASHBOARD */
-.dashboard{
-display:none;
 height:100vh;
+display:flex;
 justify-content:center;
 align-items:center;
 flex-direction:column;
-overflow-y:auto;
-padding-top:70px;
 }
 
-/* PROFILE HEADER */
-.profile-header{
-display:flex;
-flex-direction:column;
-align-items:center;
-gap:15px;
-margin-bottom:30px;
-}
-
-.avatar{
-width:80px;
-height:80px;
-border-radius:50%;
-background:linear-gradient(135deg,#00ff9c,#00c97b);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:2rem;
-font-weight:800;
-color:#000;
-box-shadow:0 10px 30px rgba(0,255,156,.4);
-}
-
-.user-info{
-text-align:center;
-}
-
-.user-info h2{
-font-size:1.5rem;
-margin-bottom:5px;
-}
-
-.user-info p{
-font-size:0.9rem;
-opacity:0.8;
-}
-
-/* PROFILE BOX */
-.profile-box{
-margin:20px;
-background:rgba(255,255,255,0.1);
-backdrop-filter:blur(20px);
-padding:25px;
-border-radius:15px;
-width:100%;
-max-width:400px;
-}
-
-.profile-box h3{
-margin-bottom:15px;
-font-size:1.2rem;
-border-bottom:2px solid #00ff9c;
-padding-bottom:10px;
-}
-
-/* AI CHAT SECTION */
-.ai-chat-section{
-margin:20px;
-background:rgba(255,255,255,0.1);
-backdrop-filter:blur(20px);
-padding:25px;
-border-radius:15px;
-width:100%;
-max-width:500px;
-height:500px;
-display:flex;
-flex-direction:column;
-}
-
-.chat-messages{
-flex:1;
-overflow-y:auto;
-margin-bottom:15px;
-background:rgba(0,0,0,0.2);
-border-radius:10px;
-padding:15px;
-}
-
-.chat-message{
-margin:10px 0;
-padding:10px;
-border-radius:8px;
-word-wrap:break-word;
-}
-
-.user-message{
-background:rgba(0,255,156,0.2);
-border-left:3px solid #00ff9c;
-text-align:right;
-}
-
-.ai-message{
+.box{
+width:90%;
+max-width:600px;
 background:rgba(0,0,0,0.3);
-border-left:3px solid #FF9900;
-text-align:left;
+padding:20px;
+border-radius:15px;
+backdrop-filter:blur(10px);
 }
 
-.chat-input-group{
-display:flex;
-gap:10px;
-}
-
-.chat-input-group input{
-flex:1;
+textarea,input,select{
+width:100%;
 padding:10px;
+margin:10px 0;
 border-radius:8px;
 border:none;
 outline:none;
 }
 
-.chat-input-group button{
-padding:10px 20px;
-background:linear-gradient(135deg,#00ff9c,#00c97b);
-color:#000;
+button{
+padding:10px 15px;
 border:none;
 border-radius:8px;
 cursor:pointer;
-font-weight:600;
+background:#00ff9c;
+font-weight:bold;
+margin-top:5px;
 }
 
-/* WORKOUT & MEAL GENERATOR */
-.ai-tools-section{
-margin:20px;
-background:rgba(255,255,255,0.1);
-backdrop-filter:blur(20px);
-padding:25px;
-border-radius:15px;
-width:100%;
-max-width:400px;
-}
-
-.ai-tools-section select{
-width:100%;
-padding:10px;
-margin:10px 0;
-border-radius:8px;
-border:none;
-outline:none;
-}
-
-.result-box{
-background:rgba(0,0,0,0.3);
-padding:15px;
-border-radius:8px;
-margin-top:15px;
-max-height:300px;
-overflow-y:auto;
-font-size:0.9rem;
+.result{
+margin-top:10px;
 white-space:pre-wrap;
+background:rgba(0,0,0,0.4);
+padding:10px;
+border-radius:8px;
 }
-
-/* RESPONSIVE */
-@media (max-width:600px){
-.profile-box{
-max-width:90%;
-padding:15px;
-}
-
-.ai-chat-section{
-max-width:90%;
-padding:15px;
-height:400px;
-}
-
-.ai-tools-section{
-max-width:90%;
-padding:15px;
-}
-
-.login-box{
-max-width:90%;
-padding:20px;
-}
-
-h1{font-size:2rem!important}
-
-.navbar-menu{
-gap:10px;
-font-size:0.9rem;
-}
-}
-
-h1{font-size:3rem;margin-bottom:20px}
-h2{font-size:2rem}
-h3{font-size:1.2rem}
 </style>
 </head>
 
 <body>
 
-<div class="gradient-bg"></div>
-<div id="tsparticles"></div>
+<div class="box">
 
-<!-- LOADING SPINNER -->
-<div id="loading">
-<div class="spinner"></div>
-</div>
+<h2>🤖 AI Fitness App</h2>
 
-<!-- ERROR & SUCCESS MESSAGES -->
-<div id="errorMsg"></div>
-<div id="successMsg"></div>
+<!-- CHAT -->
+<textarea id="chatInput" placeholder="Ask anything..."></textarea>
+<button onclick="sendChat()">Send</button>
+<div class="result" id="chatResult"></div>
 
-<!-- NAVIGATION -->
-<nav class="navbar" id="navbar">
-<div class="navbar-brand"> ILYASS AI AGENT </div>
-<ul class="navbar-menu">
-<li><a onclick="scrollToSection('profile')">Profile</a></li>
-<li><a onclick="scrollToSection('chat')">AI Chat</a></li>
-<li><a onclick="scrollToSection('tools')">AI Tools</a></li>
-<li><a onclick="logout()">Logout</a></li>
-</ul>
-</nav>
+<hr>
 
-<!-- HOME -->
-<div class="center" id="home">
-<h1>💪 ILYASS Pro + 🤖 AI</h1>
-<p style="margin-bottom:20px;font-size:1.1rem;opacity:0.9">Your Personal Fitness Tracker with AI Assistant</p>
-<button class="btn btn-main" onclick="openLogin()">
-<i class="fas fa-sign-in-alt"></i> Login
-</button>
-</div>
-
-<!-- LOGIN -->
-<div class="login-box" id="loginBox">
-
-<h2 style="text-align:center;margin-bottom:20px">Welcome Back</h2>
-
-<button class="btn google" style="width:100%;margin-bottom:15px" onclick="googleLogin()">
-<i class="fab fa-google"></i> Continue with Google
-</button>
-
-<p style="margin:15px 0;text-align:center">OR</p>
-
-<input class="input" id="email" placeholder="📧 Email" type="email">
-<input class="input" id="password" type="password" placeholder="🔑 Password">
-
-<div class="forgot-pwd">
-<a onclick="alert('Password reset feature coming soon!')">Forgot Password?</a>
-</div>
-
-<button class="btn btn-main" style="width:100%;margin:15px 0" onclick="emailLogin()">
-<i class="fas fa-login"></i> Login
-</button>
-<button class="btn" style="width:100%;background:#222;color:#fff" onclick="register()">
-<i class="fas fa-user-plus"></i> Create Account
-</button>
-
-</div>
-
-<!-- DASHBOARD -->
-<div class="dashboard" id="dash">
-
-<!-- PROFILE HEADER -->
-<div class="profile-header">
-<div class="avatar" id="userAvatar">U</div>
-<div class="user-info">
-<h2>User Profile</h2>
-<p id="userEmail">email@example.com</p>
-</div>
-</div>
-
-<!-- PROFILE SETTINGS -->
-<div class="profile-box" id="profile">
-<h3>🎯 User Settings</h3>
-
-<input class="input" id="userName" placeholder="👤 Your Name">
-<input class="input" id="userGoal" placeholder="🎯 Your Goal (e.g., Muscle Gain, Fat Loss)">
-<input class="input" id="userCalories" type="number" placeholder="🔥 Daily Calories Target" min="1000" max="5000">
-
-<button class="btn btn-main" style="width:100%;margin-top:15px" onclick="saveProfile()">
-<i class="fas fa-save"></i> Save Profile
-</button>
-</div>
-
-<!-- AI CHAT SECTION -->
-<div class="ai-chat-section" id="chat">
-<h3 style="margin-bottom:15px">🤖 AI Fitness Assistant</h3>
-<div class="chat-messages" id="chatMessages"></div>
-<div class="chat-input-group">
-<input type="text" id="aiInput" placeholder="Ask me anything about fitness..." />
-<button onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button>
-</div>
-</div>
-
-<!-- AI TOOLS SECTION -->
-<div class="ai-tools-section" id="tools">
-<h3 style="margin-bottom:15px">🛠️ AI Generator Tools</h3>
-
-<!-- WORKOUT GENERATOR -->
-<div style="margin-bottom:20px">
-<h4 style="margin-bottom:10px">💪 Generate Workout Plan</h4>
-<select id="fitnessLevel">
-<option value="">Select Fitness Level</option>
+<!-- WORKOUT -->
+<h3>💪 Workout Generator</h3>
+<input id="goal" placeholder="Goal (muscle, fat loss...)">
+<select id="level">
 <option value="beginner">Beginner</option>
 <option value="intermediate">Intermediate</option>
 <option value="advanced">Advanced</option>
 </select>
-<button class="btn btn-main" style="width:100%;margin-top:10px" onclick="generateWorkout()">
-Generate Workout
-</button>
-<div class="result-box" id="workoutResult"></div>
-</div>
+<button onclick="generateWorkout()">Generate</button>
+<div class="result" id="workoutResult"></div>
 
-<!-- MEAL PLAN GENERATOR -->
-<div>
-<h4 style="margin-bottom:10px">🍎 Generate Meal Plan</h4>
-<select id="dietType">
-<option value="">Select Diet Type</option>
+<hr>
+
+<!-- MEAL -->
+<h3>🍎 Meal Plan</h3>
+<input id="calories" placeholder="Calories (e.g. 2500)">
+<select id="diet">
 <option value="balanced">Balanced</option>
 <option value="keto">Keto</option>
 <option value="vegetarian">Vegetarian</option>
-<option value="vegan">Vegan</option>
-<option value="high-protein">High Protein</option>
+<option value="high protein">High Protein</option>
 </select>
-<button class="btn btn-main" style="width:100%;margin-top:10px" onclick="generateMealPlan()">
-Generate Meal Plan
-</button>
-<div class="result-box" id="mealResult"></div>
-</div>
-</div>
+<button onclick="generateMeal()">Generate</button>
+<div class="result" id="mealResult"></div>
 
-<!-- ABOUT SECTION -->
-<div class="profile-box" id="about" style="margin-bottom:30px">
-<h3> ILYASS AI WORKOUT</h3>
-<p style="line-height:1.6;font-size:0.95rem">
-ILYASS Pro is your personal fitness companion with AI-powered features!
-<br><br>
-✨ Features:
-<br>• Secure authentication
-<br>• Personal profile management
-<br>• 🤖 AI Chat Assistant
-<br>• 🤖 Workout Generator
-<br>• 🤖 Meal Plan Creator
-<br>• Goal monitoring
-<br>• Data persistence with Firebase
-</p>
-</div>
-
-<button class="btn btn-main" style="margin:20px 0" onclick="logout()">
-<i class="fas fa-sign-out-alt"></i> Logout
-</button>
 </div>
 
 <script>
 
-// UPDATE NAVBAR VISIBILITY
-function updateNavbarVisibility() {
-const navbar = document.getElementById("navbar");
-const dash = document.getElementById("dash");
-if (dash.style.display === "flex") {
-navbar.style.display = "flex";
-} else {
-navbar.style.display = "none";
-}
-}
+const OPENAI_API_KEY = "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"; // 🔥 بدّل هنا فقط
 
-// SCROLL TO SECTION
-function scrollToSection(id) {
-const element = document.getElementById(id);
-if (element) {
-element.scrollIntoView({ behavior: 'smooth' });
-}
-}
+async function callOpenAI(prompt){
 
-// PARTICLES
-tsParticles.load("tsparticles", {
-particles:{
-number:{value:60},
-color:{value:"#00ff9c"},
-links:{enable:true,color:"#00ff9c",opacity:0.3},
-move:{enable:true,speed:1},
-size:{value:3},
-opacity:{value:0.5}
-}
+const res = await fetch("https://api.openai.com/v1/chat/completions", {
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":`Bearer ${OPENAI_API_KEY}`
+},
+body:JSON.stringify({
+model:"gpt-4o-mini",
+messages:[
+{role:"system",content:"You are a helpful fitness assistant."},
+{role:"user",content:prompt}
+],
+temperature:0.7
+})
 });
 
-// UI
-function openLogin(){
-document.getElementById("loginBox").style.display="block";
+const data = await res.json();
+
+return data.choices?.[0]?.message?.content || "Error";
 }
 
-function showDashboard(){
-document.getElementById("home").style.display="none";
-document.getElementById("loginBox").style.display="none";
-document.getElementById("dash").style.display="flex";
-updateNavbarVisibility();
+// CHAT
+async function sendChat(){
+let input = document.getElementById("chatInput").value;
+document.getElementById("chatResult").innerText = "Loading...";
+let res = await callOpenAI(input);
+document.getElementById("chatResult").innerText = res;
+}
+
+// WORKOUT
+async function generateWorkout(){
+let goal = document.getElementById("goal").value;
+let level = document.getElementById("level").value;
+
+let prompt = `Create workout plan for goal ${goal}, level ${level}`;
+document.getElementById("workoutResult").innerText = "Loading...";
+
+let res = await callOpenAI(prompt);
+document.getElementById("workoutResult").innerText = res;
+}
+
+// MEAL
+async function generateMeal(){
+let calories = document.getElementById("calories").value;
+let diet = document.getElementById("diet").value;
+
+let prompt = `Create meal plan for ${calories} calories, diet ${diet}`;
+document.getElementById("mealResult").innerText = "Loading...";
+
+let res = await callOpenAI(prompt);
+document.getElementById("mealResult").innerText = res;
 }
 
 </script>
