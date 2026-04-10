@@ -29,12 +29,11 @@ setDoc,
 getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "YOUR_AUTH_DOMAIN",
-projectId: "YOUR_PROJECT_ID",
-appId: "YOUR_APP_ID"
-};
+<script type="module">
+
+const OPENAI_API_KEY = "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"; // 👈 هنا
+
+// باقي الكود ديالك
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -42,7 +41,7 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 // OPENAI API KEY - غير هذا برقمك من OpenAI!
-const OPENAI_API_KEY = "sk-YOUR_OPENAI_API_KEY_HERE";
+const OPENAI_API_KEY = "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";
 
 // AMAZON AFFILIATE SETUP
 const AMAZON_ASSOCIATE_TAG = "YOUR_ASSOCIATE_TAG";
@@ -908,7 +907,7 @@ Generate Meal Plan
 
 <!-- ABOUT SECTION -->
 <div class="profile-box" id="about" style="margin-bottom:30px">
-<h3>ℹ️ About ILYASS Pro + AI</h3>
+<h3> ILYASS AI WORKOUT</h3>
 <p style="line-height:1.6;font-size:0.95rem">
 ILYASS Pro is your personal fitness companion with AI-powered features!
 <br><br>
