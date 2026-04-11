@@ -6,16 +6,72 @@
 <title>Nexus AI</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0b0f19;color:white;display:flex;height:100vh}
-.sidebar{width:250px;background:#111827;padding:20px}
-.chat{flex:1;display:flex;flex-direction:column}
-.messages{flex:1;overflow-y:auto;padding:20px}
-.msg{margin:5px 0;padding:10px;border-radius:10px;max-width:70%}
-.user{background:#22c55e;color:black;margin-left:auto}
-.ai{background:#1f2937}
-.input{display:flex;padding:10px;background:#111827}
-input{flex:1;padding:10px;border:none;border-radius:8px}
-button{margin-left:10px;padding:10px;background:#22c55e;border:none;cursor:pointer}
+body{
+margin:0;
+font-family:Arial;
+background:#0b0f19;
+color:white;
+display:flex;
+height:100vh;
+}
+
+.sidebar{
+width:250px;
+background:#111827;
+padding:20px;
+}
+
+.chat{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+.messages{
+flex:1;
+overflow-y:auto;
+padding:20px;
+}
+
+.msg{
+margin:5px 0;
+padding:10px;
+border-radius:10px;
+max-width:70%;
+word-wrap:break-word;
+}
+
+.user{
+background:#22c55e;
+color:black;
+margin-left:auto;
+}
+
+.ai{
+background:#1f2937;
+}
+
+.input{
+display:flex;
+padding:10px;
+background:#111827;
+}
+
+input{
+flex:1;
+padding:10px;
+border:none;
+border-radius:8px;
+outline:none;
+}
+
+button{
+margin-left:10px;
+padding:10px;
+background:#22c55e;
+border:none;
+cursor:pointer;
+}
 </style>
 
 </head>
@@ -23,7 +79,7 @@ button{margin-left:10px;padding:10px;background:#22c55e;border:none;cursor:point
 <body>
 
 <div class="sidebar">
-<h3>Nexus AI</h3>
+<h3>Nexus AI 🚀</h3>
 </div>
 
 <div class="chat">
@@ -33,7 +89,7 @@ button{margin-left:10px;padding:10px;background:#22c55e;border:none;cursor:point
 </div>
 
 <div class="input">
-<input id="input" placeholder="Type..." />
+<input id="input" placeholder="Type your message..." onkeydown="if(event.key==='Enter') send()" />
 <button onclick="send()">Send</button>
 </div>
 
@@ -45,39 +101,42 @@ function addMessage(text,type){
   const div = document.createElement("div");
   div.className = "msg " + type;
   div.innerText = text;
-  document.getElementById("messages").appendChild(div);
+
+  const box = document.getElementById("messages");
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
 }
 
 async function send(){
 
-const input = document.getElementById("input");
-const text = input.value.trim();
-if(!text) return;
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if(!text) return;
 
-addMessage(text,"user");
-input.value="";
+  addMessage(text,"user");
+  input.value="";
 
-try{
+  try{
 
-const res = await fetch("/api/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: text })
-});
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
+    });
 
-// ✅ SAFE JSON handling
-const data = await res.json();
+    const data = await res.json();
 
-if (!res.ok) {
-  throw new Error(data.error || "Server error");
-}
+    if(!res.ok){
+      throw new Error(data.error || "Server error");
+    }
 
-addMessage(data.reply || "No response","ai");
+    addMessage(data.reply || "No response","ai");
 
-}catch(err){
-addMessage(err.message,"ai");
-}
-
+  }catch(err){
+    addMessage(err.message,"ai");
+  }
 }
 
 </script>
