@@ -1,37 +1,229 @@
-export default async function handler(req, res) {
-  try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Only POST allowed" });
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nexus AI</title>
 
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const message = body?.message;
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-    if (!message) {
-      return res.status(400).json({ error: "No message provided" });
-    }
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "You are a helpful assistant." },
-          { role: "user", content: message }
-        ]
-      })
-    });
-
-    const data = await response.json();
-
-    return res.status(200).json(data);
-
-  } catch (err) {
-    console.error("ERROR:", err);
-    return res.status(500).json({ error: err.message });
-  }
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter;
 }
+
+body{
+background:#0b0f19;
+color:#fff;
+height:100vh;
+display:flex;
+}
+
+.sidebar{
+width:260px;
+background:#0f172a;
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:15px;
+border-right:1px solid rgba(255,255,255,0.08);
+}
+
+.logo{
+font-size:18px;
+font-weight:800;
+color:#00ff9c;
+}
+
+.new-chat{
+padding:10px;
+background:#111827;
+border:1px solid rgba(255,255,255,0.1);
+border-radius:10px;
+cursor:pointer;
+text-align:center;
+}
+
+.chat-area{
+flex:1;
+display:flex;
+flex-direction:column;
+height:100vh;
+}
+
+.topbar{
+padding:15px;
+border-bottom:1px solid rgba(255,255,255,0.08);
+background:#0f172a;
+}
+
+.messages{
+flex:1;
+padding:20px;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.msg{
+max-width:70%;
+padding:12px;
+border-radius:12px;
+word-wrap:break-word;
+}
+
+.user{
+background:#00ff9c;
+color:#000;
+align-self:flex-end;
+}
+
+.ai{
+background:#111827;
+align-self:flex-start;
+}
+
+.input-box{
+display:flex;
+padding:15px;
+background:#0f172a;
+}
+
+input{
+flex:1;
+padding:12px;
+border:none;
+background:#111827;
+color:#fff;
+border-radius:10px;
+outline:none;
+}
+
+button{
+margin-left:10px;
+padding:12px;
+background:#00ff9c;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
+
+button:disabled{
+opacity:0.5;
+cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+<div class="logo">Nexus AI</div>
+<div class="new-chat" onclick="clearChat()">+ New Chat</div>
+</div>
+
+<div class="chat-area">
+
+<div class="topbar">AI Assistant</div>
+
+<div class="messages" id="messages">
+<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
+</div>
+
+<div class="input-box">
+<input id="input" placeholder="Type your message..." onkeydown="if(event.key==='Enter') send()" />
+<button id="btn" onclick="send()">Send</button>
+</div>
+
+</div>
+
+<script>
+
+function clearChat(){
+document.getElementById("messages").innerHTML =
+'<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>';
+}
+
+function setLoading(state){
+document.getElementById("btn").disabled = state;
+document.getElementById("btn").innerText = state ? "..." : "Send";
+}
+
+function addMessage(text,type){
+const div = document.createElement("div");
+div.className = "msg " + type;
+div.innerText = text;
+
+const messages = document.getElementById("messages");
+messages.appendChild(div);
+messages.scrollTop = messages.scrollHeight;
+}
+
+async function send(){
+
+const input = document.getElementById("input");
+const text = input.value.trim();
+if(!text) return;
+
+addMessage(text,"user");
+input.value="";
+
+setLoading(true);
+
+try{
+
+const res = await fetch("/api/chat",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({ message: text })
+});
+
+const contentType = res.headers.get("content-type");
+
+let data;
+
+if(contentType && contentType.includes("application/json")){
+data = await res.json();
+}else{
+const txt = await res.text();
+throw new Error(txt);
+}
+
+let reply = "No response";
+
+// ✅ FIX IMPORTANT (no [object Object])
+if(data.choices && data.choices[0]){
+reply = data.choices[0].message.content;
+}
+else if(data.error){
+reply = typeof data.error === "string"
+? data.error
+: JSON.stringify(data.error);
+}
+else{
+reply = JSON.stringify(data);
+}
+
+addMessage(reply,"ai");
+
+}catch(err){
+addMessage(
+err?.message ? err.message : JSON.stringify(err),
+"ai"
+);
+}
+
+setLoading(false);
+
+}
+
+</script>
+
+</body>
+</html>
