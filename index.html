@@ -14,7 +14,7 @@
 }
 
 body{
-  background:#ffffff; /* ✅ WHITE */
+  background:#ffffff;
   color:#111;
   height:100vh;
   display:flex;
@@ -23,7 +23,7 @@ body{
 /* SIDEBAR */
 .sidebar{
   width:260px;
-  background:#f7f7f8; /* ChatGPT style */
+  background:#f7f7f8;
   padding:20px;
   display:flex;
   flex-direction:column;
@@ -34,7 +34,6 @@ body{
 .logo{
   font-size:18px;
   font-weight:bold;
-  color:#111;
 }
 
 .newchat{
@@ -42,10 +41,12 @@ body{
   background:#ececec;
   border-radius:10px;
   cursor:pointer;
+  transition:0.2s;
 }
 
 .newchat:hover{
   background:#e2e2e2;
+  transform:scale(1.02);
 }
 
 .search{
@@ -69,10 +70,16 @@ body{
   padding:8px;
   border-radius:8px;
   cursor:pointer;
+  transition:0.2s;
 }
 
 .chatitem:hover{
   background:#eaeaea;
+}
+
+.chatitem.active{
+  background:#e0e0e0;
+  font-weight:bold;
 }
 
 /* CHAT */
@@ -89,29 +96,34 @@ body{
   overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
 }
 
-/* MSG */
+/* MESSAGE */
 .msg{
   max-width:70%;
   padding:12px 14px;
   border-radius:14px;
   white-space:pre-wrap;
-  border:1px solid #eee;
+  animation:pop 0.2s ease;
+}
+
+@keyframes pop{
+  from{opacity:0; transform:translateY(8px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 .user{
   align-self:flex-end;
   background:#10a37f;
   color:white;
-  border:none;
 }
 
 .ai{
   align-self:flex-start;
   background:#f7f7f8;
   color:#111;
+  border:1px solid #e5e5e5;
 }
 
 /* INPUT */
@@ -129,6 +141,12 @@ input{
   border-radius:10px;
   background:#f0f0f0;
   color:#111;
+  outline:none;
+  transition:0.2s;
+}
+
+input:focus{
+  box-shadow:0 0 0 2px rgba(16,163,127,0.3);
 }
 
 button{
@@ -139,6 +157,11 @@ button{
   background:#10a37f;
   color:white;
   cursor:pointer;
+  transition:0.2s;
+}
+
+button:active{
+  transform:scale(0.97);
 }
 
 /* LOGIN */
@@ -177,6 +200,7 @@ button{
   background:#10a37f;
   color:white;
 }
+
 </style>
 
 </head>
@@ -196,11 +220,8 @@ button{
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">◆ AI CHAT</div>
-
   <div class="newchat" onclick="newChat()">+ New Chat</div>
-
   <input class="search" placeholder="Search chats..." oninput="searchChats(this.value)">
-
   <div class="chatlist" id="chatlist"></div>
 </div>
 
@@ -221,8 +242,9 @@ button{
 
 <script>
 
-/* LOGIN */
 let loggedIn=false;
+
+/* LOGIN */
 function login(){
   document.getElementById("login").style.display="none";
   loggedIn=true;
@@ -232,6 +254,7 @@ function login(){
 let chats=[];
 let currentChat=null;
 
+/* NEW CHAT */
 function newChat(){
   const id=Date.now();
 
@@ -245,6 +268,13 @@ function newChat(){
   clearBox();
 }
 
+/* TITLE FROM FIRST MESSAGE */
+function getTitle(chat){
+  const first=chat.messages.find(m=>m.type==="user");
+  return first ? first.text.slice(0,25) : "New Chat";
+}
+
+/* RENDER */
 function renderChats(){
   const list=document.getElementById("chatlist");
   list.innerHTML="";
@@ -252,15 +282,20 @@ function renderChats(){
   chats.forEach(c=>{
     const div=document.createElement("div");
     div.className="chatitem";
-    div.innerText="Chat " + c.id;
+    div.innerText=getTitle(c);
+
     div.onclick=()=>loadChat(c.id);
     list.appendChild(div);
   });
 }
 
+/* LOAD CHAT */
 function loadChat(id){
   currentChat=id;
   clearBox();
+
+  document.querySelectorAll(".chatitem").forEach(x=>x.classList.remove("active"));
+  event?.target?.classList.add("active");
 
   const chat=chats.find(c=>c.id===id);
   if(!chat) return;
@@ -268,8 +303,11 @@ function loadChat(id){
   chat.messages.forEach(m=>{
     addMessage(m.text,m.type,false);
   });
+
+  scrollBottom();
 }
 
+/* SEARCH */
 function searchChats(val){
   document.querySelectorAll(".chatitem").forEach(i=>{
     i.style.display=i.innerText.toLowerCase().includes(val.toLowerCase())
@@ -284,14 +322,23 @@ function addMessage(text,type,save=true){
   div.innerText=text;
 
   document.getElementById("messages").appendChild(div);
-  document.getElementById("messages").scrollTop=999999;
+
+  scrollBottom();
 
   if(save){
     let chat=chats.find(c=>c.id===currentChat);
     if(chat) chat.messages.push({text,type});
+    renderChats();
   }
 }
 
+/* SCROLL */
+function scrollBottom(){
+  const box=document.getElementById("messages");
+  box.scrollTo({top:box.scrollHeight,behavior:"smooth"});
+}
+
+/* CLEAR */
 function clearBox(){
   document.getElementById("messages").innerHTML="";
 }
@@ -319,7 +366,9 @@ async function send(){
 
     const data=await res.json();
 
-    addMessage(data.reply || "No response","ai");
+    setTimeout(()=>{
+      addMessage(data.reply || "No response","ai");
+    },300);
 
   }catch(err){
     addMessage("❌ ERROR:\n"+err.message,"ai");
