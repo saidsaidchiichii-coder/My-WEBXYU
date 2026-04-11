@@ -3,148 +3,272 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>444</title>
+<title>Grok Style AI</title>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter, Arial, sans-serif;
+}
+
 body{
-margin:0;
-font-family:Arial;
-background:#0b0f19;
-color:white;
-display:flex;
-height:100vh;
+  background:#000;
+  color:#fff;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
 }
 
-.sidebar{
-width:250px;
-background:#111827;
-padding:20px;
+/* NAV */
+.nav{
+  height:60px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
 }
 
-.chat{
-flex:1;
-display:flex;
-flex-direction:column;
+.left{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-.messages{
-flex:1;
-overflow-y:auto;
-padding:20px;
+.logo svg{
+  width:28px;
+  height:28px;
 }
 
-.msg{
-margin:5px 0;
-padding:10px;
-border-radius:10px;
-max-width:70%;
-word-wrap:break-word;
-white-space:pre-wrap;
+.right{
+  display:flex;
+  align-items:center;
+  gap:12px;
 }
 
-.user{
-background:#22c55e;
-color:black;
-margin-left:auto;
+.btn{
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:14px;
+  cursor:pointer;
+  transition:0.2s;
 }
 
-.ai{
-background:#1f2937;
+.signin{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.2);
+  color:#fff;
 }
 
-.input{
-display:flex;
-padding:10px;
-background:#111827;
+.signup{
+  background:#fff;
+  color:#000;
+}
+
+.btn:hover{
+  opacity:0.85;
+}
+
+/* CENTER */
+.center{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  animation:fade 0.4s ease-out;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:scale(0.98);}
+  to{opacity:1; transform:scale(1);}
+}
+
+.title{
+  font-size:48px;
+  font-weight:600;
+  margin-bottom:30px;
+}
+
+/* INPUT BOX */
+.box{
+  width:700px;
+  max-width:90%;
+  background:#111;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  padding:10px 14px;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.05);
+  transition:0.2s;
+}
+
+.box:focus-within{
+  box-shadow:0 0 0 2px rgba(255,255,255,0.15);
+}
+
+.icon{
+  color:#888;
+  font-size:18px;
+  margin-right:8px;
 }
 
 input{
-flex:1;
-padding:10px;
-border:none;
-border-radius:8px;
-outline:none;
+  flex:1;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:#fff;
+  font-size:16px;
 }
 
-button{
-margin-left:10px;
-padding:10px;
-background:#22c55e;
-border:none;
-cursor:pointer;
+input::placeholder{
+  color:rgba(255,255,255,0.4);
 }
 
-button:disabled{
-opacity:0.6;
-cursor:not-allowed;
+.auto{
+  font-size:13px;
+  color:#ccc;
+  margin-right:10px;
+  cursor:pointer;
+}
+
+.mic{
+  font-size:16px;
+  margin-right:10px;
+  cursor:pointer;
+  color:#ccc;
+}
+
+.send{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  background:#fff;
+  color:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border:none;
+  transition:0.2s;
+}
+
+.send:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+}
+
+/* BADGE */
+.badge{
+  margin-top:12px;
+  font-size:12px;
+  color:#aaa;
+  background:#111;
+  padding:6px 12px;
+  border-radius:999px;
+}
+
+/* FOOTER */
+footer{
+  position:absolute;
+  bottom:20px;
+  width:100%;
+  text-align:center;
+  font-size:12px;
+  color:#666;
 }
 </style>
-
 </head>
 
 <body>
 
-<div class="sidebar">
-<h3>IDK AI 🚀</h3>
+<!-- NAV -->
+<div class="nav">
+  <div class="left">
+    <div class="logo">
+      <!-- Simple Grok-style star logo -->
+      <svg viewBox="0 0 24 24" fill="white">
+        <path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/>
+      </svg>
+    </div>
+    <b>Grok</b>
+  </div>
+
+  <div class="right">
+    <div class="btn signin" onclick="alert('Sign in UI only (no backend)')">Sign in</div>
+    <div class="btn signup" onclick="alert('Sign up UI only (no backend)')">Sign up</div>
+  </div>
 </div>
 
-<div class="chat">
+<!-- CENTER -->
+<div class="center">
 
-<div class="messages" id="messages">
-<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
+  <div class="title">Grok</div>
+
+  <div class="box">
+    <div class="icon">📎</div>
+
+    <input id="input" placeholder="What's on your mind?" />
+
+    <div class="auto">Auto ▼</div>
+    <div class="mic">🎤</div>
+
+    <button class="send" id="btn">➤</button>
+  </div>
+
+  <div class="badge">New · Hold Ctrl+D to dictate</div>
 </div>
 
-<div class="input">
-<input id="input" placeholder="Type your message..."
-onkeydown="if(event.key==='Enter') send()" />
-<button id="btn" onclick="send()">Send</button>
-</div>
-
-</div>
+<footer>
+By messaging Grok, you agree to our Terms and Privacy Policy.
+</footer>
 
 <script>
 
-function addMessage(text,type){
-  const div = document.createElement("div");
-  div.className = "msg " + type;
-  div.innerText = text;
-
-  const box = document.getElementById("messages");
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-}
+const input = document.getElementById("input");
+const btn = document.getElementById("btn");
 
 function setLoading(state){
-  document.getElementById("btn").disabled = state;
-  document.getElementById("btn").innerText = state ? "..." : "Send";
+  btn.disabled = state;
+  btn.innerHTML = state ? "..." : "➤";
 }
+
+/* FIXED ENTER KEY */
+input.addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){
+    send();
+  }
+});
+
+btn.addEventListener("click", send);
 
 async function send(){
 
-  const input = document.getElementById("input");
   const text = input.value.trim();
   if(!text) return;
-
-  addMessage(text,"user");
-  input.value="";
 
   setLoading(true);
 
   try{
 
     const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
       },
       body: JSON.stringify({ message: text })
     });
 
-    // 🔥 SAFE JSON HANDLING (no crash)
     let data;
-    try {
+    try{
       data = await res.json();
-    } catch (e) {
+    }catch(e){
       const txt = await res.text();
       throw new Error(txt);
     }
@@ -153,12 +277,13 @@ async function send(){
       throw new Error(data.error || "Server error");
     }
 
-    addMessage(data.reply || "No response","ai");
+    alert("AI: " + (data.reply || "No response"));
 
   }catch(err){
-    addMessage("❌ ERROR:\n" + err.message,"ai");
+    alert("ERROR: " + err.message);
   }
 
+  input.value = "";
   setLoading(false);
 }
 
