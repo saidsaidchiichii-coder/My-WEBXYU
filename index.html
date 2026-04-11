@@ -172,6 +172,7 @@ messages.appendChild(div);
 messages.scrollTop = messages.scrollHeight;
 }
 
+/* typing */
 function showTyping(){
 const div = document.createElement("div");
 div.className = "msg ai";
@@ -207,14 +208,14 @@ headers:{
 body:JSON.stringify({ message: text })
 });
 
-const contentType = res.headers.get("content-type");
-
+/* ✅ SAFE FIX (no 405 / no html crash) */
 let data;
 
-if(contentType && contentType.includes("application/json")){
+try {
 data = await res.json();
-}else{
-throw new Error(await res.text());
+} catch (e) {
+const txt = await res.text();
+throw new Error(txt);
 }
 
 removeTyping();
@@ -228,6 +229,9 @@ else if (data.error) {
 reply = typeof data.error === "string"
 ? data.error
 : JSON.stringify(data.error, null, 2);
+}
+else {
+reply = JSON.stringify(data);
 }
 
 addMessage(reply,"ai");
