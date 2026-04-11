@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Login</title>
+<title>AI SaaS Project</title>
 
 <style>
 *{
@@ -16,42 +16,35 @@
 body{
   height:100vh;
   background: radial-gradient(circle at top, #0f172a, #000);
-  display:flex;
-  justify-content:center;
-  align-items:center;
   color:white;
 }
 
-/* RGB CARD */
+/* LOGIN */
+.center{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
 .login-box{
   position:relative;
-  width:340px;
+  width:360px;
   padding:30px;
   border-radius:18px;
   background:rgba(0,0,0,0.6);
   backdrop-filter: blur(10px);
-  z-index:1;
   overflow:hidden;
 }
 
 .login-box::before{
   content:"";
   position:absolute;
-  top:-3px;
-  left:-3px;
-  right:-3px;
-  bottom:-3px;
-  z-index:-1;
-  background:linear-gradient(
-    90deg,
-    #ff00ff,
-    #00ffff,
-    #22c55e,
-    #ffcc00,
-    #ff00ff
-  );
+  inset:-3px;
+  background:linear-gradient(90deg,#ff00ff,#00ffff,#22c55e,#ffcc00,#ff00ff);
   background-size:300% 300%;
-  animation: rgbMove 4s linear infinite;
+  animation: rgb 4s linear infinite;
+  z-index:-1;
   border-radius:20px;
 }
 
@@ -64,7 +57,7 @@ body{
   z-index:-1;
 }
 
-@keyframes rgbMove{
+@keyframes rgb{
   0%{background-position:0% 50%;}
   50%{background-position:100% 50%;}
   100%{background-position:0% 50%;}
@@ -76,9 +69,9 @@ input{
   margin:8px 0;
   border:none;
   border-radius:10px;
-  outline:none;
   background:rgba(255,255,255,0.08);
   color:white;
+  outline:none;
 }
 
 button{
@@ -91,93 +84,162 @@ button{
   font-weight:bold;
 }
 
-.login-btn{
-  background:#22c55e;
+.login-btn{background:#22c55e;}
+.signup-btn{background:#00c2ff;}
+
+/* APP */
+.app{
+  display:none;
+  height:100vh;
+  flex-direction:column;
 }
 
-.signup-btn{
-  background:#00c2ff;
+.nav{
+  padding:15px;
+  border-bottom:1px solid #222;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logout{
+  background:red;
+  padding:8px 12px;
+  border:none;
+  color:white;
+  border-radius:8px;
+}
+
+.chat{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
+.msg{
+  margin:10px 0;
+}
+
+.user{
+  text-align:right;
+}
+
+.user span{
+  background:#22c55e;
+  padding:8px 12px;
+  border-radius:10px;
+  color:black;
+}
+
+.ai span{
+  background:#1f2937;
+  padding:8px 12px;
+  border-radius:10px;
+  display:inline-block;
+}
+
+.inputBox{
+  display:flex;
+  padding:10px;
+  border-top:1px solid #222;
+}
+
+.inputBox input{
+  flex:1;
+}
+
+.inputBox button{
+  width:80px;
+  margin-left:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="login-box">
-  <h2 style="text-align:center;margin-bottom:15px;">LOGIN</h2>
+<!-- LOGIN -->
+<div class="center" id="loginPage">
+  <div class="login-box">
+    <h2 style="text-align:center">LOGIN</h2>
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
 
-  <button class="login-btn" id="loginBtn">LOGIN</button>
-  <button class="signup-btn" id="signupBtn">SIGN UP</button>
+    <button class="login-btn" id="loginBtn">LOGIN</button>
+    <button class="signup-btn" id="signupBtn">SIGN UP</button>
+  </div>
 </div>
 
-<!-- SUPABASE -->
+<!-- APP -->
+<div class="app" id="app">
+
+  <div class="nav">
+    🤖 AI AGENT
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="inputBox">
+    <input id="msg" placeholder="Ask AI...">
+    <button onclick="send()">➤</button>
+  </div>
+
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-const supabaseUrl = "https://ypqkmuflothekoaxwupn.supabase.co";
-const supabaseKey = "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8";
+const supabase = supabase.createClient(
+  "https://ypqkmuflothekoaxwupn.supabase.co",
+  "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8"
+);
 
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
-/* DEBUG */
-console.log("Supabase loaded:", supabaseClient);
-
-/* ELEMENTS */
+/* LOGIN ELEMENTS */
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 
-const loginBtn = document.getElementById("loginBtn");
-const signupBtn = document.getElementById("signupBtn");
-
-/* ================= SIGN UP ================= */
-signupBtn.addEventListener("click", async () => {
-
-  console.log("SIGNUP CLICKED");
-
-  const { data, error } = await supabaseClient.auth.signUp({
+document.getElementById("signupBtn").onclick = async () => {
+  const { error } = await supabase.auth.signUp({
     email: email.value,
     password: password.value
   });
 
-  console.log("SIGNUP DATA:", data);
-  console.log("SIGNUP ERROR:", error);
+  if(error) return alert(error.message);
+  alert("Check your email 📩");
+};
 
-  if(error){
-    alert("❌ Signup failed:\n" + error.message);
-    return;
-  }
-
-  alert("📩 Check your email to confirm account");
-});
-
-/* ================= LOGIN ================= */
-loginBtn.addEventListener("click", async () => {
-
-  console.log("LOGIN CLICKED");
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
+document.getElementById("loginBtn").onclick = async () => {
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: email.value,
     password: password.value
   });
 
-  console.log("LOGIN DATA:", data);
-  console.log("LOGIN ERROR:", error);
+  if(error) return alert(error.message);
 
-  if(error){
-    alert("❌ Login failed:\n" + error.message);
-    return;
-  }
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+};
 
-  if(!data.user){
-    alert("❌ No user found");
-    return;
-  }
+/* CHAT */
+function send(){
+  const msg = document.getElementById("msg");
+  if(!msg.value) return;
 
-  alert("✅ LOGIN SUCCESS");
-});
+  const chat = document.getElementById("chat");
+
+  chat.innerHTML += `
+    <div class="msg user"><span>${msg.value}</span></div>
+    <div class="msg ai"><span>AI: I got → ${msg.value}</span></div>
+  `;
+
+  msg.value = "";
+}
+
+/* LOGOUT */
+function logout(){
+  location.reload();
+}
 </script>
 
 </body>
