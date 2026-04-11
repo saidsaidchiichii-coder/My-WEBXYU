@@ -6,6 +6,25 @@
 <title>AI Chat Pro</title>
 
 <style>
+:root{
+  --bg:#0f0f0f;
+  --panel:#111;
+  --panel2:#1a1a1a;
+  --text:#fff;
+  --ai:#1f1f1f;
+  --user:#22c55e;
+}
+
+/* LIGHT MODE */
+.light{
+  --bg:#f5f5f5;
+  --panel:#ffffff;
+  --panel2:#e9e9e9;
+  --text:#000;
+  --ai:#eaeaea;
+  --user:#16a34a;
+}
+
 *{
   margin:0;
   padding:0;
@@ -14,105 +33,105 @@
 }
 
 body{
+  background:var(--bg);
+  color:var(--text);
   height:100vh;
   display:flex;
-  background:#0f0f0f;
-  color:white;
-  transition:0.3s;
-}
-
-/* LIGHT MODE */
-body.light{
-  background:#f5f5f5;
-  color:#111;
+  overflow:hidden;
 }
 
 /* SIDEBAR */
 .sidebar{
   width:280px;
-  background:#111;
+  background:var(--panel);
   display:flex;
   flex-direction:column;
   padding:15px;
-  gap:10px;
+  gap:12px;
 }
 
-body.light .sidebar{
-  background:#fff;
-  border-right:1px solid #ddd;
-}
-
-.logo{
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   font-weight:bold;
-  font-size:16px;
-}
-
-.search{
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  outline:none;
-  background:#1a1a1a;
-  color:white;
-}
-
-body.light .search{
-  background:#eee;
-  color:#111;
 }
 
 .newchat{
   padding:10px;
-  background:#22c55e;
-  color:black;
   border-radius:10px;
-  text-align:center;
+  background:var(--panel2);
   cursor:pointer;
-  font-weight:bold;
+  text-align:center;
+  transition:0.2s;
+}
+.newchat:hover{transform:scale(1.03);}
+
+/* SEARCH */
+.search{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:var(--panel2);
+  color:var(--text);
+  outline:none;
 }
 
-.chatList{
+/* CHATS LIST */
+.chatlist{
   flex:1;
   overflow-y:auto;
-  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-.chatItem{
+.chatitem{
   padding:10px;
-  border-radius:10px;
+  border-radius:8px;
+  background:transparent;
   cursor:pointer;
-  margin-bottom:5px;
-  background:#1a1a1a;
-  font-size:14px;
 }
-
-body.light .chatItem{
-  background:#eee;
-}
-
-.chatItem.active{
-  border:1px solid #22c55e;
+.chatitem:hover{
+  background:var(--panel2);
 }
 
 /* PROFILE */
 .profile{
   padding:10px;
-  background:#1a1a1a;
+  background:var(--panel2);
   border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   font-size:13px;
 }
 
-body.light .profile{
-  background:#eee;
-}
-
-/* CHAT AREA */
-.chat{
+/* MAIN */
+.main{
   flex:1;
   display:flex;
   flex-direction:column;
 }
 
+/* TOP BAR */
+.top{
+  height:60px;
+  background:var(--panel);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 15px;
+}
+
+.toggle{
+  cursor:pointer;
+  padding:8px 12px;
+  border-radius:8px;
+  background:var(--panel2);
+}
+
+/* CHAT BOX */
 .messages{
   flex:1;
   padding:20px;
@@ -122,12 +141,13 @@ body.light .profile{
   gap:10px;
 }
 
+/* MSG */
 .msg{
-  max-width:70%;
+  max-width:65%;
   padding:12px;
   border-radius:12px;
-  animation:fade 0.2s ease;
   white-space:pre-wrap;
+  animation:fade .2s ease;
 }
 
 @keyframes fade{
@@ -137,109 +157,133 @@ body.light .profile{
 
 .user{
   align-self:flex-end;
-  background:#22c55e;
+  background:var(--user);
   color:black;
 }
 
 .ai{
   align-self:flex-start;
-  background:#1f1f1f;
-}
-
-body.light .ai{
-  background:#e5e5e5;
+  background:var(--ai);
 }
 
 /* INPUT */
-.inputBox{
+.inputbar{
   display:flex;
-  padding:15px;
-  background:#111;
+  padding:12px;
+  background:var(--panel);
+  border-top:1px solid #222;
 }
 
-body.light .inputBox{
-  background:#fff;
-  border-top:1px solid #ddd;
-}
-
-input{
+.inputbar input{
   flex:1;
   padding:12px;
   border:none;
   border-radius:10px;
+  background:var(--panel2);
+  color:var(--text);
   outline:none;
-  background:#1a1a1a;
-  color:white;
 }
 
-body.light input{
-  background:#eee;
-  color:#111;
-}
-
-button{
+.inputbar button{
   margin-left:10px;
   padding:12px 16px;
   border:none;
   border-radius:10px;
+  background:var(--user);
   cursor:pointer;
-  background:#22c55e;
   font-weight:bold;
 }
 
-/* TOP BAR */
-.topbar{
+/* OVERLAY LOGIN */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
   display:flex;
-  justify-content:space-between;
-  padding:10px;
-  font-size:12px;
-  opacity:0.8;
+  justify-content:center;
+  align-items:center;
 }
 
-/* TOGGLE */
-.toggle{
+.login{
+  width:320px;
+  background:var(--panel);
+  padding:20px;
+  border-radius:14px;
+}
+
+.login input{
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:var(--panel2);
+  color:var(--text);
+}
+
+.login button{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:var(--user);
   cursor:pointer;
-  padding:5px 10px;
-  background:#333;
-  border-radius:10px;
+}
+
+.small{
+  font-size:12px;
+  opacity:0.7;
 }
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
+<div class="overlay" id="login">
+  <div class="login">
+    <h3>Login</h3>
+    <p class="small">AI Chat System</p>
+
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
 <div class="sidebar">
 
-  <div class="logo">◆ AI CHAT PRO</div>
-
-  <input class="search" placeholder="Search chats..." oninput="searchChats(this.value)"/>
-
-  <div class="newchat" onclick="createChat()">+ New Chat</div>
-
-  <div class="chatList" id="chatList"></div>
-
-  <div class="profile">
-    👤 Free user<br/>
-    Plan: Trial Free
+  <div class="topbar">
+    <div>AI CHAT</div>
   </div>
 
-  <div class="toggle" onclick="toggleTheme()">🌙 / ☀️</div>
+  <div class="newchat" onclick="newChat()">+ New Chat</div>
+
+  <input class="search" placeholder="Search chats..." oninput="searchChats(this.value)">
+
+  <div class="chatlist" id="chatlist"></div>
+
+  <div class="profile">
+    <div>👤 Free User</div>
+    <div class="toggle" onclick="toggleTheme()">Theme</div>
+  </div>
 
 </div>
 
-<!-- CHAT -->
-<div class="chat">
+<!-- MAIN -->
+<div class="main">
 
-  <div class="topbar">
-    <div id="chatTitle">New Chat</div>
+  <div class="top">
+    <div>Chat</div>
   </div>
 
-  <div class="messages" id="messages"></div>
+  <div class="messages" id="box"></div>
 
-  <div class="inputBox">
-    <input id="input" placeholder="Message..."
-    onkeydown="if(event.key==='Enter') send()" />
+  <div class="inputbar">
+    <input id="input" placeholder="Message..." onkeydown="if(event.key==='Enter')send()">
     <button onclick="send()">Send</button>
   </div>
 
@@ -247,113 +291,93 @@ button{
 
 <script>
 
-let chats = JSON.parse(localStorage.getItem("chats") || "[]");
-let activeChat = null;
+let chats = [];
+let currentChat = 0;
 
-/* INIT */
-function init(){
-  if(chats.length === 0){
-    createChat();
-  }else{
-    loadChat(chats[0].id);
-  }
-  renderList();
-}
-init();
-
-/* CREATE CHAT */
-function createChat(){
-  const id = Date.now();
-  const chat = {
-    id,
-    title:"New Chat",
-    messages:[]
-  };
-
-  chats.unshift(chat);
-  save();
-  loadChat(id);
-}
-
-/* LOAD CHAT */
-function loadChat(id){
-  activeChat = chats.find(c => c.id === id);
-  renderMessages();
-  renderList();
-  document.getElementById("chatTitle").innerText = activeChat.title;
-}
-
-/* RENDER LIST */
-function renderList(){
-  const list = document.getElementById("chatList");
-  list.innerHTML = "";
-
-  chats.forEach(c=>{
-    const div = document.createElement("div");
-    div.className = "chatItem" + (activeChat?.id === c.id ? " active":"");
-    div.innerText = c.title;
-    div.onclick = ()=>loadChat(c.id);
-    list.appendChild(div);
-  });
-}
-
-/* SEARCH */
-function searchChats(q){
-  document.querySelectorAll(".chatItem").forEach(el=>{
-    el.style.display = el.innerText.toLowerCase().includes(q.toLowerCase())
-    ? "block":"none";
-  });
-}
-
-/* ADD MESSAGE */
-function addMessage(text,role){
-  activeChat.messages.push({text,role});
-  save();
-  renderMessages();
-}
-
-/* RENDER CHAT */
-function renderMessages(){
-  const box = document.getElementById("messages");
-  box.innerHTML = "";
-
-  activeChat.messages.forEach(m=>{
-    const div = document.createElement("div");
-    div.className = "msg " + (m.role==="user"?"user":"ai");
-    div.innerText = m.text;
-    box.appendChild(div);
-  });
-
-  box.scrollTop = box.scrollHeight;
-}
-
-/* SEND */
-async function send(){
-  const input = document.getElementById("input");
-  const text = input.value.trim();
-  if(!text) return;
-
-  if(activeChat.messages.length === 0){
-    activeChat.title = text.slice(0,20);
-  }
-
-  addMessage(text,"user");
-  input.value="";
-
-  // fake AI
-  setTimeout(()=>{
-    addMessage("AI: " + text,"ai");
-  },600);
-}
-
-/* SAVE */
-function save(){
-  localStorage.setItem("chats", JSON.stringify(chats));
+/* LOGIN */
+function login(){
+  document.getElementById("login").style.display="none";
 }
 
 /* THEME */
 function toggleTheme(){
   document.body.classList.toggle("light");
+}
+
+/* NEW CHAT FIXED */
+function newChat(){
+  const id = Date.now();
+  chats.push({id, messages:[]});
+  currentChat = id;
+  renderChats();
+  clearBox();
+}
+
+/* RENDER LIST */
+function renderChats(){
+  const list = document.getElementById("chatlist");
+  list.innerHTML="";
+
+  chats.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="chatitem";
+    div.innerText="Chat " + c.id;
+    div.onclick=()=>loadChat(c.id);
+    list.appendChild(div);
+  });
+}
+
+/* LOAD CHAT */
+function loadChat(id){
+  currentChat=id;
+  const chat = chats.find(c=>c.id===id);
+  clearBox();
+
+  chat.messages.forEach(m=>{
+    addMsg(m.text,m.type,false);
+  });
+}
+
+/* SEARCH */
+function searchChats(val){
+  const items=document.querySelectorAll(".chatitem");
+  items.forEach(i=>{
+    i.style.display=i.innerText.toLowerCase().includes(val.toLowerCase())
+    ? "block":"none";
+  });
+}
+
+/* ADD MESSAGE */
+function addMsg(text,type,save=true){
+  const div=document.createElement("div");
+  div.className="msg "+type;
+  div.innerText=text;
+  document.getElementById("box").appendChild(div);
+  document.getElementById("box").scrollTop=9999;
+
+  if(save){
+    let chat = chats.find(c=>c.id===currentChat);
+    if(chat) chat.messages.push({text,type});
+  }
+}
+
+/* CLEAR */
+function clearBox(){
+  document.getElementById("box").innerHTML="";
+}
+
+/* SEND (AI MOCK) */
+function send(){
+  const input=document.getElementById("input");
+  const text=input.value.trim();
+  if(!text) return;
+
+  addMsg(text,"user");
+  input.value="";
+
+  setTimeout(()=>{
+    addMsg("AI: " + text,"ai");
+  },400);
 }
 
 </script>
