@@ -15,7 +15,7 @@
   font-family: Inter, Arial;
 }
 
-/* 🌈 LOGIN RGB BOX */
+/* 🌈 LOGIN RGB */
 .loginBox{
   position:relative;
   z-index:1;
@@ -27,10 +27,7 @@
   content:"";
   position:absolute;
   inset:-3px;
-  background:linear-gradient(
-    90deg,
-    #ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c
-  );
+  background:linear-gradient(90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c);
   background-size:300% 300%;
   animation:rgbMove 4s linear infinite;
   z-index:-1;
@@ -76,7 +73,6 @@ body{
   padding:10px;
   background:#1a1a1a;
   border-radius:10px;
-  cursor:pointer;
 }
 
 /* CHAT */
@@ -151,13 +147,11 @@ button{
   gap:4px;
   align-items:center;
 }
-
 .dot{
   width:6px;height:6px;border-radius:50%;
   background:#aaa;
   animation:bounce 1.2s infinite ease-in-out;
 }
-
 .dot:nth-child(2){animation-delay:0.2s;}
 .dot:nth-child(3){animation-delay:0.4s;}
 
@@ -183,21 +177,24 @@ button{
   text-align:center;
 }
 
-.loginBox input{
-  width:100%;
-  margin:6px 0;
-  padding:10px;
-  border:none;
+/* TOAST */
+.toast{
+  position:fixed;
+  top:20px;
+  right:20px;
+  padding:12px 16px;
   border-radius:10px;
-  background:#1a1a1a;
   color:white;
+  font-size:14px;
+  opacity:0;
+  transform:translateY(-10px);
+  transition:0.3s;
+  z-index:9999;
 }
-
-.error{
-  color:red;
-  font-size:12px;
-  margin-top:8px;
-}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{background:#22c55e;}
+.toast.error{background:#ef4444;}
+.toast.info{background:#3b82f6;}
 </style>
 </head>
 
@@ -213,7 +210,6 @@ button{
     <input id="password" type="password" placeholder="Password">
 
     <button onclick="login()">Login</button>
-    <p id="error" class="error"></p>
   </div>
 </div>
 
@@ -239,40 +235,52 @@ button{
 </div>
 
 <script>
-/* SUPABASE INIT */
+
+/* SUPABASE */
 const supabaseUrl = "https://idjgsgtupuymysptxrbl.supabase.co";
 const supabaseKey = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-let loggedIn = false;
-let thinkingEl = null;
+let loggedIn=false;
+
+/* TOAST */
+function notify(msg,type="info"){
+  const div=document.createElement("div");
+  div.className=`toast ${type}`;
+  div.innerText=msg;
+  document.body.appendChild(div);
+
+  setTimeout(()=>div.classList.add("show"),10);
+  setTimeout(()=>{
+    div.classList.remove("show");
+    setTimeout(()=>div.remove(),300);
+  },3000);
+}
 
 /* LOGIN */
 async function login(){
-
   const email=document.getElementById("email").value;
   const pass=document.getElementById("password").value;
-  const error=document.getElementById("error");
 
-  error.innerText="";
-
-  const { data, error: err } = await supabase.auth.signInWithPassword({
+  const {data,error} = await supabase.auth.signInWithPassword({
     email,
-    password: pass
+    password:pass
   });
 
-  if(err){
-    error.innerText = err.message;
+  if(error){
+    notify(error.message,"error");
     return;
   }
+
+  notify("Login successful","success");
 
   document.getElementById("loginOverlay").style.display="none";
   document.getElementById("chat").classList.add("active");
 
-  loggedIn = true;
+  loggedIn=true;
 }
 
-/* CHAT UI */
+/* CHAT */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -283,19 +291,17 @@ function addMessage(text,type){
   box.scrollTop=box.scrollHeight;
 }
 
+/* THINKING */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
   div.id="thinking";
-
   div.innerHTML=`
     <div class="thinking">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
-    </div>
-  `;
-
+    </div>`;
   document.getElementById("messages").appendChild(div);
 }
 
@@ -307,7 +313,10 @@ function removeThinking(){
 /* SEND */
 async function send(){
 
-  if(!loggedIn) return;
+  if(!loggedIn){
+    notify("Please login first","error");
+    return;
+  }
 
   const input=document.getElementById("input");
   const text=input.value.trim();
@@ -319,7 +328,6 @@ async function send(){
   showThinking();
 
   try{
-
     const res=await fetch("/api/chat",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -332,11 +340,11 @@ async function send(){
     addMessage(data.reply || "No response","ai");
 
   }catch(err){
-
     removeThinking();
-    addMessage("❌ ERROR:\n"+err.message,"ai");
+    notify("Chat error","error");
   }
 }
+
 </script>
 
 </body>
