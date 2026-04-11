@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login - AI SaaS</title>
+<title>AI Login Working</title>
 
 <style>
 *{
@@ -15,18 +15,18 @@
 
 body{
   height:100vh;
-  overflow:hidden;
   background:#0b0f19;
   color:white;
+  overflow:hidden;
 }
 
-/* ================= MAIN SPLIT ================= */
+/* SPLIT */
 .container{
   display:flex;
   height:100vh;
 }
 
-/* ================= LEFT (FORM) ================= */
+/* LEFT */
 .left{
   width:50%;
   display:flex;
@@ -34,28 +34,27 @@ body{
   justify-content:center;
   align-items:center;
   padding:40px;
-  animation:fadeIn 0.5s ease;
 }
 
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(20px);}
-  to{opacity:1; transform:translateY(0);}
-}
-
-/* LOGO */
-.logo{
-  position:absolute;
-  top:20px;
-  left:20px;
-  font-weight:bold;
-  color:#22c55e;
-}
-
-/* TITLE */
 h1{
-  font-size:28px;
-  margin-bottom:20px;
-  animation:fadeIn 0.7s ease;
+  margin-bottom:15px;
+}
+
+input{
+  width:100%;
+  max-width:320px;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#0f172a;
+  color:white;
+  outline:none;
+}
+
+input:focus{
+  border-color:#22c55e;
+  box-shadow:0 0 10px rgba(34,197,94,0.3);
 }
 
 /* BUTTONS */
@@ -67,176 +66,125 @@ h1{
   border-radius:999px;
   border:none;
   cursor:pointer;
-  transition:0.3s;
   font-weight:600;
+  transition:0.2s;
 }
 
-.btn:hover{
-  transform:scale(1.03);
-  box-shadow:0 0 15px rgba(0,255,255,0.2);
+.btn:active{
+  transform:scale(0.97);
 }
 
-.black{
-  background:#000;
-  color:white;
-}
+.black{background:#000;color:white;}
+.light{background:#1f2937;color:white;}
+.login-btn{background:#22c55e;color:black;}
 
-.light{
-  background:#1f2937;
-  color:white;
-}
-
-.divider{
-  margin:15px 0;
-  opacity:0.5;
-}
-
-/* INPUTS */
-input{
-  width:100%;
-  max-width:320px;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#0f172a;
-  color:white;
-  outline:none;
-  transition:0.3s;
-}
-
-input:focus{
-  border-color:#22c55e;
-  box-shadow:0 0 10px rgba(34,197,94,0.3);
-}
-
-/* LOGIN BUTTON */
-.login-btn{
-  background:#22c55e;
-  color:black;
-}
-
-/* SIGNUP TEXT */
-.signup{
-  margin-top:10px;
+.error{
+  color:red;
   font-size:13px;
-  opacity:0.7;
+  margin-top:5px;
 }
 
-.signup span{
-  color:#22c55e;
-  cursor:pointer;
-}
-
-/* ================= RIGHT (VISUAL) ================= */
+/* RIGHT */
 .right{
   width:50%;
+  background:radial-gradient(circle at top,#1a237e,#000);
   position:relative;
-  overflow:hidden;
-  background:radial-gradient(circle at top, #1a237e, #000);
 }
 
-/* floating glow */
-.glow{
-  position:absolute;
-  width:300px;
-  height:300px;
-  background:radial-gradient(circle, rgba(0,255,255,0.3), transparent);
-  filter:blur(40px);
-  animation:float 6s infinite ease-in-out;
-}
-
-.glow:nth-child(2){
-  top:30%;
-  left:40%;
-  background:radial-gradient(circle, rgba(255,0,255,0.3), transparent);
-}
-
-.glow:nth-child(3){
-  top:60%;
-  left:20%;
-  background:radial-gradient(circle, rgba(0,255,100,0.3), transparent);
-}
-
-@keyframes float{
-  0%{transform:translateY(0);}
-  50%{transform:translateY(-30px);}
-  100%{transform:translateY(0);}
-}
-
-/* center shape */
-.centerShape{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  width:200px;
-  height:200px;
-  border-radius:30px;
-  background:linear-gradient(45deg,#00ffff,#ff00ff,#22c55e);
-  filter:blur(60px);
-  opacity:0.6;
-  animation:spin 8s linear infinite;
-}
-
-@keyframes spin{
-  0%{transform:translate(-50%,-50%) rotate(0deg);}
-  100%{transform:translate(-50%,-50%) rotate(360deg);}
-}
-
-/* MOBILE */
-@media(max-width:900px){
-  .container{
-    flex-direction:column;
-  }
-  .left,.right{
-    width:100%;
-    height:50%;
-  }
+.screen{
+  display:none;
+  height:100vh;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- LOGIN PAGE -->
+<div class="container" id="loginPage">
 
-  <!-- LEFT -->
   <div class="left">
 
-    <div class="logo">⚡ AI SYSTEM</div>
+    <h1>Login</h1>
 
-    <h1>Log into your account</h1>
+    <button class="btn black" onclick="fakeLogin('x')">Login with X</button>
+    <button class="btn light" onclick="fakeLogin('google')">Login with Google</button>
+    <button class="btn light" onclick="fakeLogin('apple')">Login with Apple</button>
 
-    <button class="btn black">Login with X</button>
-    <button class="btn light">Login with Google</button>
-    <button class="btn light">Login with Apple</button>
+    <div style="margin:10px 0;opacity:0.6">OR</div>
 
-    <div class="divider">──────── OR ────────</div>
+    <input id="email" placeholder="Email"/>
+    <input id="password" type="password" placeholder="Password"/>
 
-    <input placeholder="Email"/>
-    <input type="password" placeholder="Password"/>
+    <button class="btn login-btn" onclick="login()">LOGIN</button>
+    <button class="btn light" onclick="signup()">SIGN UP</button>
 
-    <button class="btn login-btn">LOGIN</button>
-
-    <div class="signup">
-      Don't have an account? <span>Sign up</span>
-    </div>
+    <div class="error" id="error"></div>
 
   </div>
 
-  <!-- RIGHT -->
-  <div class="right">
-
-    <div class="glow"></div>
-    <div class="glow"></div>
-    <div class="glow"></div>
-
-    <div class="centerShape"></div>
-
-  </div>
+  <div class="right"></div>
 
 </div>
+
+<!-- APP PAGE -->
+<div class="screen" id="app">
+  <h1>✅ Welcome to AI APP</h1>
+  <button class="btn black" onclick="logout()">Logout</button>
+</div>
+
+<script>
+
+function showError(msg){
+  document.getElementById("error").innerText = msg;
+}
+
+/* LOGIN */
+function login(){
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  if(!email || !pass){
+    showError("❌ Email and password required");
+    return;
+  }
+
+  // fake success login
+  showError("");
+
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+}
+
+/* SIGNUP */
+function signup(){
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  if(!email || !pass){
+    showError("❌ Fill all fields to sign up");
+    return;
+  }
+
+  showError("📩 Account created (fake) - now login");
+}
+
+/* SOCIAL LOGIN */
+function fakeLogin(type){
+  alert("Login with " + type + " (demo)");
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+}
+
+/* LOGOUT */
+function logout(){
+  location.reload();
+}
+
+</script>
 
 </body>
 </html>
