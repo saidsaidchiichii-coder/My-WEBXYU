@@ -30,6 +30,8 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:0 24px;
+  position:relative;
+  z-index:3;
 }
 
 .nav-left{
@@ -47,10 +49,6 @@ body{
   cursor:pointer;
 }
 
-.nav-right button:hover{
-  opacity:0.85;
-}
-
 /* CENTER */
 .center{
   flex:1;
@@ -58,12 +56,8 @@ body{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  animation: fadeIn 300ms ease-out;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:scale(0.98);}
-  to{opacity:1; transform:scale(1);}
+  position:relative;
+  z-index:2; /* ABOVE CHAT */
 }
 
 .title{
@@ -72,7 +66,7 @@ body{
   margin-bottom:30px;
 }
 
-/* CHAT BOX INPUT */
+/* INPUT */
 .input-box{
   width:700px;
   max-width:90%;
@@ -82,7 +76,6 @@ body{
   display:flex;
   align-items:center;
   padding:0 14px;
-  box-shadow:0 0 0 1px rgba(255,255,255,0.05);
 }
 
 .input-box input{
@@ -95,21 +88,15 @@ body{
   padding-left:10px;
 }
 
-.input-box input::placeholder{
-  color:rgba(255,255,255,0.4);
-}
-
 .icon{
   color:#888;
   margin:0 8px;
-  cursor:pointer;
 }
 
 .auto{
   font-size:14px;
   color:#ccc;
   margin-right:10px;
-  cursor:pointer;
 }
 
 .send{
@@ -122,10 +109,9 @@ body{
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  font-weight:bold;
 }
 
-/* CHAT AREA */
+/* CHAT */
 .chat-box{
   position:absolute;
   top:70px;
@@ -136,14 +122,16 @@ body{
   display:flex;
   flex-direction:column;
   gap:10px;
+  z-index:1;
+  pointer-events:none; /* 🔥 THIS FIXES YOUR PROBLEM */
 }
 
 .msg{
   max-width:70%;
   padding:10px 14px;
   border-radius:10px;
-  word-wrap:break-word;
   white-space:pre-wrap;
+  pointer-events:auto; /* allow interaction only on messages */
 }
 
 .user{
@@ -154,7 +142,6 @@ body{
 
 .ai{
   background:#1f2937;
-  align-self:flex-start;
 }
 
 /* FOOTER */
@@ -166,15 +153,11 @@ body{
   font-size:12px;
   color:#666;
 }
-.footer span{
-  color:#999;
-}
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
 <div class="nav">
   <div class="nav-left">◆ ILYASS AI AGENT</div>
   <div class="nav-right">
@@ -182,44 +165,31 @@ body{
   </div>
 </div>
 
-<!-- CHAT MESSAGES (EMPTY NOW) -->
 <div class="chat-box" id="messages"></div>
 
-<!-- CENTER INPUT -->
 <div class="center">
-
   <div class="title">ILYASS AI AGENT</div>
 
   <div class="input-box">
     <span class="icon">📎</span>
-
-    <input id="input"
-      placeholder="What's on your mind?" />
-
+    <input id="input" placeholder="What's on your mind?" />
     <span class="auto">Auto ▼</span>
-
     <span class="icon">🎤</span>
-
     <div class="send" id="sendBtn">➤</div>
   </div>
-
-  <div class="subtext">New · Hold Ctrl+D to dictate</div>
-
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
- Contact WebSite Owner "ILYASS" To Get Any Access on Our Website, you agree to our <span>Terms</span> and <span>Privacy Policy</span>.
+ Contact WebSite Owner "ILYASS"
 </div>
 
 <script>
-
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 let loading = false;
 
-/* ENTER KEY FIX */
-input.addEventListener("keydown", function(e){
+/* ENTER FIX */
+input.addEventListener("keydown", (e)=>{
   if(e.key === "Enter"){
     e.preventDefault();
     send();
@@ -241,41 +211,27 @@ function addMessage(text,type){
 function setLoading(state){
   loading = state;
   sendBtn.innerText = state ? "..." : "➤";
-  sendBtn.style.pointerEvents = state ? "none" : "auto";
 }
 
 async function send(){
-
   if(loading) return;
 
   const text = input.value.trim();
   if(!text) return;
 
   addMessage(text,"user");
-  input.value="";
+  input.value = "";
 
   setLoading(true);
 
   try{
-
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ message: text })
     });
 
-    let data;
-    try{
-      data = await res.json();
-    }catch(e){
-      const txt = await res.text();
-      throw new Error(txt);
-    }
-
-    if(!res.ok){
-      throw new Error(data.error || "Server error");
-    }
-
+    const data = await res.json();
     addMessage(data.reply || "No response","ai");
 
   }catch(err){
@@ -284,7 +240,6 @@ async function send(){
 
   setLoading(false);
 }
-
 </script>
 
 </body>
