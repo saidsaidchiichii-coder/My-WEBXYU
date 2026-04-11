@@ -22,31 +22,18 @@ body{
   overflow:hidden;
 }
 
-/* NAVBAR */
+/* NAV */
 .nav{
-  width:100%;
   height:60px;
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:0 24px;
-  position:relative;
   z-index:3;
 }
 
 .nav-left{
   font-weight:700;
-  letter-spacing:1px;
-}
-
-.nav-right button{
-  margin-left:12px;
-  padding:8px 14px;
-  border-radius:999px;
-  border:1px solid #ffffff33;
-  background:transparent;
-  color:white;
-  cursor:pointer;
 }
 
 /* CENTER */
@@ -56,13 +43,11 @@ body{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  position:relative;
-  z-index:2; /* ABOVE CHAT */
+  z-index:2;
 }
 
 .title{
   font-size:48px;
-  font-weight:600;
   margin-bottom:30px;
 }
 
@@ -85,18 +70,6 @@ body{
   outline:none;
   color:white;
   font-size:16px;
-  padding-left:10px;
-}
-
-.icon{
-  color:#888;
-  margin:0 8px;
-}
-
-.auto{
-  font-size:14px;
-  color:#ccc;
-  margin-right:10px;
 }
 
 .send{
@@ -121,17 +94,22 @@ body{
   padding:20px;
   display:flex;
   flex-direction:column;
-  gap:10px;
-  z-index:1;
-  pointer-events:none; /* 🔥 THIS FIXES YOUR PROBLEM */
+  gap:12px;
+  pointer-events:none;
 }
 
 .msg{
   max-width:70%;
-  padding:10px 14px;
-  border-radius:10px;
+  padding:12px 16px;
+  border-radius:12px;
   white-space:pre-wrap;
-  pointer-events:auto; /* allow interaction only on messages */
+  animation:fadeUp 0.2s ease;
+  pointer-events:auto;
+}
+
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 .user{
@@ -160,9 +138,6 @@ body{
 
 <div class="nav">
   <div class="nav-left">◆ ILYASS AI AGENT</div>
-  <div class="nav-right">
-    <button>Imagine</button>
-  </div>
 </div>
 
 <div class="chat-box" id="messages"></div>
@@ -171,10 +146,7 @@ body{
   <div class="title">ILYASS AI AGENT</div>
 
   <div class="input-box">
-    <span class="icon">📎</span>
     <input id="input" placeholder="What's on your mind?" />
-    <span class="auto">Auto ▼</span>
-    <span class="icon">🎤</span>
     <div class="send" id="sendBtn">➤</div>
   </div>
 </div>
@@ -188,7 +160,7 @@ const input = document.getElementById("input");
 const sendBtn = document.getElementById("sendBtn");
 let loading = false;
 
-/* ENTER FIX */
+/* ENTER */
 input.addEventListener("keydown", (e)=>{
   if(e.key === "Enter"){
     e.preventDefault();
@@ -208,6 +180,27 @@ function addMessage(text,type){
   box.scrollTop = box.scrollHeight;
 }
 
+/* ✨ TYPING EFFECT */
+function typeMessage(text){
+  const div = document.createElement("div");
+  div.className = "msg ai";
+  document.getElementById("messages").appendChild(div);
+
+  let i = 0;
+  const speed = 15;
+
+  function typing(){
+    if(i < text.length){
+      div.innerText += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
+    }
+  }
+
+  typing();
+}
+
+/* LOADING */
 function setLoading(state){
   loading = state;
   sendBtn.innerText = state ? "..." : "➤";
@@ -220,7 +213,7 @@ async function send(){
   if(!text) return;
 
   addMessage(text,"user");
-  input.value = "";
+  input.value="";
 
   setLoading(true);
 
@@ -232,7 +225,8 @@ async function send(){
     });
 
     const data = await res.json();
-    addMessage(data.reply || "No response","ai");
+
+    typeMessage(data.reply || "No response");
 
   }catch(err){
     addMessage("❌ ERROR:\n" + err.message,"ai");
