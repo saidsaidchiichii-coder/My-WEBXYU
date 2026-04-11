@@ -1,450 +1,247 @@
-# 🚀 COMPLETE GROK CLONE - SINGLE FILE
-
-```html
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ILYASS AGENT- GROZA AI</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/react-router-dom@6/dist/umd/react-router-dom.production.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif']
-          },
-          animation: {
-            'float': 'float 6s ease-in-out infinite',
-            'glow': 'glow 2s ease-in-out infinite alternate',
-          },
-          keyframes: {
-            float: {
-              '0%, 100%': { transform: 'translate3d(0,0,0)' },
-              '50%': { transform: 'translate3d(0, -20px, 0)' }
-            },
-            glow: {
-              '0%': { boxShadow: '0 0 20px rgba(99,102,241,0.3)' },
-              '100%': { boxShadow: '0 0 40px rgba(99,102,241,0.6)' }
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    .glass { 
-      background: rgba(255,255,255,0.1); 
-      backdrop-filter: blur(20px); 
-      border: 1px solid rgba(255,255,255,0.2); 
-    }
-    .glass-dark { 
-      background: rgba(26,26,26,0.8); 
-      backdrop-filter: blur(20px); 
-      border: 1px solid rgba(255,255,255,0.1); 
-    }
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-    .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
-    @font-face {
-      font-family: 'Inter';
-      src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI SaaS Project</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI;
+}
+
+body{
+  height:100vh;
+  background: radial-gradient(circle at top, #0f172a, #000);
+  color:white;
+}
+
+/* LOGIN */
+.center{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card{
+  width:360px;
+  padding:30px;
+  border-radius:18px;
+  position:relative;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  overflow:hidden;
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  background:linear-gradient(90deg,#ff00ff,#00ffff,#22c55e,#ffcc00,#ff00ff);
+  background-size:300% 300%;
+  animation:rgb 4s linear infinite;
+  z-index:-1;
+  border-radius:20px;
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  background:rgba(10,10,20,0.95);
+  border-radius:16px;
+  z-index:-1;
+}
+
+@keyframes rgb{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:none;
+  border-radius:10px;
+  outline:none;
+  background:rgba(255,255,255,0.08);
+  color:white;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.login{background:#22c55e;}
+.signup{background:#00c2ff;}
+
+/* APP */
+.app{
+  display:none;
+  height:100vh;
+  flex-direction:column;
+}
+
+.nav{
+  height:60px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 20px;
+  border-bottom:1px solid #222;
+}
+
+.logout{
+  background:red;
+  border:none;
+  padding:8px 12px;
+  color:white;
+  border-radius:8px;
+}
+
+.chat{
+  flex:1;
+  overflow:auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.msg{
+  max-width:70%;
+  padding:10px 14px;
+  border-radius:12px;
+}
+
+.user{
+  align-self:flex-end;
+  background:#22c55e;
+  color:black;
+}
+
+.ai{
+  align-self:flex-start;
+  background:#1f2937;
+}
+
+.inputBar{
+  display:flex;
+  padding:10px;
+  border-top:1px solid #222;
+}
+
+.inputBar input{
+  flex:1;
+}
+
+.inputBar button{
+  width:80px;
+  margin-left:10px;
+}
+</style>
 </head>
-<body class="bg-slate-900 text-white font-sans">
-  <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef, useCallback, createContext, useContext, StrictMode } = React;
-    const { BrowserRouter, Routes, Route, useNavigate, useLocation, Link } = ReactRouterDOM;
-    const { motion, AnimatePresence, useAnimation } = window.FramerMotion;
-    const { ChevronLeft, MessageCircle, Mic, Image, Settings, Search, User, Plus, Trash2, Copy, Edit, Send, Loader2, Eye, EyeOff, Menu, X, Moon, Sun } = window.lucide;
+<body>
 
-    // ============================================================================
-    // STORES
-    // ============================================================================
+<!-- LOGIN -->
+<div class="center" id="loginPage">
+  <div class="card">
+    <h2 style="text-align:center;margin-bottom:10px;">LOGIN</h2>
 
-    // Auth Store
-    const AuthContext = createContext();
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
 
-    const useAuth = () => {
-      const context = useContext(AuthContext);
-      if (!context) throw new Error('useAuth must be used within AuthProvider');
-      return context;
-    };
+    <button class="login" id="loginBtn">LOGIN</button>
+    <button class="signup" id="signupBtn">SIGN UP</button>
+  </div>
+</div>
 
-    const AuthProvider = ({ children }) => {
-      const [user, setUser] = useState(null);
-      const [token, setToken] = useState(localStorage.getItem('grok-token'));
-      const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('grok-token'));
-      const [loading, setLoading] = useState(true);
+<!-- APP -->
+<div class="app" id="app">
 
-      const login = async (email, password) => {
-        setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        const mockUser = {
-          id: '1',
-          name: 'John Doe',
-          email,
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
-        };
-        
-        localStorage.setItem('grok-token', 'mock-jwt');
-        setUser(mockUser);
-        setToken('mock-jwt');
-        setIsAuthenticated(true);
-        setLoading(false);
-      };
+  <div class="nav">
+    🤖 AI AGENT
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
 
-      const signup = async (name, email, password) => {
-        setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        const mockUser = { id: '2', name, email, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' };
-        localStorage.setItem('grok-token', 'mock-jwt');
-        setUser(mockUser);
-        setToken('mock-jwt');
-        setIsAuthenticated(true);
-        setLoading(false);
-      };
+  <div class="chat" id="chat"></div>
 
-      const logout = () => {
-        localStorage.removeItem('grok-token');
-        setUser(null);
-        setToken(null);
-        setIsAuthenticated(false);
-      };
+  <div class="inputBar">
+    <input id="msg" placeholder="Ask AI...">
+    <button onclick="send()">➤</button>
+  </div>
 
-      useEffect(() => {
-        if (token) setIsAuthenticated(true);
-        setLoading(false);
-      }, []);
+</div>
 
-      return (
-        <AuthContext.Provider value={{ user, token, isAuthenticated, loading, login, signup, logout }}>
-          {children}
-        </AuthContext.Provider>
-      );
-    };
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-    // Theme Store
-    const ThemeContext = createContext();
+<script>
+const client = supabase.createClient(
+  "https://ypqkmuflothekoaxwupn.supabase.co",
+  "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8"
+);
 
-    const ThemeProvider = ({ children }) => {
-      const [theme, setTheme] = useState(localStorage.getItem('grok-theme') || 'dark');
+/* AUTH */
+const email = document.getElementById("email");
+const password = document.getElementById("password");
 
-      useEffect(() => {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        localStorage.setItem('grok-theme', theme);
-      }, [theme]);
+document.getElementById("signupBtn").onclick = async () => {
+  const { error } = await client.auth.signUp({
+    email: email.value,
+    password: password.value
+  });
 
-      const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  if(error) return alert(error.message);
 
-      return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-          {children}
-        </ThemeContext.Provider>
-      );
-    };
+  alert("📩 Check email");
+};
 
-    const useTheme = () => useContext(ThemeContext);
+document.getElementById("loginBtn").onclick = async () => {
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email.value,
+    password: password.value
+  });
 
-    // Chat Store
-    const useChatStore = () => {
-      const [chats, setChats] = useState(JSON.parse(localStorage.getItem('grok-chats')) || []);
-      const [currentChatId, setCurrentChatId] = useState(null);
-      const [messages, setMessages] = useState([]);
-      const [input, setInput] = useState('');
-      const [isStreaming, setIsStreaming] = useState(false);
-      const [sidebarOpen, setSidebarOpen] = useState(false);
+  if(error) return alert(error.message);
 
-      useEffect(() => {
-        localStorage.setItem('grok-chats', JSON.stringify(chats));
-      }, [chats]);
+  document.getElementById("loginPage").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+};
 
-      const addMessage = (role, content) => {
-        const message = {
-          id: Date.now(),
-          role,
-          content,
-          timestamp: new Date().toISOString(),
-          status: 'pending'
-        };
-        setMessages(prev => [...prev, message]);
-        return message;
-      };
+/* CHAT */
+function send(){
+  const msg = document.getElementById("msg");
+  if(!msg.value) return;
 
-      const streamResponse = async (userMessageId) => {
-        setIsStreaming(true);
-        const responses = [
-          "That's an interesting question! Let me think about this...",
-          "Great question! Here's what I know:",
-          "Absolutely! Let me break this down for you:",
-          "Perfect! Here's my analysis:",
-          "Excellent point! Here's my perspective:"
-        ];
-        
-        const response = responses[Math.floor(Math.random() * responses.length)] + 
-          ` Your question about "${input}" is quite insightful. I can help you explore this further with detailed analysis, examples, and actionable insights. What specific aspect would you like me to focus on?`;
+  const chat = document.getElementById("chat");
 
-        let streamedContent = '';
-        for (let i = 0; i < response.length; i += 5) {
-          await new Promise(resolve => setTimeout(resolve, 30));
-          streamedContent += response.slice(i, i + 5);
-          
-          setMessages(prev => prev.map(msg => 
-            msg.id === userMessageId 
-              ? msg 
-              : msg.role === 'assistant' 
-              ? { ...msg, content: streamedContent }
-              : msg
-          ));
-        }
-        
-        setIsStreaming(false);
-        setMessages(prev => prev.map(msg => msg.role === 'assistant' ? { ...msg, status: 'complete' } : msg));
-      };
+  chat.innerHTML += `
+    <div class="msg user">${msg.value}</div>
+    <div class="msg ai">AI: ${msg.value}</div>
+  `;
 
-      const sendMessage = async () => {
-        if (!input.trim()) return;
-        
-        const userMessage = addMessage('user', input);
-        setInput('');
-        
-        setTimeout(() => {
-          const aiMessage = addMessage('assistant', '');
-          streamResponse(userMessage.id);
-        }, 500);
-      };
+  msg.value = "";
+}
 
-      const newChat = () => {
-        const newChat = {
-          id: Date.now(),
-          title: 'New Chat',
-          createdAt: new Date().toISOString(),
-          messages: []
-        };
-        setChats([newChat, ...chats]);
-        setCurrentChatId(newChat.id);
-        setMessages([]);
-      };
+/* LOGOUT */
+function logout(){
+  location.reload();
+}
+</script>
 
-      const deleteChat = (chatId) => {
-        setChats(prev => prev.filter(c => c.id !== chatId));
-        if (currentChatId === chatId) {
-          setMessages([]);
-          setCurrentChatId(null);
-        }
-      };
-
-      return {
-        chats,
-        currentChatId,
-        messages,
-        input,
-        isStreaming,
-        sidebarOpen,
-        setInput,
-        sendMessage,
-        newChat,
-        deleteChat,
-        setCurrentChatId,
-        setSidebarOpen,
-        toggleSidebar: () => setSidebarOpen(!sidebarOpen)
-      };
-    };
-
-    // ============================================================================
-    // UI COMPONENTS
-    // ============================================================================
-
-    const Button = ({ children, className = '', variant = 'default', size = 'md', onClick, disabled, ...props }) => {
-      const baseClasses = 'inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-      const variants = {
-        default: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500',
-        secondary: 'bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 text-white',
-        ghost: 'hover:bg-white/10',
-        destructive: 'bg-red-600 hover:bg-red-700 text-white'
-      };
-      const sizes = {
-        sm: 'px-3 py-1.5 text-sm',
-        md: 'px-4 py-2',
-        lg: 'px-6 py-3 text-lg'
-      };
-
-      return (
-        <motion.button
-          className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
-          whileHover={!disabled ? { scale: 1.05 } : {}}
-          whileTap={!disabled ? { scale: 0.95 } : {}}
-          onClick={onClick}
-          disabled={disabled}
-          {...props}
-        >
-          {children}
-        </motion.button>
-      );
-    };
-
-    const Input = ({ className = '', ...props }) => (
-      <input
-        className={`w-full px-4 py-3 rounded-xl bg-white/10 dark:bg-slate-800/50 border border-white/20 backdrop-blur-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${className}`}
-        {...props}
-      />
-    );
-
-    const Toast = ({ message, type = 'info', onClose }) => (
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.9 }}
-        className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-2xl backdrop-blur-sm border ${
-          type === 'success' ? 'bg-green-500/90 border-green-400 text-white' :
-          type === 'error' ? 'bg-red-500/90 border-red-400 text-white' :
-          'bg-blue-500/90 border-blue-400 text-white'
-        } max-w-sm`}
-      >
-        {message}
-        <button onClick={onClose} className="ml-4 text-white/80 hover:text-white">
-          <X size={20} />
-        </button>
-      </motion.div>
-    );
-
-    const Toaster = () => {
-      const [toasts, setToasts] = useState([]);
-      
-      const addToast = (message, type) => {
-        const id = Date.now();
-        setToasts(prev => [...prev, { id, message, type }]);
-        setTimeout(() => removeToast(id), 4000);
-      };
-      
-      const removeToast = (id) => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-      };
-
-      return (
-        <>
-          {toasts.map(toast => (
-            <Toast
-              key={toast.id}
-              message={toast.message}
-              type={toast.type}
-              onClose={() => removeToast(toast.id)}
-            />
-          ))}
-        </>
-      );
-    };
-
-    // ============================================================================
-    // AUTH PAGES
-    // ============================================================================
-
-    const LoginPage = () => {
-      const [email, setEmail] = useState('');
-      const [password, setPassword] = useState('');
-      const [showPassword, setShowPassword] = useState(false);
-      const [isEmailLogin, setIsEmailLogin] = useState(false);
-      const [loading, setLoading] = useState(false);
-      const { login } = useAuth();
-      const navigate = useNavigate();
-      const { addToast } = useToasts();
-
-      const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-          await login(email, password);
-          addToast('Welcome back!', 'success');
-          navigate('/chat');
-        } catch {
-          addToast('Invalid credentials', 'error');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl flex flex-col lg:flex-row rounded-3xl shadow-2xl overflow-hidden glass-dark max-h-[90vh]">
-            {/* Form Side */}
-            <div className="lg:w-1/2 p-12 flex flex-col justify-center">
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-4xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-6"
-              >
-                Log into your account
-              </motion.h1>
-
-              <div className="space-y-4">
-                <Button 
-                  className="w-full h-14 text-lg" 
-                  onClick={() => addToast('X login coming soon!', 'info')}
-                >
-                  <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584l-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h1.474L12 13.438l-7.084 7.206H8.09l5.124-5.518L17.61 20.644Z"/>
-                  </svg>
-                  Login with X
-                </Button>
-
-                <div className="flex items-center my-8">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                  <span className="px-4 text-sm text-white/60 uppercase">or</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                </div>
-
-                {isEmailLogin ? (
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
-                      </button>
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full h-14 text-lg" 
-                      disabled={loading || !email || !password}
-                    >
-                      {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : null}
-                      {loading ? 'Signing in...' : 'Login'}
-                    </Button>
-                  </form>
-                ) : (
-                  <Button 
-                    variant="secondary" 
-                    className="w-full h-14 text-lg" 
-                    onClick={() => setIsEmailLogin(true)}
-                  >
-                    <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M22.56 12.25a11.45 11.45 0 0 1-3.543 1.068a7.26 7.26 0 0 0 3.18-4.022a7.123 7.123 0 0 1-2.254.694a3.527 3.527 0 0 0-6.005-
+</body>
+</html>
