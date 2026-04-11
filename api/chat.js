@@ -1,47 +1,62 @@
 export default async function handler(req, res) {
 
-  // ✅ allow GET (fix 405 on preview / browser)
+  // GET test
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API is working ✔️ Use POST /api/chat"
+      message: "API working ✔️ Use POST"
     });
   }
 
-  // ❌ block other methods
   if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Only POST allowed"
-    });
+    return res.status(405).json({ error: "Only POST allowed" });
   }
 
   try {
 
-    // 📦 safe body parsing (Vercel fix)
     const body = typeof req.body === "string"
       ? JSON.parse(req.body)
       : req.body;
 
     const message = body?.message;
 
-    // ❌ validation
     if (!message) {
-      return res.status(400).json({
-        error: "Message is required"
+      return res.status(400).json({ error: "Message required" });
+    }
+
+    // 🤖 OPENAI REQUEST
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a helpful assistant." },
+          { role: "user", content: message }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    const data = await response.json();
+
+    // 🛑 handle OpenAI errors cleanly
+    if (!response.ok) {
+      return res.status(500).json({
+        error: data.error?.message || "OpenAI error"
       });
     }
 
-    // 🧠 response (for now mock / safe)
     return res.status(200).json({
-      reply: `🤖 AI: received -> ${message}`
+      reply: data.choices?.[0]?.message?.content || "No response"
     });
 
   } catch (err) {
-
-    console.error("API ERROR:", err);
-
     return res.status(500).json({
-      error: err?.message || "Internal Server Error"
+      error: err.message
     });
   }
 }
