@@ -73,6 +73,7 @@ gap:10px;
 max-width:70%;
 padding:12px;
 border-radius:12px;
+word-wrap:break-word;
 }
 
 .user{
@@ -99,6 +100,7 @@ border:none;
 background:#111827;
 color:#fff;
 border-radius:10px;
+outline:none;
 }
 
 button{
@@ -109,6 +111,10 @@ border:none;
 border-radius:10px;
 cursor:pointer;
 }
+
+button:hover{
+opacity:0.9;
+}
 </style>
 </head>
 
@@ -116,7 +122,7 @@ cursor:pointer;
 
 <div class="sidebar">
 <div class="logo">AI AGENT SYSTEM</div>
-<div class="new-chat">+ New Chat</div>
+<div class="new-chat" onclick="clearChat()">+ New Chat</div>
 </div>
 
 <div class="chat-area">
@@ -135,6 +141,11 @@ cursor:pointer;
 </div>
 
 <script>
+
+function clearChat(){
+document.getElementById("messages").innerHTML =
+'<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>';
+}
 
 async function send(){
 
@@ -155,20 +166,30 @@ headers:{
 body:JSON.stringify({ message: text })
 });
 
-const data = await res.json();
+// 🔥 IMPORTANT FIX: handle non-JSON errors
+const contentType = res.headers.get("content-type");
 
-let reply = "Error";
+let data;
+
+if(contentType && contentType.includes("application/json")){
+data = await res.json();
+}else{
+const textError = await res.text();
+throw new Error(textError);
+}
+
+let reply = "No response";
 
 if(data.choices && data.choices[0]){
-  reply = data.choices[0].message.content;
+reply = data.choices[0].message.content;
 }else if(data.error){
-  reply = "Error: " + data.error;
+reply = "Error: " + data.error;
 }
 
 addMessage(reply,"ai");
 
 }catch(err){
-addMessage("Error: "+err.message,"ai");
+addMessage("Error: " + err.message,"ai");
 }
 
 }
@@ -178,8 +199,9 @@ const div = document.createElement("div");
 div.className = "msg " + type;
 div.innerText = text;
 
-document.getElementById("messages").appendChild(div);
-document.getElementById("messages").scrollTop = 999999;
+const messages = document.getElementById("messages");
+messages.appendChild(div);
+messages.scrollTop = messages.scrollHeight;
 }
 
 </script>
