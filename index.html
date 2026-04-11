@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI AUTH SYSTEM</title>
+<title>AI SYSTEM</title>
 
 <style>
 *{
@@ -20,13 +20,12 @@ body{
   overflow:hidden;
 }
 
-/* SPLIT */
+/* LOGIN */
 .container{
   display:flex;
   height:100vh;
 }
 
-/* LEFT */
 .left{
   width:50%;
   display:flex;
@@ -36,19 +35,11 @@ body{
   padding:40px;
 }
 
-/* RIGHT VISUAL */
 .right{
   width:50%;
   background:radial-gradient(circle at top,#1a237e,#000);
-  position:relative;
 }
 
-/* TITLE */
-h1{
-  margin-bottom:15px;
-}
-
-/* INPUT */
 input{
   width:100%;
   max-width:320px;
@@ -58,15 +49,8 @@ input{
   border:1px solid #333;
   background:#0f172a;
   color:white;
-  outline:none;
 }
 
-input:focus{
-  border-color:#22c55e;
-  box-shadow:0 0 10px rgba(34,197,94,0.3);
-}
-
-/* BUTTONS */
 .btn{
   width:100%;
   max-width:320px;
@@ -75,76 +59,85 @@ input:focus{
   border-radius:999px;
   border:none;
   cursor:pointer;
-  font-weight:600;
-  transition:0.2s;
-}
-
-.btn:active{
-  transform:scale(0.97);
 }
 
 .black{background:#000;color:white;}
 .green{background:#22c55e;color:black;}
-.google{background:#fff;color:black;}
 
-/* FORM 2 SWITCH */
-.switch{
-  margin-top:10px;
-  font-size:13px;
-  opacity:0.7;
-  cursor:pointer;
-}
-
-.error{
-  color:red;
-  font-size:13px;
-  margin-top:5px;
-}
-
-/* APP */
+/* APP (FORM 2 = AI CHAT) */
 .app{
   display:none;
   height:100vh;
-  justify-content:center;
-  align-items:center;
   flex-direction:column;
+}
+
+.nav{
+  height:60px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 20px;
+  border-bottom:1px solid #222;
+}
+
+.chat{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.msg{
+  max-width:70%;
+  padding:10px 14px;
+  border-radius:12px;
+}
+
+.user{
+  align-self:flex-end;
+  background:#22c55e;
+  color:black;
+}
+
+.ai{
+  align-self:flex-start;
+  background:#1f2937;
+}
+
+.inputBar{
+  display:flex;
+  padding:10px;
+  border-top:1px solid #222;
+}
+
+.inputBar input{
+  flex:1;
+  max-width:none;
+}
+
+.inputBar button{
+  width:80px;
+  margin-left:10px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN PAGE -->
+<!-- LOGIN -->
 <div class="container" id="loginPage">
 
   <div class="left">
 
     <h1>Login</h1>
 
-    <!-- SOCIAL LOGIN -->
-    <button class="btn black" onclick="loginWithGoogle()">
-      Login with Google
-    </button>
-
-    <div style="margin:10px 0;opacity:0.5">OR</div>
-
-    <!-- FORM 2 -->
     <input id="email" placeholder="Email"/>
     <input id="password" type="password" placeholder="Password"/>
 
-    <button class="btn green" onclick="loginEmail()">
-      LOGIN
-    </button>
-
-    <button class="btn black" onclick="signupEmail()">
-      SIGN UP
-    </button>
-
-    <div class="switch" onclick="alert('Forgot password flow (add later)')">
-      Forgot password?
-    </div>
-
-    <div class="error" id="error"></div>
+    <button class="btn green" onclick="login()">LOGIN</button>
+    <button class="btn black" onclick="signup()">SIGN UP</button>
 
   </div>
 
@@ -152,13 +145,23 @@ input:focus{
 
 </div>
 
-<!-- APP PAGE -->
+<!-- FORM 2 = AI CHAT -->
 <div class="app" id="app">
-  <h1>✅ Logged in successfully</h1>
-  <button class="btn black" onclick="logout()">Logout</button>
+
+  <div class="nav">
+    🤖 AI FORM 2
+    <button class="btn black" style="width:100px" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="chat" id="chat"></div>
+
+  <div class="inputBar">
+    <input id="msg" placeholder="Ask AI..."/>
+    <button class="btn green" onclick="send()">➤</button>
+  </div>
+
 </div>
 
-<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
@@ -168,57 +171,28 @@ const client = supabase.createClient(
   "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8"
 );
 
-/* ERROR */
-function showError(msg){
-  document.getElementById("error").innerText = msg;
-}
-
-/* ================= GOOGLE LOGIN ================= */
-async function loginWithGoogle(){
-  const { error } = await client.auth.signInWithOAuth({
-    provider: 'google',
-    options:{
-      redirectTo: window.location.origin
-    }
-  });
-
-  if(error){
-    showError(error.message);
-  }
-}
-
-/* ================= EMAIL LOGIN ================= */
-async function loginEmail(){
+/* LOGIN */
+async function login(){
   const email = document.getElementById("email").value;
   const pass = document.getElementById("password").value;
 
-  if(!email || !pass){
-    showError("Fill all fields");
-    return;
-  }
-
-  const { data, error } = await client.auth.signInWithPassword({
+  const { error } = await client.auth.signInWithPassword({
     email,
     password: pass
   });
 
   if(error){
-    showError(error.message);
+    alert(error.message);
     return;
   }
 
   goApp();
 }
 
-/* ================= SIGNUP ================= */
-async function signupEmail(){
+/* SIGNUP */
+async function signup(){
   const email = document.getElementById("email").value;
   const pass = document.getElementById("password").value;
-
-  if(!email || !pass){
-    showError("Fill all fields");
-    return;
-  }
 
   const { error } = await client.auth.signUp({
     email,
@@ -226,20 +200,35 @@ async function signupEmail(){
   });
 
   if(error){
-    showError(error.message);
+    alert(error.message);
     return;
   }
 
-  alert("📩 Check email to confirm account");
+  alert("📩 Check email");
 }
 
-/* ================= APP ================= */
+/* GO APP */
 function goApp(){
   document.getElementById("loginPage").style.display = "none";
   document.getElementById("app").style.display = "flex";
 }
 
-/* ================= LOGOUT ================= */
+/* CHAT */
+function send(){
+  const msg = document.getElementById("msg");
+  if(!msg.value) return;
+
+  const chat = document.getElementById("chat");
+
+  chat.innerHTML += `
+    <div class="msg user">${msg.value}</div>
+    <div class="msg ai">AI: ${msg.value}</div>
+  `;
+
+  msg.value = "";
+}
+
+/* LOGOUT */
 function logout(){
   location.reload();
 }
