@@ -63,6 +63,12 @@ body{
   padding:12px 14px;
   border-radius:14px;
   white-space:pre-wrap;
+  animation:fade 0.2s ease;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 .user{
@@ -102,8 +108,7 @@ button{
   cursor:pointer;
 }
 
-/* ================= LOGIN OVERLAY ================= */
-
+/* LOGIN */
 .overlay{
   position:fixed;
   inset:0;
@@ -121,16 +126,6 @@ button{
   border-radius:16px;
   text-align:center;
   box-shadow:0 0 30px rgba(34,197,94,0.2);
-}
-
-.loginBox h2{
-  margin-bottom:5px;
-}
-
-.loginBox p{
-  opacity:0.7;
-  font-size:13px;
-  margin-bottom:15px;
 }
 
 .loginBox input{
@@ -153,9 +148,8 @@ button{
   font-weight:bold;
 }
 
-.loginBox .ghost{
-  background:#222;
-  color:white;
+.ghost{
+  background:#222 !important;
 }
 
 .error{
@@ -169,7 +163,7 @@ button{
 
 <body>
 
-<!-- ================= LOGIN OVERLAY ================= -->
+<!-- LOGIN -->
 <div class="overlay" id="loginOverlay">
   <div class="loginBox">
     <h2>Welcome</h2>
@@ -210,7 +204,6 @@ button{
 
 let loggedIn = false;
 
-/* DISABLE CHAT BEFORE LOGIN */
 document.querySelector(".chat").style.filter = "blur(8px)";
 
 /* LOGIN */
@@ -224,23 +217,18 @@ function login(){
     return;
   }
 
-  if(pass.length < 3){
-    document.getElementById("error").innerText = "Wrong password";
-    return;
-  }
-
   document.getElementById("loginOverlay").style.display = "none";
   document.querySelector(".chat").style.filter = "none";
 
   loggedIn = true;
 }
 
-/* SIGNUP (DEMO) */
+/* SIGNUP */
 function signup(){
   alert("Signup success (demo)");
 }
 
-/* CHAT */
+/* ADD MESSAGE */
 function addMessage(text,type){
   const div = document.createElement("div");
   div.className = "msg " + type;
@@ -249,15 +237,56 @@ function addMessage(text,type){
   const box = document.getElementById("messages");
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
+
+  return div;
 }
 
+/* LOADING */
 function setLoading(state){
   const btn = document.getElementById("btn");
   btn.disabled = state;
   btn.innerText = state ? "..." : "Send";
 }
 
-/* YOUR AI LOGIC (UNCHANGED) */
+/* THINKING */
+function showThinking(){
+  const div = document.createElement("div");
+  div.className = "msg ai";
+  div.innerText = "AI is thinking...";
+
+  const box = document.getElementById("messages");
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+
+  return div;
+}
+
+/* TYPE EFFECT */
+function typeMessage(text){
+
+  const div = document.createElement("div");
+  div.className = "msg ai";
+  div.innerText = "";
+
+  const box = document.getElementById("messages");
+  box.appendChild(div);
+
+  let words = text.split(" ");
+  let i = 0;
+
+  function type(){
+    if(i < words.length){
+      div.innerText += words[i] + " ";
+      i++;
+      box.scrollTop = box.scrollHeight;
+      setTimeout(type, 50);
+    }
+  }
+
+  type();
+}
+
+/* SEND */
 async function send(){
 
   if(!loggedIn) return;
@@ -271,6 +300,8 @@ async function send(){
 
   setLoading(true);
 
+  const thinking = showThinking();
+
   try{
 
     const res = await fetch("/api/chat", {
@@ -281,10 +312,15 @@ async function send(){
 
     const data = await res.json();
 
-    addMessage(data.reply || "No response","ai");
+    thinking.remove();
+
+    typeMessage(data.reply || "No response");
 
   }catch(err){
+
+    thinking.remove();
     addMessage("❌ ERROR:\n" + err.message,"ai");
+
   }
 
   setLoading(false);
