@@ -25,13 +25,14 @@ overflow:hidden;
 display:flex;
 }
 
-/* SIDEBAR - EXACT CHATGPT */
+/* SIDEBAR - EXACT CHATGPT WITH CONVERSATIONS */
 .sidebar{
 width:260px;
 background:#202123;
 border-right:1px solid #343541;
 display:flex;
 flex-direction:column;
+overflow:hidden;
 }
 
 .sidebar-header{
@@ -67,6 +68,50 @@ transition:all 0.2s ease;
 .new-chat:hover{
 background:#343541;
 border-color:#565869;
+}
+
+/* CONVERSATIONS LIST - EXACT CHATGPT */
+.conversations{
+flex:1;
+overflow-y:auto;
+padding:8px 0;
+}
+
+.conversation-item{
+padding:12px 16px;
+cursor:pointer;
+border-radius:8px;
+margin:0 8px;
+transition:all 0.2s ease;
+font-size:14px;
+display:flex;
+flex-direction:column;
+gap:4px;
+}
+
+.conversation-item:hover{
+background:#2a2b32;
+}
+
+.conversation-item.active{
+background:#343541;
+border:1px solid #10a37f;
+}
+
+.conversation-title{
+font-weight:500;
+color:#ececf1;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.conversation-preview{
+font-size:12px;
+color:#8e8ea0;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
 }
 
 /* MAIN CHAT AREA - EXACT CHATGPT */
@@ -223,33 +268,25 @@ animation:fadeInUp 0.2s ease-out;
 }
 
 /* SCROLLBAR - CHATGPT STYLE */
-.messages::-webkit-scrollbar{
+.messages::-webkit-scrollbar,
+.conversations::-webkit-scrollbar{
 width:4px;
 }
 
-.messages::-webkit-scrollbar-track{
+.messages::-webkit-scrollbar-track,
+.conversations::-webkit-scrollbar-track{
 background:transparent;
 }
 
-.messages::-webkit-scrollbar-thumb{
+.messages::-webkit-scrollbar-thumb,
+.conversations::-webkit-scrollbar-thumb{
 background:#40414f;
 border-radius:2px;
 }
 
-.messages::-webkit-scrollbar-thumb:hover{
+.messages::-webkit-scrollbar-thumb:hover,
+.conversations::-webkit-scrollbar-thumb:hover{
 background:#565869;
-}
-
-/* RESPONSIVE */
-@media (max-width:768px){
-.sidebar{
-width:260px;
-transform:translateX(-100%);
-transition:transform 0.3s ease;
-}
-.chat-container{
-width:100%;
-}
 }
 
 </style>
@@ -257,18 +294,19 @@ width:100%;
 
 <body>
 
-<!-- ❗ SAME HTML STRUCTURE & LOGIC -->
-
 <div class="sidebar">
 <div class="sidebar-header">
 <div class="logo"> ILYASS AI </div>
 </div>
-<div class="new-chat" onclick="clearChat()">+ New Chat</div>
+<div class="new-chat" onclick="newChat()">+ New Chat</div>
+<div class="conversations" id="conversations">
+<!-- Conversations will be added here -->
+</div>
 </div>
 
 <div class="chat-container">
 
-<div class="topbar">AI Assistant</div>
+<div class="topbar" id="currentChatTitle">New Chat</div>
 
 <div class="messages" id="messages">
 <div class="message-container ai-container">
@@ -291,11 +329,75 @@ width:100%;
 
 <script>
 
-/* SAME EXACT CODE LOGIC - NO CHANGES */
+// YOUR SAME EXACT CODE + CHATGPT CONVERSATION HISTORY
+let currentChatId = 'chat-1';
+let chats = JSON.parse(localStorage.getItem('chats')) || {};
+let chatHistory = [];
+
+// Initialize first chat
+if(!chats['chat-1']){
+  chats['chat-1'] = {
+    title: 'New Chat',
+    messages: [{role: 'ai', content: 'Hello 👋 كيف نعاونك اليوم؟'}],
+    preview: 'Hello 👋 كيف ن...'
+  };
+}
+
+function updateConversations(){
+  const convContainer = document.getElementById('conversations');
+  convContainer.innerHTML = '';
+  
+  Object.keys(chats).forEach(chatId => {
+    const chat = chats[chatId];
+    const div = document.createElement('div');
+    div.className = `conversation-item ${currentChatId === chatId ? 'active' : ''}`;
+    div.onclick = () => loadChat(chatId);
+    div.innerHTML = `
+      <div class="conversation-title">${chat.title}</div>
+      <div class="conversation-preview">${chat.preview}</div>
+    `;
+    convContainer.appendChild(div);
+  });
+}
+
+function newChat(){
+  const newId = 'chat-' + Date.now();
+  currentChatId = newId;
+  chats[newId] = {
+    title: 'New Chat',
+    messages: [{role: 'ai', content: 'Hello 👋 كيف نعاونك اليوم؟'}],
+    preview: 'Hello 👋 كيف ن...'
+  };
+  loadChat(newId);
+  saveChats();
+  updateConversations();
+}
+
+function loadChat(chatId){
+  currentChatId = chatId;
+  const chat = chats[chatId];
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('currentChatTitle').textContent = chat.title;
+  chat.messages.forEach(msg => addMessage(msg.content, msg.role));
+  updateConversations();
+}
+
+function saveChats(){
+  localStorage.setItem('chats', JSON.stringify(chats));
+}
+
+function updateChatTitle(){
+  const firstMsg = chats[currentChatId]?.messages?.[1];
+  if(firstMsg && firstMsg.role === 'user' && chats[currentChatId].title === 'New Chat'){
+    const title = firstMsg.content.length > 30 ? firstMsg.content.substring(0,30) + '...' : firstMsg.content;
+    chats[currentChatId].title = title;
+    document.getElementById('currentChatTitle').textContent = title;
+    updateConversations();
+  }
+}
 
 function clearChat(){
-document.getElementById("messages").innerHTML =
-'<div class="message-container ai-container"><div class="ai">Hello 👋 كيف نعاونك اليوم؟</div></div>';
+  newChat();
 }
 
 function setLoading(state){
@@ -364,7 +466,24 @@ div.innerHTML = `<div class="${type}">${text}</div>`;
 const messages = document.getElementById("messages");
 messages.appendChild(div);
 messages.scrollTop = messages.scrollHeight;
+
+// SAVE TO CURRENT CHAT
+if(!chats[currentChatId]){
+  chats[currentChatId] = {title: 'New Chat', messages: [], preview: ''};
 }
+chats[currentChatId].messages.push({role: type, content: text});
+
+// Update preview
+const preview = chats[currentChatId].messages[chats[currentChatId].messages.length-2]?.content || text;
+chats[currentChatId].preview = preview.length > 50 ? preview.substring(0,50) + '...' : preview;
+
+updateChatTitle();
+saveChats();
+updateConversations();
+}
+
+// Initialize
+updateConversations();
 
 </script>
 
