@@ -22,7 +22,7 @@ body{
   color:white;
 }
 
-/* 🔥 RGB MOVING BORDER CARD */
+/* 🔥 RGB CARD */
 .login-box{
   position:relative;
   width:340px;
@@ -34,7 +34,7 @@ body{
   overflow:hidden;
 }
 
-/* RGB animated border */
+/* RGB BORDER ANIMATION */
 .login-box::before{
   content:"";
   position:absolute;
@@ -71,6 +71,7 @@ body{
   100%{background-position:0% 50%;}
 }
 
+/* INPUTS */
 input{
   width:100%;
   padding:12px;
@@ -82,6 +83,7 @@ input{
   color:white;
 }
 
+/* BUTTONS */
 button{
   width:100%;
   padding:12px;
@@ -123,14 +125,16 @@ const supabaseKey = "sb_publishable_xxxxxxx"; // 👈 حط key ديالك هنا
 
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-/* ELEMENTS */
+/* INPUTS */
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 
 const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
 
-/* SIGN UP */
+/* =========================
+   SIGN UP
+========================= */
 signupBtn.addEventListener("click", async () => {
   const { data, error } = await supabase.auth.signUp({
     email: email.value,
@@ -138,13 +142,15 @@ signupBtn.addEventListener("click", async () => {
   });
 
   if(error){
-    alert(error.message);
+    alert("❌ Signup failed:\n" + error.message);
   } else {
-    alert("Check your email 📩");
+    alert("📩 Check your email to confirm account");
   }
 });
 
-/* LOGIN */
+/* =========================
+   LOGIN
+========================= */
 loginBtn.addEventListener("click", async () => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email: email.value,
@@ -152,11 +158,17 @@ loginBtn.addEventListener("click", async () => {
   });
 
   if(error){
-    alert(error.message);
-  } else {
-    alert("Login success ✅");
-    console.log(data.user);
+    alert("❌ Login failed:\n" + error.message);
+    return;
   }
+
+  if(!data.user){
+    alert("❌ No user found");
+    return;
+  }
+
+  alert("✅ Login success!");
+  console.log(data.user);
 });
 </script>
 
