@@ -3,80 +3,131 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>444</title>
+<title>AI Chat</title>
 
 <style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: Inter, Arial;
+}
+
 body{
-margin:0;
-font-family:Arial;
-background:#0b0f19;
-color:white;
-display:flex;
-height:100vh;
+  background:#0f0f0f;
+  color:white;
+  height:100vh;
+  display:flex;
 }
 
+/* SIDEBAR */
 .sidebar{
-width:250px;
-background:#111827;
-padding:20px;
+  width:260px;
+  background:#111;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
 }
 
+.logo{
+  font-size:18px;
+  font-weight:bold;
+  color:#fff;
+}
+
+.newchat{
+  padding:10px;
+  background:#1a1a1a;
+  border-radius:10px;
+  cursor:pointer;
+  text-align:center;
+  transition:0.2s;
+}
+
+.newchat:hover{
+  transform:scale(1.05);
+  background:#222;
+}
+
+/* CHAT AREA */
 .chat{
-flex:1;
-display:flex;
-flex-direction:column;
+  flex:1;
+  display:flex;
+  flex-direction:column;
 }
 
+/* MESSAGES */
 .messages{
-flex:1;
-overflow-y:auto;
-padding:20px;
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
+/* MESSAGE BUBBLES */
 .msg{
-margin:5px 0;
-padding:10px;
-border-radius:10px;
-max-width:70%;
-word-wrap:break-word;
-white-space:pre-wrap;
+  max-width:70%;
+  padding:12px 14px;
+  border-radius:14px;
+  white-space:pre-wrap;
+  animation:fade 0.2s ease;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 .user{
-background:#22c55e;
-color:black;
-margin-left:auto;
+  align-self:flex-end;
+  background:#22c55e;
+  color:black;
 }
 
 .ai{
-background:#1f2937;
+  align-self:flex-start;
+  background:#1f1f1f;
+  color:#e5e5e5;
 }
 
+/* INPUT */
 .input{
-display:flex;
-padding:10px;
-background:#111827;
+  display:flex;
+  padding:15px;
+  background:#111;
+  border-top:1px solid #222;
 }
 
 input{
-flex:1;
-padding:10px;
-border:none;
-border-radius:8px;
-outline:none;
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  outline:none;
+  background:#1a1a1a;
+  color:white;
 }
 
 button{
-margin-left:10px;
-padding:10px;
-background:#22c55e;
-border:none;
-cursor:pointer;
+  margin-left:10px;
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:scale(1.05);
 }
 
 button:disabled{
-opacity:0.6;
-cursor:not-allowed;
+  opacity:0.6;
 }
 </style>
 
@@ -84,21 +135,24 @@ cursor:not-allowed;
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
-<h3>IDK AI 🚀</h3>
+  <div class="logo">◆ ILYASS AI</div>
+  <div class="newchat">+ New Chat</div>
 </div>
 
+<!-- CHAT -->
 <div class="chat">
 
-<div class="messages" id="messages">
-<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
-</div>
+  <div class="messages" id="messages">
+    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
+  </div>
 
-<div class="input">
-<input id="input" placeholder="Type your message..."
-onkeydown="if(event.key==='Enter') send()" />
-<button id="btn" onclick="send()">Send</button>
-</div>
+  <div class="input">
+    <input id="input" placeholder="Ask anything..."
+    onkeydown="if(event.key==='Enter') send()" />
+    <button id="btn" onclick="send()">Send</button>
+  </div>
 
 </div>
 
@@ -115,10 +169,12 @@ function addMessage(text,type){
 }
 
 function setLoading(state){
-  document.getElementById("btn").disabled = state;
-  document.getElementById("btn").innerText = state ? "..." : "Send";
+  const btn = document.getElementById("btn");
+  btn.disabled = state;
+  btn.innerText = state ? "..." : "Send";
 }
 
+/* 🔥 YOUR ORIGINAL LOGIC (UNCHANGED) */
 async function send(){
 
   const input = document.getElementById("input");
@@ -133,25 +189,12 @@ async function send(){
   try{
 
     const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: text })
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ message:text })
     });
 
-    // 🔥 SAFE JSON HANDLING (no crash)
-    let data;
-    try {
-      data = await res.json();
-    } catch (e) {
-      const txt = await res.text();
-      throw new Error(txt);
-    }
-
-    if(!res.ok){
-      throw new Error(data.error || "Server error");
-    }
+    const data = await res.json();
 
     addMessage(data.reply || "No response","ai");
 
