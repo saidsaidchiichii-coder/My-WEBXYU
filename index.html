@@ -39,6 +39,7 @@ padding:10px;
 border-radius:10px;
 max-width:70%;
 word-wrap:break-word;
+white-space:pre-wrap;
 }
 
 .user{
@@ -72,6 +73,11 @@ background:#22c55e;
 border:none;
 cursor:pointer;
 }
+
+button:disabled{
+opacity:0.6;
+cursor:not-allowed;
+}
 </style>
 
 </head>
@@ -90,7 +96,7 @@ cursor:pointer;
 
 <div class="input">
 <input id="input" placeholder="Type your message..." onkeydown="if(event.key==='Enter') send()" />
-<button onclick="send()">Send</button>
+<button id="btn" onclick="send()">Send</button>
 </div>
 
 </div>
@@ -107,6 +113,11 @@ function addMessage(text,type){
   box.scrollTop = box.scrollHeight;
 }
 
+function setLoading(state){
+  document.getElementById("btn").disabled = state;
+  document.getElementById("btn").innerText = state ? "..." : "Send";
+}
+
 async function send(){
 
   const input = document.getElementById("input");
@@ -115,6 +126,8 @@ async function send(){
 
   addMessage(text,"user");
   input.value="";
+
+  setLoading(true);
 
   try{
 
@@ -126,7 +139,17 @@ async function send(){
       body: JSON.stringify({ message: text })
     });
 
-    const data = await res.json();
+    // 🔥 IMPORTANT DEBUG SAFE MODE
+    const contentType = res.headers.get("content-type");
+
+    let data;
+
+    if(contentType && contentType.includes("application/json")){
+      data = await res.json();
+    } else {
+      const errText = await res.text();
+      throw new Error("Server not JSON:\n" + errText);
+    }
 
     if(!res.ok){
       throw new Error(data.error || "Server error");
@@ -135,8 +158,10 @@ async function send(){
     addMessage(data.reply || "No response","ai");
 
   }catch(err){
-    addMessage(err.message,"ai");
+    addMessage("❌ ERROR:\n" + err.message,"ai");
   }
+
+  setLoading(false);
 }
 
 </script>
