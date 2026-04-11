@@ -42,7 +42,6 @@ body{
   cursor:pointer;
 }
 
-/* SEARCH */
 .search{
   padding:10px;
   border:none;
@@ -52,7 +51,6 @@ body{
   outline:none;
 }
 
-/* CHAT LIST */
 .chatlist{
   flex:1;
   overflow-y:auto;
@@ -67,6 +65,7 @@ body{
   cursor:pointer;
   background:transparent;
 }
+
 .chatitem:hover{
   background:#1a1a1a;
 }
@@ -87,7 +86,6 @@ body{
   gap:10px;
 }
 
-/* MSG */
 .msg{
   max-width:70%;
   padding:12px 14px;
@@ -211,25 +209,41 @@ button{
 
 <script>
 
-/* LOGIN */
 let loggedIn=false;
+
+/* LOGIN */
 function login(){
   document.getElementById("login").style.display="none";
   loggedIn=true;
 }
 
-/* CHAT SYSTEM */
+/* CHAT DATA */
 let chats=[];
-let currentChat=0;
+let currentChat=null;
 
+/* NEW CHAT */
 function newChat(){
   const id=Date.now();
-  chats.push({id,messages:[]});
+
+  chats.push({
+    id,
+    title:"New Chat",
+    messages:[]
+  });
+
   currentChat=id;
   renderChats();
   clearBox();
 }
 
+/* GET TITLE FROM FIRST USER MESSAGE */
+function getChatTitle(chat){
+  const first = chat.messages.find(m=>m.type==="user");
+  if(!first) return "New Chat";
+  return first.text.slice(0,30);
+}
+
+/* RENDER SIDEBAR */
 function renderChats(){
   const list=document.getElementById("chatlist");
   list.innerHTML="";
@@ -237,17 +251,20 @@ function renderChats(){
   chats.forEach(c=>{
     const div=document.createElement("div");
     div.className="chatitem";
-    div.innerText="Chat "+c.id;
+
+    div.innerText=getChatTitle(c);
+
     div.onclick=()=>loadChat(c.id);
     list.appendChild(div);
   });
 }
 
+/* LOAD CHAT */
 function loadChat(id){
   currentChat=id;
   clearBox();
 
-  let chat=chats.find(c=>c.id===id);
+  const chat=chats.find(c=>c.id===id);
   if(!chat) return;
 
   chat.messages.forEach(m=>{
@@ -255,33 +272,38 @@ function loadChat(id){
   });
 }
 
-function searchChats(v){
+/* SEARCH */
+function searchChats(val){
   document.querySelectorAll(".chatitem").forEach(i=>{
-    i.style.display=i.innerText.toLowerCase().includes(v.toLowerCase())
+    i.style.display=i.innerText.toLowerCase().includes(val.toLowerCase())
     ?"block":"none";
   });
 }
 
-/* MESSAGE UI ONLY */
+/* ADD MESSAGE */
 function addMessage(text,type,save=true){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
 
   document.getElementById("messages").appendChild(div);
-  document.getElementById("messages").scrollTop=99999;
+  document.getElementById("messages").scrollTop=999999;
 
   if(save){
     let chat=chats.find(c=>c.id===currentChat);
-    if(chat) chat.messages.push({text,type});
+    if(chat){
+      chat.messages.push({text,type});
+    }
+    renderChats(); // update title live
   }
 }
 
+/* CLEAR */
 function clearBox(){
   document.getElementById("messages").innerHTML="";
 }
 
-/* ================= YOUR ORIGINAL AI LOGIC (UNCHANGED) ================= */
+/* ================= YOUR AI LOGIC (UNCHANGED 100%) ================= */
 async function send(){
 
   if(!loggedIn) return;
