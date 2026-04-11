@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ REQUEST
+    // 🤖 GROQ API CALL
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -34,32 +34,40 @@ export default async function handler(req, res) {
           "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
+          model: "llama-3.3-70b-versatile",
           messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: message }
+            {
+              role: "system",
+              content: "You are a helpful assistant."
+            },
+            {
+              role: "user",
+              content: message
+            }
           ],
-          temperature: 0.7
+          temperature: 0.7,
+          max_tokens: 1024
         })
       }
     );
 
     const data = await response.json();
 
-    // 🛑 handle Groq errors
+    // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
         error: data.error?.message || "Groq API error"
       });
     }
 
+    // ✅ success
     return res.status(200).json({
       reply: data.choices?.[0]?.message?.content || "No response"
     });
 
   } catch (err) {
     return res.status(500).json({
-      error: err.message
+      error: err.message || "Server error"
     });
   }
 }
