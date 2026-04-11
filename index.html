@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI SaaS Project</title>
+<title>Login - AI SaaS</title>
 
 <style>
 *{
@@ -15,233 +15,228 @@
 
 body{
   height:100vh;
-  background: radial-gradient(circle at top, #0f172a, #000);
+  overflow:hidden;
+  background:#0b0f19;
   color:white;
 }
 
-/* LOGIN */
-.center{
-  height:100vh;
+/* ================= MAIN SPLIT ================= */
+.container{
   display:flex;
+  height:100vh;
+}
+
+/* ================= LEFT (FORM) ================= */
+.left{
+  width:50%;
+  display:flex;
+  flex-direction:column;
   justify-content:center;
   align-items:center;
+  padding:40px;
+  animation:fadeIn 0.5s ease;
 }
 
-.card{
-  width:360px;
-  padding:30px;
-  border-radius:18px;
-  position:relative;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter: blur(12px);
-  overflow:hidden;
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
-.card::before{
-  content:"";
+/* LOGO */
+.logo{
   position:absolute;
-  inset:-3px;
-  background:linear-gradient(90deg,#ff00ff,#00ffff,#22c55e,#ffcc00,#ff00ff);
-  background-size:300% 300%;
-  animation:rgb 4s linear infinite;
-  z-index:-1;
-  border-radius:20px;
+  top:20px;
+  left:20px;
+  font-weight:bold;
+  color:#22c55e;
 }
 
-.card::after{
-  content:"";
-  position:absolute;
-  inset:2px;
-  background:rgba(10,10,20,0.95);
-  border-radius:16px;
-  z-index:-1;
+/* TITLE */
+h1{
+  font-size:28px;
+  margin-bottom:20px;
+  animation:fadeIn 0.7s ease;
 }
 
-@keyframes rgb{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
+/* BUTTONS */
+.btn{
+  width:100%;
+  max-width:320px;
+  padding:12px;
+  margin:6px 0;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  transition:0.3s;
+  font-weight:600;
 }
 
+.btn:hover{
+  transform:scale(1.03);
+  box-shadow:0 0 15px rgba(0,255,255,0.2);
+}
+
+.black{
+  background:#000;
+  color:white;
+}
+
+.light{
+  background:#1f2937;
+  color:white;
+}
+
+.divider{
+  margin:15px 0;
+  opacity:0.5;
+}
+
+/* INPUTS */
 input{
   width:100%;
+  max-width:320px;
   padding:12px;
-  margin:8px 0;
-  border:none;
+  margin:6px 0;
   border-radius:10px;
+  border:1px solid #333;
+  background:#0f172a;
+  color:white;
   outline:none;
-  background:rgba(255,255,255,0.08);
-  color:white;
+  transition:0.3s;
 }
 
-button{
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
+input:focus{
+  border-color:#22c55e;
+  box-shadow:0 0 10px rgba(34,197,94,0.3);
 }
 
-.login{background:#22c55e;}
-.signup{background:#00c2ff;}
-
-/* APP */
-.app{
-  display:none;
-  height:100vh;
-  flex-direction:column;
-}
-
-.nav{
-  height:60px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 20px;
-  border-bottom:1px solid #222;
-}
-
-.logout{
-  background:red;
-  border:none;
-  padding:8px 12px;
-  color:white;
-  border-radius:8px;
-}
-
-.chat{
-  flex:1;
-  overflow:auto;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.msg{
-  max-width:70%;
-  padding:10px 14px;
-  border-radius:12px;
-}
-
-.user{
-  align-self:flex-end;
+/* LOGIN BUTTON */
+.login-btn{
   background:#22c55e;
   color:black;
 }
 
-.ai{
-  align-self:flex-start;
-  background:#1f2937;
+/* SIGNUP TEXT */
+.signup{
+  margin-top:10px;
+  font-size:13px;
+  opacity:0.7;
 }
 
-.inputBar{
-  display:flex;
-  padding:10px;
-  border-top:1px solid #222;
+.signup span{
+  color:#22c55e;
+  cursor:pointer;
 }
 
-.inputBar input{
-  flex:1;
+/* ================= RIGHT (VISUAL) ================= */
+.right{
+  width:50%;
+  position:relative;
+  overflow:hidden;
+  background:radial-gradient(circle at top, #1a237e, #000);
 }
 
-.inputBar button{
-  width:80px;
-  margin-left:10px;
+/* floating glow */
+.glow{
+  position:absolute;
+  width:300px;
+  height:300px;
+  background:radial-gradient(circle, rgba(0,255,255,0.3), transparent);
+  filter:blur(40px);
+  animation:float 6s infinite ease-in-out;
+}
+
+.glow:nth-child(2){
+  top:30%;
+  left:40%;
+  background:radial-gradient(circle, rgba(255,0,255,0.3), transparent);
+}
+
+.glow:nth-child(3){
+  top:60%;
+  left:20%;
+  background:radial-gradient(circle, rgba(0,255,100,0.3), transparent);
+}
+
+@keyframes float{
+  0%{transform:translateY(0);}
+  50%{transform:translateY(-30px);}
+  100%{transform:translateY(0);}
+}
+
+/* center shape */
+.centerShape{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:200px;
+  height:200px;
+  border-radius:30px;
+  background:linear-gradient(45deg,#00ffff,#ff00ff,#22c55e);
+  filter:blur(60px);
+  opacity:0.6;
+  animation:spin 8s linear infinite;
+}
+
+@keyframes spin{
+  0%{transform:translate(-50%,-50%) rotate(0deg);}
+  100%{transform:translate(-50%,-50%) rotate(360deg);}
+}
+
+/* MOBILE */
+@media(max-width:900px){
+  .container{
+    flex-direction:column;
+  }
+  .left,.right{
+    width:100%;
+    height:50%;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div class="center" id="loginPage">
-  <div class="card">
-    <h2 style="text-align:center;margin-bottom:10px;">LOGIN</h2>
+<div class="container">
 
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+  <!-- LEFT -->
+  <div class="left">
 
-    <button class="login" id="loginBtn">LOGIN</button>
-    <button class="signup" id="signupBtn">SIGN UP</button>
+    <div class="logo">⚡ AI SYSTEM</div>
+
+    <h1>Log into your account</h1>
+
+    <button class="btn black">Login with X</button>
+    <button class="btn light">Login with Google</button>
+    <button class="btn light">Login with Apple</button>
+
+    <div class="divider">──────── OR ────────</div>
+
+    <input placeholder="Email"/>
+    <input type="password" placeholder="Password"/>
+
+    <button class="btn login-btn">LOGIN</button>
+
+    <div class="signup">
+      Don't have an account? <span>Sign up</span>
+    </div>
+
   </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <div class="glow"></div>
+    <div class="glow"></div>
+    <div class="glow"></div>
+
+    <div class="centerShape"></div>
+
+  </div>
+
 </div>
-
-<!-- APP -->
-<div class="app" id="app">
-
-  <div class="nav">
-    🤖 AI AGENT
-    <button class="logout" onclick="logout()">Logout</button>
-  </div>
-
-  <div class="chat" id="chat"></div>
-
-  <div class="inputBar">
-    <input id="msg" placeholder="Ask AI...">
-    <button onclick="send()">➤</button>
-  </div>
-
-</div>
-
-<!-- SUPABASE -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-<script>
-const client = supabase.createClient(
-  "https://ypqkmuflothekoaxwupn.supabase.co",
-  "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8"
-);
-
-/* AUTH */
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-
-document.getElementById("signupBtn").onclick = async () => {
-  const { error } = await client.auth.signUp({
-    email: email.value,
-    password: password.value
-  });
-
-  if(error) return alert(error.message);
-
-  alert("📩 Check email");
-};
-
-document.getElementById("loginBtn").onclick = async () => {
-  const { data, error } = await client.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  });
-
-  if(error) return alert(error.message);
-
-  document.getElementById("loginPage").style.display = "none";
-  document.getElementById("app").style.display = "flex";
-};
-
-/* CHAT */
-function send(){
-  const msg = document.getElementById("msg");
-  if(!msg.value) return;
-
-  const chat = document.getElementById("chat");
-
-  chat.innerHTML += `
-    <div class="msg user">${msg.value}</div>
-    <div class="msg ai">AI: ${msg.value}</div>
-  `;
-
-  msg.value = "";
-}
-
-/* LOGOUT */
-function logout(){
-  location.reload();
-}
-</script>
 
 </body>
 </html>
