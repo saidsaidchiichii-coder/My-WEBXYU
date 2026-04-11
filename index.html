@@ -22,7 +22,7 @@ body{
   color:white;
 }
 
-/* 🔥 RGB CARD */
+/* RGB CARD */
 .login-box{
   position:relative;
   width:340px;
@@ -34,7 +34,6 @@ body{
   overflow:hidden;
 }
 
-/* RGB BORDER ANIMATION */
 .login-box::before{
   content:"";
   position:absolute;
@@ -71,7 +70,6 @@ body{
   100%{background-position:0% 50%;}
 }
 
-/* INPUTS */
 input{
   width:100%;
   padding:12px;
@@ -83,7 +81,6 @@ input{
   color:white;
 }
 
-/* BUTTONS */
 button{
   width:100%;
   padding:12px;
@@ -121,41 +118,53 @@ button{
 
 <script>
 const supabaseUrl = "https://ypqkmuflothekoaxwupn.supabase.co";
-const supabaseKey = "sb_publishable_xxxxxxx"; // 👈 حط key ديالك هنا
+const supabaseKey = "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8";
 
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-/* INPUTS */
+/* DEBUG */
+console.log("Supabase loaded:", supabaseClient);
+
+/* ELEMENTS */
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 
 const loginBtn = document.getElementById("loginBtn");
 const signupBtn = document.getElementById("signupBtn");
 
-/* =========================
-   SIGN UP
-========================= */
+/* ================= SIGN UP ================= */
 signupBtn.addEventListener("click", async () => {
-  const { data, error } = await supabase.auth.signUp({
+
+  console.log("SIGNUP CLICKED");
+
+  const { data, error } = await supabaseClient.auth.signUp({
     email: email.value,
     password: password.value
   });
+
+  console.log("SIGNUP DATA:", data);
+  console.log("SIGNUP ERROR:", error);
 
   if(error){
     alert("❌ Signup failed:\n" + error.message);
-  } else {
-    alert("📩 Check your email to confirm account");
+    return;
   }
+
+  alert("📩 Check your email to confirm account");
 });
 
-/* =========================
-   LOGIN
-========================= */
+/* ================= LOGIN ================= */
 loginBtn.addEventListener("click", async () => {
-  const { data, error } = await supabase.auth.signInWithPassword({
+
+  console.log("LOGIN CLICKED");
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: email.value,
     password: password.value
   });
+
+  console.log("LOGIN DATA:", data);
+  console.log("LOGIN ERROR:", error);
 
   if(error){
     alert("❌ Login failed:\n" + error.message);
@@ -167,8 +176,7 @@ loginBtn.addEventListener("click", async () => {
     return;
   }
 
-  alert("✅ Login success!");
-  console.log(data.user);
+  alert("✅ LOGIN SUCCESS");
 });
 </script>
 
