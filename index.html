@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AI Chat</title>
 
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -15,7 +16,7 @@
   font-family: Inter, Arial;
 }
 
-/* 🌈 LOGIN RGB */
+/* LOGIN RGB */
 .loginBox{
   position:relative;
   z-index:1;
@@ -73,6 +74,7 @@ body{
   padding:10px;
   background:#1a1a1a;
   border-radius:10px;
+  margin-top:10px;
 }
 
 /* CHAT */
@@ -147,11 +149,14 @@ button{
   gap:4px;
   align-items:center;
 }
+
 .dot{
-  width:6px;height:6px;border-radius:50%;
+  width:6px;height:6px;
+  border-radius:50%;
   background:#aaa;
   animation:bounce 1.2s infinite ease-in-out;
 }
+
 .dot:nth-child(2){animation-delay:0.2s;}
 .dot:nth-child(3){animation-delay:0.4s;}
 
@@ -168,6 +173,7 @@ button{
   display:flex;
   justify-content:center;
   align-items:center;
+  z-index:999;
 }
 
 .loginBox{
@@ -182,19 +188,19 @@ button{
   position:fixed;
   top:20px;
   right:20px;
-  padding:12px 16px;
+  padding:12px 14px;
   border-radius:10px;
   color:white;
-  font-size:14px;
   opacity:0;
   transform:translateY(-10px);
   transition:0.3s;
   z-index:9999;
+  font-size:14px;
 }
+
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.success{background:#22c55e;}
 .toast.error{background:#ef4444;}
-.toast.info{background:#3b82f6;}
 </style>
 </head>
 
@@ -236,31 +242,38 @@ button{
 
 <script>
 
-/* SUPABASE */
+/* SUPABASE INIT (YOUR KEY KEPT) */
 const supabaseUrl = "https://idjgsgtupuymysptxrbl.supabase.co";
 const supabaseKey = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-let loggedIn=false;
+let loggedIn = false;
 
 /* TOAST */
-function notify(msg,type="info"){
+function notify(msg,type="success"){
   const div=document.createElement("div");
   div.className=`toast ${type}`;
   div.innerText=msg;
   document.body.appendChild(div);
 
   setTimeout(()=>div.classList.add("show"),10);
+
   setTimeout(()=>{
     div.classList.remove("show");
     setTimeout(()=>div.remove(),300);
-  },3000);
+  },2500);
 }
 
 /* LOGIN */
 async function login(){
+
   const email=document.getElementById("email").value;
   const pass=document.getElementById("password").value;
+
+  if(!email || !pass){
+    notify("Fill all fields","error");
+    return;
+  }
 
   const {data,error} = await supabase.auth.signInWithPassword({
     email,
@@ -272,7 +285,7 @@ async function login(){
     return;
   }
 
-  notify("Login successful","success");
+  notify("Login success","success");
 
   document.getElementById("loginOverlay").style.display="none";
   document.getElementById("chat").classList.add("active");
@@ -296,12 +309,15 @@ function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
   div.id="thinking";
+
   div.innerHTML=`
     <div class="thinking">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
-    </div>`;
+    </div>
+  `;
+
   document.getElementById("messages").appendChild(div);
 }
 
@@ -314,7 +330,7 @@ function removeThinking(){
 async function send(){
 
   if(!loggedIn){
-    notify("Please login first","error");
+    notify("Login required","error");
     return;
   }
 
