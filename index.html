@@ -15,7 +15,6 @@
   font-family: Inter, Arial;
 }
 
-/* CHAT */
 body{
   background:#0f0f0f;
   color:white;
@@ -42,7 +41,7 @@ body{
   margin-top:10px;
 }
 
-/* CHAT AREA */
+/* CHAT */
 .chat{
   flex:1;
   display:flex;
@@ -163,6 +162,11 @@ button{
     <input id="password" type="password" placeholder="Password">
 
     <button onclick="login()">Login</button>
+
+    <!-- 🔥 OWNER SKIP BUTTON -->
+    <button onclick="ownerSkip()" style="margin-top:10px;background:#3b82f6;">
+      Skip Login (Owner)
+    </button>
   </div>
 </div>
 
@@ -189,20 +193,18 @@ button{
 
 <script>
 
-/* SUPABASE (FIXED INIT) */
+/* SUPABASE */
 const supabaseUrl = "https://idjgsgtupuymysptxrbl.supabase.co";
 const supabaseKey = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
-
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 let loggedIn = false;
 
-/* NOTIFICATION */
+/* TOAST */
 function notify(msg,type="success"){
   const t=document.createElement("div");
   t.className=`toast ${type}`;
   t.innerText=msg;
-
   document.body.appendChild(t);
 
   setTimeout(()=>t.classList.add("show"),10);
@@ -240,6 +242,21 @@ async function login(){
   document.getElementById("chat").classList.add("active");
 
   loggedIn=true;
+}
+
+/* 🔥 OWNER SKIP LOGIN */
+function ownerSkip(){
+
+  const key = prompt("Enter OWNER KEY:");
+
+  if(key === "ADMIN123"){
+    notify("Owner access granted","success");
+    document.getElementById("loginOverlay").style.display="none";
+    document.getElementById("chat").classList.add("active");
+    loggedIn=true;
+  }else{
+    notify("Wrong owner key","error");
+  }
 }
 
 /* CHAT */
