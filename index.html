@@ -95,7 +95,8 @@ cursor:not-allowed;
 </div>
 
 <div class="input">
-<input id="input" placeholder="Type your message..." onkeydown="if(event.key==='Enter') send()" />
+<input id="input" placeholder="Type your message..."
+onkeydown="if(event.key==='Enter') send()" />
 <button id="btn" onclick="send()">Send</button>
 </div>
 
@@ -139,16 +140,13 @@ async function send(){
       body: JSON.stringify({ message: text })
     });
 
-    // 🔥 IMPORTANT DEBUG SAFE MODE
-    const contentType = res.headers.get("content-type");
-
+    // 🔥 SAFE JSON HANDLING (no crash)
     let data;
-
-    if(contentType && contentType.includes("application/json")){
+    try {
       data = await res.json();
-    } else {
-      const errText = await res.text();
-      throw new Error("Server not JSON:\n" + errText);
+    } catch (e) {
+      const txt = await res.text();
+      throw new Error(txt);
     }
 
     if(!res.ok){
