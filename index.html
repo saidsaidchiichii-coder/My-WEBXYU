@@ -184,21 +184,32 @@ headers:{
 body:JSON.stringify({ message: text })
 });
 
-const data = await res.json();
+const contentType = res.headers.get("content-type");
+
+let data;
+
+if(contentType && contentType.includes("application/json")){
+data = await res.json();
+}else{
+const errText = await res.text();
+throw new Error(errText);
+}
 
 let reply = "No response";
 
-// ✅ SAFE FIX (no object object)
-if(data.choices && data.choices[0]){
-reply = data.choices[0].message.content;
+// ✅ FIX: safe response handling (NO [object Object])
+if (data.choices && data.choices[0]) {
+  reply = data.choices[0].message.content;
 }
-else if(data.error){
-reply = typeof data.error === "string"
-? data.error
-: JSON.stringify(data.error, null, 2);
+else if (data.error) {
+  reply = typeof data.error === "string"
+    ? data.error
+    : JSON.stringify(data.error, null, 2);
 }
-else{
-reply = JSON.stringify(data, null, 2);
+else {
+  reply = typeof data === "string"
+    ? data
+    : JSON.stringify(data, null, 2);
 }
 
 addMessage(reply,"ai");
