@@ -1,593 +1,204 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IK AI - واجهة الدردشة المتقدمة</title>
-    <style>
-        :root {
-            --bg-primary: #0b0f19;
-            --bg-secondary: #111827;
-            --bg-tertiary: #1f2937;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --accent-primary: #22c55e;
-            --accent-hover: #16a34a;
-            --user-msg-bg: #22c55e;
-            --ai-msg-bg: #374151;
-            --sidebar-width: 280px;
-            --border-radius: 16px;
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #0f172a 100%);
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .app-container {
-            display: flex;
-            height: 100vh;
-            max-width: 100vw;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar-header {
-            padding: 24px 20px;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-        }
-
-        .new-chat-btn {
-            width: 100%;
-            padding: 12px 16px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .new-chat-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
-        }
-
-        .chat-history {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px 0;
-        }
-
-        .chat-item {
-            padding: 16px 20px;
-            cursor: pointer;
-            border-radius: var(--border-radius);
-            margin: 0 12px;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .chat-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(-4px);
-        }
-
-        .chat-item.active {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-
-        .chat-item::before {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: var(--accent-primary);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .chat-item:hover::before,
-        .chat-item.active::before {
-            opacity: 1;
-        }
-
-        .chat-preview {
-            font-size: 14px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .chat-header {
-            padding: 24px 32px;
-            border-bottom: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .chat-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            scroll-behavior: smooth;
-        }
-
-        .message {
-            display: flex;
-            max-width: 70%;
-            animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: 8px;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .message.ai {
-            align-self: flex-start;
-        }
-
-        .message-content {
-            padding: 16px 20px;
-            border-radius: var(--border-radius);
-            font-size: 15px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .message.user .message-content {
-            background: var(--user-msg-bg);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.ai .message-content {
-            background: var(--ai-msg-bg);
-            color: var(--text-primary);
-            border-bottom-left-radius: 4px;
-        }
-
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 20px;
-            background: var(--ai-msg-bg);
-            border-radius: var(--border-radius);
-            border-bottom-left-radius: 4px;
-            max-width: 70%;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-
-        .typing-dots span {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            animation: typing 1.4s infinite ease-in-out;
-        }
-
-        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
-        }
-
-        /* INPUT AREA */
-        .input-container {
-            padding: 24px 32px 32px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--glass-border);
-        }
-
-        .input-wrapper {
-            display: flex;
-            align-items: flex-end;
-            gap: 12px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .input-field {
-            flex: 1;
-            padding: 16px 24px;
-            background: var(--bg-tertiary);
-            border: 2px solid transparent;
-            border-radius: 32px;
-            color: var(--text-primary);
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            resize: none;
-            min-height: 56px;
-            max-height: 200px;
-            line-height: 1.5;
-        }
-
-        .input-field:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .input-field::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .send-button {
-            width: 56px;
-            height: 56px;
-            border: none;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .send-button:hover:not(:disabled) {
-            background: var(--accent-hover);
-            transform: scale(1.05);
-            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
-        }
-
-        .send-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ANIMATIONS */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grok - AI Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out forwards',
+            'scale-in': 'scaleIn 0.3s ease-out forwards',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            scaleIn: {
+              '0%': { transform: 'scale(0.98)' },
+              '100%': { transform: 'scale(1)' },
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+          }
         }
-
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                z-index: 1000;
-                transform: translateX(-100%);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                width: 100%;
-            }
-
-            .messages-container,
-            .input-container {
-                padding-left: 24px;
-                padding-right: 24px;
-            }
-
-            .chat-header {
-                padding-left: 24px;
-                padding-right: 24px;
-            }
-        }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-    </style>
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+    .glow-border:focus-within {
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 0 0 4px rgba(255,255,255,0.05);
+    }
+  </style>
 </head>
-<body>
-    <div class="app-container">
-        <!-- SIDEBAR -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">IK AI</div>
-                <button class="new-chat-btn" id="newChatBtn">
-                    ➕ دردشة جديدة
-                </button>
-            </div>
-            <div class="chat-history" id="chatHistory">
-                <!-- Chat sessions will be populated here -->
-            </div>
-        </div>
-
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <div class="chat-header">
-                <h1 class="chat-title" id="chatTitle">دردشة جديدة</h1>
-            </div>
-            
-            <div class="messages-container" id="messagesContainer">
-                <div class="message ai">
-                    <div class="message-content">
-                        مرحبا! أنا IK AI، مساعدك الذكي. كيفاش نقدر نساعدك اليوم؟ 🚀
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-container">
-                <div class="input-wrapper">
-                    <textarea 
-                        class="input-field" 
-                        id="messageInput" 
-                        placeholder="اكتب رسالتك هنا... (اضغط Enter للإرسال)"
-                        rows="1"
-                        disabled
-                    ></textarea>
-                    <button class="send-button" id="sendButton" disabled>
-                        ➤
-                    </button>
-                </div>
-            </div>
-        </div>
+<body class="bg-black text-white min-h-screen overflow-hidden">
+  <!-- Top Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between h-16 backdrop-blur-sm">
+    <!-- Logo -->
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-lg">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </div>
     </div>
 
-    <script>
-        class IKAiChat {
-            constructor() {
-                this.chats = JSON.parse(localStorage.getItem('ik-ai-chats')) || [];
-                this.currentChatId = null;
-                this.isLoading = false;
-                
-                this.elements = {
-                    sidebar: document.getElementById('sidebar'),
-                    chatHistory: document.getElementById('chatHistory'),
-                    messagesContainer: document.getElementById('messagesContainer'),
-                    messageInput: document.getElementById('messageInput'),
-                    sendButton: document.getElementById('sendButton'),
-                    newChatBtn: document.getElementById('newChatBtn'),
-                    chatTitle: document.getElementById('chatTitle')
-                };
+    <!-- Right side nav -->
+    <div class="flex items-center space-x-3">
+      <button class="text-gray-400 hover:text-white px-3 py-1 text-sm font-medium transition-colors duration-200" aria-label="Imagine">
+        Imagine
+      </button>
+      <button class="p-2 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition-all duration-200" aria-label="Settings">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+      
+      <button class="px-4 py-2 text-sm font-medium text-white border border-white/20 bg-transparent hover:border-white/40 rounded-full transition-all duration-200" aria-label="Sign in">
+        Sign in
+      </button>
+      
+      <button class="px-6 py-2 text-sm font-semibold text-black bg-white hover:bg-white/90 rounded-full shadow-lg hover:shadow-xl transition-all duration-200" aria-label="Sign up">
+        Sign up
+      </button>
+    </div>
+  </nav>
 
-                this.init();
-            }
+  <!-- Main Content -->
+  <main class="flex flex-col min-h-screen pt-16 pb-12">
+    <div class="flex-1 flex flex-col items-center justify-center px-4">
+      <!-- Logo & Title -->
+      <div class="text-center mb-10 animate-fade-in">
+        <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-2xl animate-scale-in">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-semibold tracking-tight bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+          Grok
+        </h1>
+      </div>
 
-            init() {
-                this.bindEvents();
-                this.renderChatHistory();
-                this.scrollToBottom();
-                this.enableInput();
-            }
+      <!-- Main Input Container -->
+      <div class="w-full max-w-2xl animate-fade-in">
+        <div class="relative group">
+          <!-- Input Container -->
+          <div class="bg-[#111111] border border-white/5 rounded-3xl px-5 py-4 flex items-center shadow-[0_0_0_1px_rgba(255,255,255,0.05)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.1)] focus-within:glow-border transition-all duration-300">
+            
+            <!-- Left attachment icon -->
+            <button class="p-2 text-gray-500 hover:text-white rounded-xl hover:bg-white/10 transition-all duration-200 mr-3" aria-label="Attach file">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+              </svg>
+            </button>
 
-            bindEvents() {
-                this.elements.newChatBtn.addEventListener('click', () => this.createNewChat());
-                this.elements.sendButton.addEventListener('click', () => this.sendMessage());
-                this.elements.messageInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        this.sendMessage();
-                    }
-                });
-                this.elements.messageInput.addEventListener('input', this.autoResize.bind(this));
-            }
+            <!-- Input Field -->
+            <input 
+              type="text" 
+              placeholder="What's on your mind?" 
+              class="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500 text-base placeholder:text-gray-500/70 font-normal"
+              aria-label="Message Grok"
+            />
 
-            createNewChat() {
-                const newChat = {
-                    id: Date.now().toString(),
-                    title: 'دردشة جديدة',
-                    messages: [],
-                    createdAt: new Date().toISOString()
-                };
-                
-                this.chats.unshift(newChat);
-                this.currentChatId = newChat.id;
-                this.renderChatHistory();
-                this.loadChat(newChat.id);
-                this.saveChats();
-            }
+            <!-- Right side elements -->
+            <div class="flex items-center space-x-3 ml-3">
+              
+              <!-- Auto dropdown -->
+              <div class="flex items-center space-x-1 px-3 py-1.5 bg-white/5 rounded-2xl text-xs text-gray-400 hover:bg-white/10 cursor-pointer transition-all duration-200 group/auto">
+                <span>Auto</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
 
-            loadChat(chatId) {
-                const chat = this.chats.find(c => c.id === chatId);
-                if (!chat) return;
+              <!-- Microphone -->
+              <button class="p-2 text-gray-400 hover:text-white rounded-2xl hover:bg-white/10 transition-all duration-200" aria-label="Voice input">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                </svg>
+              </button>
 
-                this.currentChatId = chatId;
-                this.elements.chatTitle.textContent = chat.title;
-                this.renderMessages(chat.messages);
-                this.renderChatHistory();
-                this.scrollToBottom();
-            }
+              <!-- Main Send Button -->
+              <button class="w-11 h-11 bg-white rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200" aria-label="Send message">
+                <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4z"/>
+                </svg>
+              </button>
 
-            renderChatHistory() {
-                this.elements.chatHistory.innerHTML = this.chats.map(chat => `
-                    <div class="chat-item ${chat.id === this.currentChatId ? 'active' : ''}" 
-                         data-chat-id="${chat.id}" 
-                         onclick="app.loadChat('${chat.id}')">
-                        <div class="chat-preview">${chat.title}</div>
-                    </div>
-                `).join('');
-            }
+            </div>
+          </div>
 
-            renderMessages(messages) {
-                this.elements.messagesContainer.innerHTML = messages.map(msg => `
-                    <div class="message ${msg.role}">
-                        <div class="message-content">${this.escapeHtml(msg.content)}</div>
-                    </div>
-                `).join('');
-            }
+          <!-- Subtext badge -->
+          <div class="flex items-center mt-4 px-4">
+            <div class="inline-flex items-center px-4 py-2 bg-[#111111] border border-white/10 rounded-2xl text-xs text-gray-500">
+              <span>New</span>
+              <span class="ml-2">·</span>
+              <span class="ml-2">Hold Ctrl+D to dictate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            async sendMessage() {
-                const message = this.elements.messageInput.value.trim();
-                if (!message || this.isLoading) return;
+    <!-- Footer -->
+    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center">
+      <p class="text-xs text-gray-500 leading-relaxed">
+        By messaging Grok, you agree to our 
+        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Terms</a> and 
+        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200 ml-1">Privacy Policy</a>.
+      </p>
+    </div>
+  </main>
 
-                // Add user message
-                const userMessage = { role: 'user', content: message };
-                this.addMessage(userMessage);
-                this.elements.messageInput.value = '';
-                this.autoResize();
-                this.disableInput();
+  <script>
+    // Add staggered animations
+    document.addEventListener('DOMContentLoaded', () => {
+      const elements = document.querySelectorAll('.animate-fade-in, .animate-scale-in');
+      elements.forEach((el, index) => {
+        el.style.animationDelay = `${index * 0.1}s`;
+      });
+    });
 
-                // Show typing indicator
-                this.showTypingIndicator();
+    // Input focus animations
+    const inputContainer = document.querySelector('.glow-border');
+    const input = document.querySelector('input');
+    
+    input.addEventListener('focus', () => {
+      inputContainer.classList.add('glow-border');
+    });
+    
+    input.addEventListener('blur', () => {
+      if (!input.value) {
+        inputContainer.classList.remove('glow-border');
+      }
+    });
 
-                try {
-                    // Simulate API call (replace with real API)
-                    const aiResponse = await this.fetchAIResponse(message);
-                    
-                    // Remove typing indicator and add AI response
-                    this.removeTypingIndicator();
-                    this.addMessage({ role: 'ai', content: aiResponse });
-                    
-                } catch (error) {
-                    this.removeTypingIndicator();
-                    this.addMessage({ role: 'ai', content: 'عذرا، حصل خطأ. جرب مرة أخرى.' });
-                }
+    // Responsive nav collapse
+    function handleResize() {
+      const navRight = document.querySelector('nav > div:last-child');
+      if (window.innerWidth < 768) {
+        navRight.classList.add('space-x-2');
+        navRight.querySelector('button:last-child').textContent = 'Sign up';
+        navRight.querySelector('button:last-child').classList.add('px-4', 'text-xs');
+      } else {
+        navRight.classList.remove('space-x-2');
+        navRight.querySelector('button:last-child').textContent = 'Sign up';
+        navRight.querySelector('button:last-child').classList.remove('px-4', 'text-xs');
+      }
+    }
 
-                this.enableInput();
-                this.scrollToBottom();
-            }
-
-            async fetchAIResponse(message) {
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-                
-                // Mock AI responses (replace with real /api/chat)
-                const responses = [
-                    `شكرا على سؤالك "${message}"! هادي إجابة مفصلة...`,
-                    `ممتاز! بخصوص "${message}"، نقدر نقولك...`,
-                    `فهمت سؤالك "${message}". الجواب هو...`,
-                    `بخصوص "${message}"، هادي المعلومات اللي عندي...`
-                ];
-                
-                return responses[Math.floor(Math.random() * responses.length)];
-            }
-
-            addMessage(message) {
-                const currentChat = this.chats.find(c => c.id === this.currentChatId);
-                if (currentChat) {
-                    currentChat.messages.push(message);
-                    currentChat.title = message.content.length > 30 
-                        ? message.content.substring(0, 30) + '...'
-                        : message.content;
-                    
-                    this.renderMessages(currentChat.messages);
-                    this.saveChats();
-                }
-            }
-
-            showTypingIndicator() {
-                this.isLoading = true;
-                const typingHtml = `
-                    <div class="typing-indicator">
-                        <div>IK AI يكتب...</div>
-                        <div class="typing-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
-                `;
-                this.elements.messagesContainer.insertAdjacentHTML('beforeend', typingHtml);
-                this.scrollToBottom();
-            }
-
-            removeTypingIndicator() {
-                this.isLoading = false;
+    window.addEventListener('resize', handleResize);
+    handleResize();
+  </script>
+</body>
+</html>
