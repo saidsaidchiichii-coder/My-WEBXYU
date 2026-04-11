@@ -1,128 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grok - AI Chat</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>444</title>
 
-  <script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0b0f19;
+color:white;
+display:flex;
+height:100vh;
+}
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+.sidebar{
+width:250px;
+background:#111827;
+padding:20px;
+}
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            inter: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.3s ease-out forwards',
-            'scale-in': 'scaleIn 0.3s ease-out forwards',
-          },
-          keyframes: {
-            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-            scaleIn: { '0%': { transform: 'scale(0.98)' }, '100%': { transform: 'scale(1)' } }
-          }
-        }
-      }
-    }
-  </script>
+.chat{
+flex:1;
+display:flex;
+flex-direction:column;
+}
 
-  <style>
-    body { font-family: 'Inter', sans-serif; }
+.messages{
+flex:1;
+overflow-y:auto;
+padding:20px;
+}
 
-    .glow-border {
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.1),
-                  0 0 0 4px rgba(255,255,255,0.05);
-    }
-  </style>
+.msg{
+margin:5px 0;
+padding:10px;
+border-radius:10px;
+max-width:70%;
+word-wrap:break-word;
+white-space:pre-wrap;
+}
+
+.user{
+background:#22c55e;
+color:black;
+margin-left:auto;
+}
+
+.ai{
+background:#1f2937;
+}
+
+.input{
+display:flex;
+padding:10px;
+background:#111827;
+}
+
+input{
+flex:1;
+padding:10px;
+border:none;
+border-radius:8px;
+outline:none;
+}
+
+button{
+margin-left:10px;
+padding:10px;
+background:#22c55e;
+border:none;
+cursor:pointer;
+}
+
+button:disabled{
+opacity:0.6;
+cursor:not-allowed;
+}
+</style>
+
 </head>
 
-<body class="bg-black text-white min-h-screen overflow-hidden">
+<body>
 
-<!-- NAV -->
-<nav class="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between h-16 backdrop-blur-sm">
-  <div class="text-white font-bold">ILYASS AGENT </div>
+<div class="sidebar">
+<h3>IDK AI 🚀</h3>
+</div>
 
-  <div class="flex items-center space-x-3">
-    <button class="text-gray-400">Imagine</button>
-    <button class="px-4 py-2 border border-white/20 rounded-full">Sign in</button>
-    <button class="px-4 py-2 bg-white text-black rounded-full">Sign up</button>
-  </div>
-</nav>
+<div class="chat">
 
-<!-- MAIN -->
-<main class="flex flex-col min-h-screen pt-24 items-center">
+<div class="messages" id="messages">
+<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
+</div>
 
-  <h1 class="text-5xl mb-10">ILYASS X</h1>
+<div class="input">
+<input id="input" placeholder="Type your message..."
+onkeydown="if(event.key==='Enter') send()" />
+<button id="btn" onclick="send()">Send</button>
+</div>
 
-  <!-- CHAT BOX -->
-  <div id="chatContainer" class="w-full max-w-2xl space-y-4 mb-6"></div>
-
-  <!-- INPUT -->
-  <div id="inputBox"
-       class="w-full max-w-2xl flex items-center bg-[#111] border border-white/10 rounded-3xl px-4 py-3">
-
-    <input id="messageInput"
-           type="text"
-           placeholder="What's on your mind?"
-           class="flex-1 bg-transparent outline-none text-white px-2" />
-
-    <button id="sendBtn"
-            class="w-11 h-11 bg-white text-black rounded-2xl ml-2">
-      ➤
-    </button>
-  </div>
-
-</main>
+</div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
 
-  const input = document.getElementById("messageInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const chat = document.getElementById("chatContainer");
-  const inputBox = document.getElementById("inputBox");
+function addMessage(text,type){
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  div.innerText = text;
 
-  function addMessage(text) {
-    const msg = document.createElement("div");
-    msg.className = "p-3 bg-white/10 rounded-xl text-white";
-    msg.textContent = text;
-    chat.appendChild(msg);
+  const box = document.getElementById("messages");
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function setLoading(state){
+  document.getElementById("btn").disabled = state;
+  document.getElementById("btn").innerText = state ? "..." : "Send";
+}
+
+async function send(){
+
+  const input = document.getElementById("input");
+  const text = input.value.trim();
+  if(!text) return;
+
+  addMessage(text,"user");
+  input.value="";
+
+  setLoading(true);
+
+  try{
+
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
+    });
+
+    // 🔥 SAFE JSON HANDLING (no crash)
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      const txt = await res.text();
+      throw new Error(txt);
+    }
+
+    if(!res.ok){
+      throw new Error(data.error || "Server error");
+    }
+
+    addMessage(data.reply || "No response","ai");
+
+  }catch(err){
+    addMessage("❌ ERROR:\n" + err.message,"ai");
   }
 
-  function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
+  setLoading(false);
+}
 
-    addMessage("You: " + text);
-    input.value = "";
-
-    // demo bot reply
-    setTimeout(() => {
-      addMessage("AI: I received -> " + text);
-    }, 500);
-  }
-
-  // CLICK SEND
-  sendBtn.addEventListener("click", sendMessage);
-
-  // ENTER KEY
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendMessage();
-  });
-
-  // focus effect
-  input.addEventListener("focus", () => {
-    inputBox.classList.add("glow-border");
-  });
-
-  input.addEventListener("blur", () => {
-    if (!input.value) inputBox.classList.remove("glow-border");
-  });
-
-});
 </script>
 
 </body>
