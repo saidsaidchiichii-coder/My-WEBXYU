@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Login Working</title>
+<title>AI AUTH SYSTEM</title>
 
 <style>
 *{
@@ -36,10 +36,19 @@ body{
   padding:40px;
 }
 
+/* RIGHT VISUAL */
+.right{
+  width:50%;
+  background:radial-gradient(circle at top,#1a237e,#000);
+  position:relative;
+}
+
+/* TITLE */
 h1{
   margin-bottom:15px;
 }
 
+/* INPUT */
 input{
   width:100%;
   max-width:320px;
@@ -75,8 +84,16 @@ input:focus{
 }
 
 .black{background:#000;color:white;}
-.light{background:#1f2937;color:white;}
-.login-btn{background:#22c55e;color:black;}
+.green{background:#22c55e;color:black;}
+.google{background:#fff;color:black;}
+
+/* FORM 2 SWITCH */
+.switch{
+  margin-top:10px;
+  font-size:13px;
+  opacity:0.7;
+  cursor:pointer;
+}
 
 .error{
   color:red;
@@ -84,14 +101,8 @@ input:focus{
   margin-top:5px;
 }
 
-/* RIGHT */
-.right{
-  width:50%;
-  background:radial-gradient(circle at top,#1a237e,#000);
-  position:relative;
-}
-
-.screen{
+/* APP */
+.app{
   display:none;
   height:100vh;
   justify-content:center;
@@ -110,17 +121,28 @@ input:focus{
 
     <h1>Login</h1>
 
-    <button class="btn black" onclick="fakeLogin('x')">Login with X</button>
-    <button class="btn light" onclick="fakeLogin('google')">Login with Google</button>
-    <button class="btn light" onclick="fakeLogin('apple')">Login with Apple</button>
+    <!-- SOCIAL LOGIN -->
+    <button class="btn black" onclick="loginWithGoogle()">
+      Login with Google
+    </button>
 
-    <div style="margin:10px 0;opacity:0.6">OR</div>
+    <div style="margin:10px 0;opacity:0.5">OR</div>
 
+    <!-- FORM 2 -->
     <input id="email" placeholder="Email"/>
     <input id="password" type="password" placeholder="Password"/>
 
-    <button class="btn login-btn" onclick="login()">LOGIN</button>
-    <button class="btn light" onclick="signup()">SIGN UP</button>
+    <button class="btn green" onclick="loginEmail()">
+      LOGIN
+    </button>
+
+    <button class="btn black" onclick="signupEmail()">
+      SIGN UP
+    </button>
+
+    <div class="switch" onclick="alert('Forgot password flow (add later)')">
+      Forgot password?
+    </div>
 
     <div class="error" id="error"></div>
 
@@ -131,55 +153,93 @@ input:focus{
 </div>
 
 <!-- APP PAGE -->
-<div class="screen" id="app">
-  <h1>✅ Welcome to AI APP</h1>
+<div class="app" id="app">
+  <h1>✅ Logged in successfully</h1>
   <button class="btn black" onclick="logout()">Logout</button>
 </div>
 
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
 <script>
 
+const client = supabase.createClient(
+  "https://ypqkmuflothekoaxwupn.supabase.co",
+  "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8"
+);
+
+/* ERROR */
 function showError(msg){
   document.getElementById("error").innerText = msg;
 }
 
-/* LOGIN */
-function login(){
+/* ================= GOOGLE LOGIN ================= */
+async function loginWithGoogle(){
+  const { error } = await client.auth.signInWithOAuth({
+    provider: 'google',
+    options:{
+      redirectTo: window.location.origin
+    }
+  });
+
+  if(error){
+    showError(error.message);
+  }
+}
+
+/* ================= EMAIL LOGIN ================= */
+async function loginEmail(){
   const email = document.getElementById("email").value;
   const pass = document.getElementById("password").value;
 
   if(!email || !pass){
-    showError("❌ Email and password required");
+    showError("Fill all fields");
     return;
   }
 
-  // fake success login
-  showError("");
+  const { data, error } = await client.auth.signInWithPassword({
+    email,
+    password: pass
+  });
 
-  document.getElementById("loginPage").style.display = "none";
-  document.getElementById("app").style.display = "flex";
+  if(error){
+    showError(error.message);
+    return;
+  }
+
+  goApp();
 }
 
-/* SIGNUP */
-function signup(){
+/* ================= SIGNUP ================= */
+async function signupEmail(){
   const email = document.getElementById("email").value;
   const pass = document.getElementById("password").value;
 
   if(!email || !pass){
-    showError("❌ Fill all fields to sign up");
+    showError("Fill all fields");
     return;
   }
 
-  showError("📩 Account created (fake) - now login");
+  const { error } = await client.auth.signUp({
+    email,
+    password: pass
+  });
+
+  if(error){
+    showError(error.message);
+    return;
+  }
+
+  alert("📩 Check email to confirm account");
 }
 
-/* SOCIAL LOGIN */
-function fakeLogin(type){
-  alert("Login with " + type + " (demo)");
+/* ================= APP ================= */
+function goApp(){
   document.getElementById("loginPage").style.display = "none";
   document.getElementById("app").style.display = "flex";
 }
 
-/* LOGOUT */
+/* ================= LOGOUT ================= */
 function logout(){
   location.reload();
 }
