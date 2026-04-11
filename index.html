@@ -13,6 +13,49 @@
   font-family: Inter, Arial;
 }
 
+  /* 🌈 RGB BORDER ANIMATION */
+.loginBox{
+  position:relative;
+  z-index:1;
+  overflow:hidden;
+}
+
+/* moving RGB glow */
+.loginBox::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:linear-gradient(
+    90deg,
+    #ff004c,
+    #00f5ff,
+    #7cff00,
+    #ff00e5,
+    #ff004c
+  );
+  background-size:300% 300%;
+  animation:rgbMove 4s linear infinite;
+  z-index:-1;
+  filter:blur(10px);
+  opacity:0.8;
+}
+
+/* inner dark layer */
+.loginBox::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  background:#111;
+  border-radius:16px;
+  z-index:-1;
+}
+
+/* animation */
+@keyframes rgbMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
 body{
   background:#0f0f0f;
   color:white;
