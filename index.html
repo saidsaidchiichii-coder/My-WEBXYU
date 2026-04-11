@@ -191,34 +191,25 @@ let data;
 if(contentType && contentType.includes("application/json")){
 data = await res.json();
 }else{
-const errText = await res.text();
-throw new Error(errText);
+throw new Error(await res.text());
 }
 
 let reply = "No response";
 
-// ✅ FIX: safe response handling (NO [object Object])
-if (data.choices && data.choices[0]) {
-  reply = data.choices[0].message.content;
+// ✅ FIX HERE (IMPORTANT)
+if (data.reply) {
+  reply = data.reply;
 }
 else if (data.error) {
   reply = typeof data.error === "string"
     ? data.error
     : JSON.stringify(data.error, null, 2);
 }
-else {
-  reply = typeof data === "string"
-    ? data
-    : JSON.stringify(data, null, 2);
-}
 
 addMessage(reply,"ai");
 
 }catch(err){
-addMessage(
-err?.message ? err.message : JSON.stringify(err),
-"ai"
-);
+addMessage(err?.message || "Error", "ai");
 }
 
 setLoading(false);
