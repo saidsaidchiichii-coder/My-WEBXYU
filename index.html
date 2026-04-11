@@ -3,243 +3,163 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ilyass AI Clone</title>
+<title>444</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Arial, sans-serif;
-}
-
 body{
-  background:#000;
-  color:white;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
+margin:0;
+font-family:Arial;
+background:#0b0f19;
+color:white;
+display:flex;
+height:100vh;
 }
 
-/* NAV */
-.nav{
-  height:60px;
-  display:flex;
-  align-items:center;
-  padding:0 24px;
-  font-weight:700;
+.sidebar{
+width:250px;
+background:#111827;
+padding:20px;
 }
 
-/* CHAT */
-.chat-box{
-  flex:1;
-  overflow-y:auto;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
+.chat{
+flex:1;
+display:flex;
+flex-direction:column;
 }
 
-/* CENTER */
-.center{
-  position:absolute;
-  top:60px;
-  bottom:80px;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-  transition:0.3s;
+.messages{
+flex:1;
+overflow-y:auto;
+padding:20px;
 }
 
-.title{
-  font-size:48px;
-  margin-bottom:30px;
-}
-
-/* INPUT */
-.input-area{
-  height:80px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:10px;
-  border-top:1px solid #111;
-}
-
-.input-box{
-  width:700px;
-  max-width:95%;
-  height:55px;
-  background:#111;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  padding:0 14px;
-}
-
-.input-box input{
-  flex:1;
-  background:transparent;
-  border:none;
-  outline:none;
-  color:white;
-  font-size:16px;
-}
-
-.send{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  background:white;
-  color:black;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-}
-
-/* MESSAGES */
 .msg{
-  max-width:70%;
-  padding:12px 16px;
-  border-radius:12px;
-  white-space:pre-wrap;
-  animation:fadeUp 0.2s ease;
-}
-
-@keyframes fadeUp{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
+margin:5px 0;
+padding:10px;
+border-radius:10px;
+max-width:70%;
+word-wrap:break-word;
+white-space:pre-wrap;
 }
 
 .user{
-  background:#22c55e;
-  color:black;
-  align-self:flex-end;
+background:#22c55e;
+color:black;
+margin-left:auto;
 }
 
 .ai{
-  background:#111827;
-  color:#e5e7eb;
+background:#1f2937;
 }
 
-/* FOOTER */
-.footer{
-  text-align:center;
-  font-size:12px;
-  color:#666;
-  padding:5px;
+.input{
+display:flex;
+padding:10px;
+background:#111827;
+}
+
+input{
+flex:1;
+padding:10px;
+border:none;
+border-radius:8px;
+outline:none;
+}
+
+button{
+margin-left:10px;
+padding:10px;
+background:#22c55e;
+border:none;
+cursor:pointer;
+}
+
+button:disabled{
+opacity:0.6;
+cursor:not-allowed;
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="nav">◆ ILYASS AI AGENT</div>
-
-<div class="chat-box" id="messages"></div>
-
-<!-- CENTER SCREEN -->
-<div class="center" id="centerBox">
-  <div class="title">ILYASS AI AGENT</div>
+<div class="sidebar">
+<h3>IDK AI 🚀</h3>
 </div>
 
-<!-- INPUT -->
-<div class="input-area">
-  <div class="input-box">
-    <input id="input" placeholder="What's on your mind?" />
-    <div class="send" id="sendBtn">➤</div>
-  </div>
+<div class="chat">
+
+<div class="messages" id="messages">
+<div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
 </div>
 
-<div class="footer">
-  Contact: saidsaidchiichii@gmail.com
+<div class="input">
+<input id="input" placeholder="Type your message..."
+onkeydown="if(event.key==='Enter') send()" />
+<button id="btn" onclick="send()">Send</button>
+</div>
+
 </div>
 
 <script>
 
-const input = document.getElementById("input");
-const sendBtn = document.getElementById("sendBtn");
-const box = document.getElementById("messages");
-const center = document.getElementById("centerBox");
-
-let loading = false;
-let started = false;
-
-/* ENTER */
-input.addEventListener("keydown",(e)=>{
-  if(e.key === "Enter") send();
-});
-
-sendBtn.addEventListener("click", send);
-
-/* USER MSG */
 function addMessage(text,type){
   const div = document.createElement("div");
   div.className = "msg " + type;
   div.innerText = text;
 
+  const box = document.getElementById("messages");
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
 
-/* AI TYPING */
-function typeMessage(text){
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  box.appendChild(div);
-
-  let i = 0;
-  function typing(){
-    if(i < text.length){
-      div.innerText += text[i];
-      i++;
-      box.scrollTop = box.scrollHeight;
-      setTimeout(typing, 10);
-    }
-  }
-  typing();
+function setLoading(state){
+  document.getElementById("btn").disabled = state;
+  document.getElementById("btn").innerText = state ? "..." : "Send";
 }
 
-/* SEND (GROQ CONNECTED) */
 async function send(){
-  if(loading) return;
 
+  const input = document.getElementById("input");
   const text = input.value.trim();
   if(!text) return;
 
-  if(!started){
-    center.style.opacity = "0";
-    setTimeout(()=> center.style.display="none",300);
-    started = true;
-  }
-
   addMessage(text,"user");
   input.value="";
-  loading = true;
-  sendBtn.innerText="...";
+
+  setLoading(true);
 
   try{
 
-    const res = await fetch("http://localhost:3000/chat", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ message:text })
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: text })
     });
 
-    const data = await res.json();
+    // 🔥 SAFE JSON HANDLING (no crash)
+    let data;
+    try {
+      data = await res.json();
+    } catch (e) {
+      const txt = await res.text();
+      throw new Error(txt);
+    }
 
-    typeMessage(data.reply || "No response");
+    if(!res.ok){
+      throw new Error(data.error || "Server error");
+    }
+
+    addMessage(data.reply || "No response","ai");
 
   }catch(err){
-    addMessage("❌ ERROR: " + err.message,"ai");
+    addMessage("❌ ERROR:\n" + err.message,"ai");
   }
 
-  loading = false;
-  sendBtn.innerText="➤";
+  setLoading(false);
 }
 
 </script>
