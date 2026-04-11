@@ -22,7 +22,6 @@ height:100vh;
 display:flex;
 }
 
-/* SIDEBAR */
 .sidebar{
 width:260px;
 background:#0f172a;
@@ -46,13 +45,8 @@ border:1px solid rgba(255,255,255,0.1);
 border-radius:10px;
 cursor:pointer;
 text-align:center;
-transition:.3s;
-}
-.new-chat:hover{
-background:#1f2937;
 }
 
-/* CHAT AREA */
 .chat-area{
 flex:1;
 display:flex;
@@ -60,14 +54,12 @@ flex-direction:column;
 height:100vh;
 }
 
-/* TOP BAR */
 .topbar{
 padding:15px;
 border-bottom:1px solid rgba(255,255,255,0.08);
 background:#0f172a;
 }
 
-/* MESSAGES */
 .messages{
 flex:1;
 padding:20px;
@@ -79,9 +71,8 @@ gap:10px;
 
 .msg{
 max-width:70%;
-padding:12px 15px;
+padding:12px;
 border-radius:12px;
-line-height:1.4;
 }
 
 .user{
@@ -92,62 +83,45 @@ align-self:flex-end;
 
 .ai{
 background:#111827;
-border:1px solid rgba(255,255,255,0.1);
 align-self:flex-start;
 }
 
-/* INPUT */
 .input-box{
 display:flex;
 padding:15px;
-border-top:1px solid rgba(255,255,255,0.08);
 background:#0f172a;
 }
 
 input{
 flex:1;
 padding:12px;
-border-radius:10px;
 border:none;
-outline:none;
 background:#111827;
 color:#fff;
+border-radius:10px;
 }
 
 button{
 margin-left:10px;
-padding:12px 18px;
+padding:12px;
+background:#00ff9c;
 border:none;
 border-radius:10px;
-background:#00ff9c;
 cursor:pointer;
-font-weight:bold;
-}
-button:hover{
-transform:scale(1.05);
 }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
 <div class="logo">AI AGENT SYSTEM</div>
-
 <div class="new-chat">+ New Chat</div>
-
-<p style="opacity:0.5;font-size:12px;margin-top:10px">
-Chat UI like ChatGPT
-</p>
 </div>
 
-<!-- CHAT -->
 <div class="chat-area">
 
-<div class="topbar">
-AI Assistant
-</div>
+<div class="topbar">AI Assistant</div>
 
 <div class="messages" id="messages">
 <div class="msg ai">Hello 👋 كيف نعاونك اليوم؟</div>
@@ -162,9 +136,6 @@ AI Assistant
 
 <script>
 
-const OPENAI_API_KEY = "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"; 
-// 👈 هنا دير API ديالك
-
 async function send(){
 
 const input = document.getElementById("input");
@@ -176,23 +147,23 @@ input.value="";
 
 try{
 
-const res = await fetch("https://api.openai.com/v1/chat/completions",{
+const res = await fetch("/api/chat",{
 method:"POST",
 headers:{
-"Content-Type":"application/json",
-"Authorization":`Bearer ${OPENAI_API_KEY}`
+"Content-Type":"application/json"
 },
-body:JSON.stringify({
-model:"gpt-4o-mini",
-messages:[
-{role:"system",content:"You are a helpful assistant."},
-{role:"user",content:text}
-]
-})
+body:JSON.stringify({ message: text })
 });
 
 const data = await res.json();
-const reply = data.choices[0].message.content;
+
+let reply = "Error";
+
+if(data.choices && data.choices[0]){
+  reply = data.choices[0].message.content;
+}else if(data.error){
+  reply = "Error: " + data.error;
+}
 
 addMessage(reply,"ai");
 
@@ -203,15 +174,14 @@ addMessage("Error: "+err.message,"ai");
 }
 
 function addMessage(text,type){
-
 const div = document.createElement("div");
 div.className = "msg " + type;
 div.innerText = text;
 
 document.getElementById("messages").appendChild(div);
 document.getElementById("messages").scrollTop = 999999;
-
 }
+
 </script>
 
 </body>
