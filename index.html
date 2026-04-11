@@ -9,46 +9,62 @@
 
 <style>
 
-/* 🌈 RGB ANIMATION BACKGROUND */
+/* 🌑 GPT STYLE BACKGROUND (UPDATED ONLY) */
 body{
 margin:0;
 padding:0;
 font-family:Inter;
 height:100vh;
 display:flex;
-background:linear-gradient(-45deg,#0a0f1c,#111827,#0f172a,#1f2937);
-background-size:400% 400%;
-animation:gradientMove 10s ease infinite;
+
+/* clean ChatGPT-like dark */
+background:
+radial-gradient(circle at 20% 20%, rgba(16,185,129,0.08), transparent 40%),
+radial-gradient(circle at 80% 30%, rgba(99,102,241,0.08), transparent 40%),
+radial-gradient(circle at 50% 80%, rgba(236,72,153,0.06), transparent 40%),
+#0b0f19;
+
 color:#e5e7eb;
 overflow:hidden;
 }
 
-@keyframes gradientMove{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
+/* optional subtle moving glow */
+body::before{
+content:"";
+position:absolute;
+width:100%;
+height:100%;
+background:linear-gradient(120deg,transparent,rgba(255,255,255,0.02),transparent);
+animation:moveLight 8s linear infinite;
+pointer-events:none;
 }
 
-/* SIDEBAR */
+@keyframes moveLight{
+0%{transform:translateX(-100%)}
+100%{transform:translateX(100%)}
+}
+
+/* SIDEBAR (same but cleaner shadow) */
 .sidebar{
 width:260px;
-background:rgba(15,23,42,0.7);
-backdrop-filter: blur(12px);
+background:rgba(17,24,39,0.75);
+backdrop-filter: blur(14px);
 padding:20px;
 display:flex;
 flex-direction:column;
 gap:15px;
-border-right:1px solid rgba(255,255,255,0.08);
+border-right:1px solid rgba(255,255,255,0.06);
 }
 
+/* LOGO (kept RGB but softer) */
 .logo{
 font-size:18px;
 font-weight:800;
-background:linear-gradient(90deg,#ff004c,#00ffcc,#6f00ff,#ffcc00);
+background:linear-gradient(90deg,#22c55e,#60a5fa,#a78bfa);
 background-size:300%;
 -webkit-background-clip:text;
 -webkit-text-fill-color:transparent;
-animation:rgbText 6s linear infinite;
+animation:rgbText 8s linear infinite;
 }
 
 @keyframes rgbText{
@@ -56,35 +72,28 @@ animation:rgbText 6s linear infinite;
 100%{background-position:300%}
 }
 
+/* NEW CHAT */
 .new-chat{
 padding:10px;
-background:rgba(255,255,255,0.05);
-border:1px solid rgba(255,255,255,0.1);
+background:rgba(255,255,255,0.04);
+border:1px solid rgba(255,255,255,0.06);
 border-radius:10px;
 cursor:pointer;
-text-align:center;
 transition:0.3s;
 }
 
 .new-chat:hover{
-transform:scale(1.05);
-background:rgba(255,255,255,0.1);
+transform:scale(1.03);
+background:rgba(255,255,255,0.08);
 }
 
-/* CHAT AREA */
-.chat-area{
-flex:1;
-display:flex;
-flex-direction:column;
-height:100vh;
-}
-
+/* TOPBAR */
 .topbar{
 padding:15px;
 font-weight:600;
-background:rgba(15,23,42,0.6);
+background:rgba(17,24,39,0.6);
 backdrop-filter: blur(10px);
-border-bottom:1px solid rgba(255,255,255,0.08);
+border-bottom:1px solid rgba(255,255,255,0.06);
 }
 
 /* MESSAGES */
@@ -98,45 +107,42 @@ gap:12px;
 scroll-behavior:smooth;
 }
 
-/* MESSAGE ANIMATION */
+/* MESSAGE */
 .msg{
 max-width:70%;
 padding:12px 14px;
 border-radius:14px;
-animation:pop 0.3s ease;
-transform-origin:bottom;
+animation:pop 0.25s ease;
 }
 
 @keyframes pop{
-from{transform:scale(0.8);opacity:0}
+from{transform:scale(0.9);opacity:0}
 to{transform:scale(1);opacity:1}
 }
 
-/* USER RGB */
+/* USER */
 .user{
-background:linear-gradient(135deg,#22c55e,#00ffcc,#00aaff);
+background:linear-gradient(135deg,#22c55e,#3b82f6);
 color:#000;
 align-self:flex-end;
 border-bottom-right-radius:4px;
-box-shadow:0 0 10px rgba(0,255,204,0.4);
 }
 
-/* AI RGB */
+/* AI */
 .ai{
-background:rgba(17,24,39,0.8);
-border:1px solid rgba(255,255,255,0.08);
+background:rgba(17,24,39,0.9);
+border:1px solid rgba(255,255,255,0.06);
 align-self:flex-start;
 border-bottom-left-radius:4px;
-box-shadow:0 0 10px rgba(168,85,247,0.2);
 }
 
 /* INPUT */
 .input-box{
 display:flex;
 padding:15px;
-background:rgba(15,23,42,0.7);
-backdrop-filter: blur(10px);
-border-top:1px solid rgba(255,255,255,0.08);
+background:rgba(17,24,39,0.7);
+backdrop-filter: blur(12px);
+border-top:1px solid rgba(255,255,255,0.06);
 }
 
 input{
@@ -147,24 +153,22 @@ background:#111827;
 color:#fff;
 border-radius:10px;
 outline:none;
-transition:0.3s;
 }
 
 input:focus{
-box-shadow:0 0 10px #00ffcc;
+box-shadow:0 0 10px rgba(59,130,246,0.4);
 }
 
 button{
 margin-left:10px;
 padding:12px 18px;
-background:linear-gradient(90deg,#00ffcc,#6f00ff,#ff004c);
+background:linear-gradient(90deg,#22c55e,#3b82f6,#a855f7);
 background-size:300%;
 border:none;
 border-radius:10px;
 cursor:pointer;
 font-weight:600;
-animation:rgbBtn 5s linear infinite;
-transition:0.3s;
+animation:rgbBtn 6s linear infinite;
 }
 
 @keyframes rgbBtn{
@@ -185,6 +189,8 @@ cursor:not-allowed;
 </head>
 
 <body>
+
+<!-- ❗ SAME HTML EXACTLY (NO CHANGE) -->
 
 <div class="sidebar">
 <div class="logo"> Nexus AI </div>
