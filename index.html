@@ -33,7 +33,6 @@ body{
 .logo{
   font-size:18px;
   font-weight:bold;
-  color:#fff;
 }
 
 .newchat{
@@ -41,23 +40,15 @@ body{
   background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
-  text-align:center;
-  transition:0.2s;
 }
 
-.newchat:hover{
-  transform:scale(1.05);
-  background:#222;
-}
-
-/* CHAT AREA */
+/* CHAT */
 .chat{
   flex:1;
   display:flex;
   flex-direction:column;
 }
 
-/* MESSAGES */
 .messages{
   flex:1;
   padding:20px;
@@ -67,18 +58,11 @@ body{
   gap:10px;
 }
 
-/* MESSAGE BUBBLES */
 .msg{
   max-width:70%;
   padding:12px 14px;
   border-radius:14px;
   white-space:pre-wrap;
-  animation:fade 0.2s ease;
-}
-
-@keyframes fade{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
 }
 
 .user{
@@ -90,7 +74,6 @@ body{
 .ai{
   align-self:flex-start;
   background:#1f1f1f;
-  color:#e5e5e5;
 }
 
 /* INPUT */
@@ -106,7 +89,6 @@ input{
   padding:12px;
   border:none;
   border-radius:10px;
-  outline:none;
   background:#1a1a1a;
   color:white;
 }
@@ -118,22 +100,90 @@ button{
   border-radius:10px;
   background:#22c55e;
   cursor:pointer;
+}
+
+/* ================= LOGIN OVERLAY ================= */
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.loginBox{
+  width:320px;
+  background:#111;
+  padding:25px;
+  border-radius:16px;
+  text-align:center;
+  box-shadow:0 0 30px rgba(34,197,94,0.2);
+}
+
+.loginBox h2{
+  margin-bottom:5px;
+}
+
+.loginBox p{
+  opacity:0.7;
+  font-size:13px;
+  margin-bottom:15px;
+}
+
+.loginBox input{
+  width:100%;
+  margin:6px 0;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
   font-weight:bold;
-  transition:0.2s;
 }
 
-button:hover{
-  transform:scale(1.05);
+.loginBox .ghost{
+  background:#222;
+  color:white;
 }
 
-button:disabled{
-  opacity:0.6;
+.error{
+  color:red;
+  font-size:12px;
+  margin-top:8px;
 }
 </style>
 
 </head>
 
 <body>
+
+<!-- ================= LOGIN OVERLAY ================= -->
+<div class="overlay" id="loginOverlay">
+  <div class="loginBox">
+    <h2>Welcome</h2>
+    <p>Login to continue</p>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+    <button class="ghost" onclick="signup()">Sign Up</button>
+
+    <p id="error" class="error"></p>
+  </div>
+</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -158,6 +208,39 @@ button:disabled{
 
 <script>
 
+let loggedIn = false;
+
+/* DISABLE CHAT BEFORE LOGIN */
+document.querySelector(".chat").style.filter = "blur(8px)";
+
+/* LOGIN */
+function login(){
+
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
+
+  if(!email || !pass){
+    document.getElementById("error").innerText = "Fill all fields";
+    return;
+  }
+
+  if(pass.length < 3){
+    document.getElementById("error").innerText = "Wrong password";
+    return;
+  }
+
+  document.getElementById("loginOverlay").style.display = "none";
+  document.querySelector(".chat").style.filter = "none";
+
+  loggedIn = true;
+}
+
+/* SIGNUP (DEMO) */
+function signup(){
+  alert("Signup success (demo)");
+}
+
+/* CHAT */
 function addMessage(text,type){
   const div = document.createElement("div");
   div.className = "msg " + type;
@@ -174,8 +257,10 @@ function setLoading(state){
   btn.innerText = state ? "..." : "Send";
 }
 
-/* 🔥 YOUR ORIGINAL LOGIC (UNCHANGED) */
+/* YOUR AI LOGIC (UNCHANGED) */
 async function send(){
+
+  if(!loggedIn) return;
 
   const input = document.getElementById("input");
   const text = input.value.trim();
