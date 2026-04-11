@@ -3,135 +3,81 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Chat Pro</title>
+<title>AI Chat</title>
 
 <style>
-:root{
-  --bg:#0f0f0f;
-  --panel:#111;
-  --panel2:#1a1a1a;
-  --text:#fff;
-  --ai:#1f1f1f;
-  --user:#22c55e;
-}
-
-/* LIGHT MODE */
-.light{
-  --bg:#f5f5f5;
-  --panel:#ffffff;
-  --panel2:#e9e9e9;
-  --text:#000;
-  --ai:#eaeaea;
-  --user:#16a34a;
-}
-
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:Inter, Arial;
+  font-family: Inter, Arial;
 }
 
 body{
-  background:var(--bg);
-  color:var(--text);
+  background:#0f0f0f;
+  color:white;
   height:100vh;
   display:flex;
-  overflow:hidden;
 }
 
 /* SIDEBAR */
 .sidebar{
-  width:280px;
-  background:var(--panel);
+  width:260px;
+  background:#111;
+  padding:20px;
   display:flex;
   flex-direction:column;
-  padding:15px;
   gap:12px;
 }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.logo{
+  font-size:18px;
   font-weight:bold;
 }
 
 .newchat{
   padding:10px;
+  background:#1a1a1a;
   border-radius:10px;
-  background:var(--panel2);
   cursor:pointer;
-  text-align:center;
-  transition:0.2s;
 }
-.newchat:hover{transform:scale(1.03);}
 
 /* SEARCH */
 .search{
   padding:10px;
   border:none;
   border-radius:10px;
-  background:var(--panel2);
-  color:var(--text);
+  background:#1a1a1a;
+  color:white;
   outline:none;
 }
 
-/* CHATS LIST */
+/* CHAT LIST */
 .chatlist{
   flex:1;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:6px;
 }
 
 .chatitem{
-  padding:10px;
+  padding:8px;
   border-radius:8px;
-  background:transparent;
   cursor:pointer;
+  background:transparent;
 }
 .chatitem:hover{
-  background:var(--panel2);
+  background:#1a1a1a;
 }
 
-/* PROFILE */
-.profile{
-  padding:10px;
-  background:var(--panel2);
-  border-radius:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:13px;
-}
-
-/* MAIN */
-.main{
+/* CHAT */
+.chat{
   flex:1;
   display:flex;
   flex-direction:column;
 }
 
-/* TOP BAR */
-.top{
-  height:60px;
-  background:var(--panel);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 15px;
-}
-
-.toggle{
-  cursor:pointer;
-  padding:8px 12px;
-  border-radius:8px;
-  background:var(--panel2);
-}
-
-/* CHAT BOX */
 .messages{
   flex:1;
   padding:20px;
@@ -143,58 +89,50 @@ body{
 
 /* MSG */
 .msg{
-  max-width:65%;
-  padding:12px;
-  border-radius:12px;
+  max-width:70%;
+  padding:12px 14px;
+  border-radius:14px;
   white-space:pre-wrap;
-  animation:fade .2s ease;
-}
-
-@keyframes fade{
-  from{opacity:0;transform:translateY(10px);}
-  to{opacity:1;transform:translateY(0);}
 }
 
 .user{
   align-self:flex-end;
-  background:var(--user);
+  background:#22c55e;
   color:black;
 }
 
 .ai{
   align-self:flex-start;
-  background:var(--ai);
+  background:#1f1f1f;
 }
 
 /* INPUT */
-.inputbar{
+.input{
   display:flex;
-  padding:12px;
-  background:var(--panel);
+  padding:15px;
+  background:#111;
   border-top:1px solid #222;
 }
 
-.inputbar input{
+input{
   flex:1;
   padding:12px;
   border:none;
   border-radius:10px;
-  background:var(--panel2);
-  color:var(--text);
-  outline:none;
+  background:#1a1a1a;
+  color:white;
 }
 
-.inputbar button{
+button{
   margin-left:10px;
-  padding:12px 16px;
+  padding:12px 18px;
   border:none;
   border-radius:10px;
-  background:var(--user);
+  background:#22c55e;
   cursor:pointer;
-  font-weight:bold;
 }
 
-/* OVERLAY LOGIN */
+/* LOGIN */
 .overlay{
   position:fixed;
   inset:0;
@@ -204,180 +142,175 @@ body{
   align-items:center;
 }
 
-.login{
+.loginBox{
   width:320px;
-  background:var(--panel);
+  background:#111;
   padding:20px;
   border-radius:14px;
 }
 
-.login input{
+.loginBox input{
   width:100%;
   margin:6px 0;
   padding:10px;
   border-radius:8px;
   border:none;
-  background:var(--panel2);
-  color:var(--text);
+  background:#1a1a1a;
+  color:white;
 }
 
-.login button{
+.loginBox button{
   width:100%;
-  margin-top:10px;
   padding:10px;
+  margin-top:10px;
   border:none;
   border-radius:8px;
-  background:var(--user);
-  cursor:pointer;
-}
-
-.small{
-  font-size:12px;
-  opacity:0.7;
+  background:#22c55e;
 }
 </style>
+
 </head>
 
 <body>
 
 <!-- LOGIN -->
 <div class="overlay" id="login">
-  <div class="login">
+  <div class="loginBox">
     <h3>Login</h3>
-    <p class="small">AI Chat System</p>
-
     <input id="email" placeholder="Email">
     <input id="pass" type="password" placeholder="Password">
-
-    <button onclick="login()">Login</button>
+    <button onclick="login()">Enter</button>
   </div>
 </div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-
-  <div class="topbar">
-    <div>AI CHAT</div>
-  </div>
+  <div class="logo">◆ AI CHAT</div>
 
   <div class="newchat" onclick="newChat()">+ New Chat</div>
 
   <input class="search" placeholder="Search chats..." oninput="searchChats(this.value)">
 
   <div class="chatlist" id="chatlist"></div>
-
-  <div class="profile">
-    <div>👤 Free User</div>
-    <div class="toggle" onclick="toggleTheme()">Theme</div>
-  </div>
-
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- CHAT -->
+<div class="chat">
 
-  <div class="top">
-    <div>Chat</div>
+  <div class="messages" id="messages">
+    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
   </div>
 
-  <div class="messages" id="box"></div>
-
-  <div class="inputbar">
-    <input id="input" placeholder="Message..." onkeydown="if(event.key==='Enter')send()">
-    <button onclick="send()">Send</button>
+  <div class="input">
+    <input id="input" placeholder="Ask anything..."
+    onkeydown="if(event.key==='Enter') send()" />
+    <button id="btn" onclick="send()">Send</button>
   </div>
 
 </div>
 
 <script>
 
-let chats = [];
-let currentChat = 0;
-
 /* LOGIN */
+let loggedIn=false;
 function login(){
   document.getElementById("login").style.display="none";
+  loggedIn=true;
 }
 
-/* THEME */
-function toggleTheme(){
-  document.body.classList.toggle("light");
-}
+/* CHAT SYSTEM */
+let chats=[];
+let currentChat=0;
 
-/* NEW CHAT FIXED */
 function newChat(){
-  const id = Date.now();
-  chats.push({id, messages:[]});
-  currentChat = id;
+  const id=Date.now();
+  chats.push({id,messages:[]});
+  currentChat=id;
   renderChats();
   clearBox();
 }
 
-/* RENDER LIST */
 function renderChats(){
-  const list = document.getElementById("chatlist");
+  const list=document.getElementById("chatlist");
   list.innerHTML="";
 
   chats.forEach(c=>{
     const div=document.createElement("div");
     div.className="chatitem";
-    div.innerText="Chat " + c.id;
+    div.innerText="Chat "+c.id;
     div.onclick=()=>loadChat(c.id);
     list.appendChild(div);
   });
 }
 
-/* LOAD CHAT */
 function loadChat(id){
   currentChat=id;
-  const chat = chats.find(c=>c.id===id);
   clearBox();
 
+  let chat=chats.find(c=>c.id===id);
+  if(!chat) return;
+
   chat.messages.forEach(m=>{
-    addMsg(m.text,m.type,false);
+    addMessage(m.text,m.type,false);
   });
 }
 
-/* SEARCH */
-function searchChats(val){
-  const items=document.querySelectorAll(".chatitem");
-  items.forEach(i=>{
-    i.style.display=i.innerText.toLowerCase().includes(val.toLowerCase())
-    ? "block":"none";
+function searchChats(v){
+  document.querySelectorAll(".chatitem").forEach(i=>{
+    i.style.display=i.innerText.toLowerCase().includes(v.toLowerCase())
+    ?"block":"none";
   });
 }
 
-/* ADD MESSAGE */
-function addMsg(text,type,save=true){
+/* MESSAGE UI ONLY */
+function addMessage(text,type,save=true){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
-  document.getElementById("box").appendChild(div);
-  document.getElementById("box").scrollTop=9999;
+
+  document.getElementById("messages").appendChild(div);
+  document.getElementById("messages").scrollTop=99999;
 
   if(save){
-    let chat = chats.find(c=>c.id===currentChat);
+    let chat=chats.find(c=>c.id===currentChat);
     if(chat) chat.messages.push({text,type});
   }
 }
 
-/* CLEAR */
 function clearBox(){
-  document.getElementById("box").innerHTML="";
+  document.getElementById("messages").innerHTML="";
 }
 
-/* SEND (AI MOCK) */
-function send(){
+/* ================= YOUR ORIGINAL AI LOGIC (UNCHANGED) ================= */
+async function send(){
+
+  if(!loggedIn) return;
+
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
-  addMsg(text,"user");
+  addMessage(text,"user");
   input.value="";
 
-  setTimeout(()=>{
-    addMsg("AI: " + text,"ai");
-  },400);
+  document.getElementById("btn").innerText="...";
+
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
+
+    const data=await res.json();
+
+    addMessage(data.reply || "No response","ai");
+
+  }catch(err){
+    addMessage("❌ ERROR:\n"+err.message,"ai");
+  }
+
+  document.getElementById("btn").innerText="Send";
 }
 
 </script>
