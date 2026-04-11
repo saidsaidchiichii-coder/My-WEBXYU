@@ -3,123 +3,92 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI SYSTEM</title>
+<title>AI App</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Segoe UI;
-}
-
 body{
-  height:100vh;
+  margin:0;
+  font-family:Segoe UI;
   background:#0b0f19;
   color:white;
-  overflow:hidden;
 }
 
 /* LOGIN */
-.container{
-  display:flex;
+#loginPage{
   height:100vh;
-}
-
-.left{
-  width:50%;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  padding:40px;
-}
-
-.right{
-  width:50%;
-  background:radial-gradient(circle at top,#1a237e,#000);
+  gap:10px;
 }
 
 input{
-  width:100%;
-  max-width:320px;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#0f172a;
+  width:260px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#1a1a1a;
   color:white;
 }
 
-.btn{
-  width:100%;
-  max-width:320px;
-  padding:12px;
-  margin:6px 0;
-  border-radius:999px;
+button{
+  width:260px;
+  padding:10px;
   border:none;
+  border-radius:999px;
+  background:#22c55e;
   cursor:pointer;
+  font-weight:bold;
 }
 
-.black{background:#000;color:white;}
-.green{background:#22c55e;color:black;}
-
-/* APP (FORM 2 = AI CHAT) */
-.app{
+/* APP */
+#app{
   display:none;
   height:100vh;
   flex-direction:column;
 }
 
-.nav{
-  height:60px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 20px;
-  border-bottom:1px solid #222;
-}
-
-.chat{
+#chat{
   flex:1;
-  padding:20px;
+  padding:10px;
   overflow:auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:8px;
 }
 
-.msg{
-  max-width:70%;
-  padding:10px 14px;
-  border-radius:12px;
-}
-
+/* MSG */
 .user{
   align-self:flex-end;
   background:#22c55e;
   color:black;
+  padding:10px;
+  border-radius:10px;
+  max-width:60%;
 }
 
 .ai{
   align-self:flex-start;
-  background:#1f2937;
+  background:#1a1a1a;
+  padding:10px;
+  border-radius:10px;
+  max-width:60%;
 }
 
-.inputBar{
+/* INPUT */
+.bar{
   display:flex;
+  gap:10px;
   padding:10px;
   border-top:1px solid #222;
 }
 
-.inputBar input{
+.bar input{
   flex:1;
-  max-width:none;
 }
-
-.inputBar button{
-  width:80px;
-  margin-left:10px;
+.bar button{
+  width:100px;
 }
 </style>
 </head>
@@ -127,110 +96,85 @@ input{
 <body>
 
 <!-- LOGIN -->
-<div class="container" id="loginPage">
+<div id="loginPage">
+  <h2>LOGIN</h2>
+  <input id="email" placeholder="Email"/>
+  <input id="pass" type="password" placeholder="Password"/>
 
-  <div class="left">
-
-    <h1>Login</h1>
-
-    <input id="email" placeholder="Email"/>
-    <input id="password" type="password" placeholder="Password"/>
-
-    <button class="btn green" onclick="login()">LOGIN</button>
-    <button class="btn black" onclick="signup()">SIGN UP</button>
-
-  </div>
-
-  <div class="right"></div>
-
+  <button onclick="login()">LOGIN</button>
+  <button onclick="signup()">SIGNUP</button>
 </div>
 
-<!-- FORM 2 = AI CHAT -->
-<div class="app" id="app">
+<!-- APP -->
+<div id="app">
 
-  <div class="nav">
-    🤖 AI FORM 2
-    <button class="btn black" style="width:100px" onclick="logout()">Logout</button>
-  </div>
+  <div id="chat"></div>
 
-  <div class="chat" id="chat"></div>
-
-  <div class="inputBar">
+  <div class="bar">
     <input id="msg" placeholder="Ask AI..."/>
-    <button class="btn green" onclick="send()">➤</button>
+    <button onclick="send()">Send</button>
   </div>
 
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
 
-const client = supabase.createClient(
-  "https://ypqkmuflothekoaxwupn.supabase.co",
-  "sb_publishable_c_HDHKad3Sjgz5Ho47gwWg_63AAuQY8"
-);
-
 /* LOGIN */
-async function login(){
+function login(){
   const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
+  const pass = document.getElementById("pass").value;
 
-  const { error } = await client.auth.signInWithPassword({
-    email,
-    password: pass
-  });
-
-  if(error){
-    alert(error.message);
+  if(!email || !pass){
+    alert("Fill all fields");
     return;
   }
 
-  goApp();
+  document.getElementById("loginPage").style.display="none";
+  document.getElementById("app").style.display="flex";
 }
 
 /* SIGNUP */
-async function signup(){
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  const { error } = await client.auth.signUp({
-    email,
-    password: pass
-  });
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  alert("📩 Check email");
-}
-
-/* GO APP */
-function goApp(){
-  document.getElementById("loginPage").style.display = "none";
-  document.getElementById("app").style.display = "flex";
+function signup(){
+  alert("Signup success (demo)");
 }
 
 /* CHAT */
 function send(){
-  const msg = document.getElementById("msg");
-  if(!msg.value) return;
+  const input = document.getElementById("msg");
+  const msg = input.value.trim();
+  if(!msg) return;
 
   const chat = document.getElementById("chat");
 
-  chat.innerHTML += `
-    <div class="msg user">${msg.value}</div>
-    <div class="msg ai">AI: ${msg.value}</div>
-  `;
+  // USER
+  chat.innerHTML += `<div class="user">${msg}</div>`;
 
-  msg.value = "";
+  // AI RESPONSE (FIXED LOGIC)
+  let reply = ai(msg);
+  chat.innerHTML += `<div class="ai">${reply}</div>`;
+
+  input.value="";
+  chat.scrollTop = chat.scrollHeight;
 }
 
-/* LOGOUT */
-function logout(){
-  location.reload();
+/* SIMPLE AI */
+function ai(msg){
+
+  let m = msg.toLowerCase();
+
+  if(m.includes("hi") || m.includes("hello")){
+    return "Hello 👋 كيفاش نعاونك؟";
+  }
+
+  if(m.includes("1+1")){
+    return "2";
+  }
+
+  if(m.includes("who are you")){
+    return "I am your AI assistant 🤖";
+  }
+
+  return "I got: " + msg;
 }
 
 </script>
