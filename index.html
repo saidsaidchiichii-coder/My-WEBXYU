@@ -15,7 +15,7 @@
 
 body{
   height:100vh;
-  background: radial-gradient(circle at top, #0f172a, #000); /* 👈 ORIGINAL BACKGROUND */
+  background: radial-gradient(circle at top, #0f172a, #000);
   display:flex;
   justify-content:center;
   align-items:center;
@@ -56,7 +56,6 @@ body{
   border-radius:20px;
 }
 
-/* inner dark layer */
 .login-box::after{
   content:"";
   position:absolute;
@@ -72,7 +71,6 @@ body{
   100%{background-position:0% 50%;}
 }
 
-/* inputs */
 input{
   width:100%;
   padding:12px;
@@ -84,7 +82,6 @@ input{
   color:white;
 }
 
-/* buttons */
 button{
   width:100%;
   padding:12px;
@@ -110,12 +107,58 @@ button{
 <div class="login-box">
   <h2 style="text-align:center;margin-bottom:15px;">LOGIN</h2>
 
-  <input placeholder="Email">
-  <input type="password" placeholder="Password">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-  <button class="login-btn">LOGIN</button>
-  <button class="signup-btn">SIGN UP</button>
+  <button class="login-btn" id="loginBtn">LOGIN</button>
+  <button class="signup-btn" id="signupBtn">SIGN UP</button>
 </div>
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const supabaseUrl = "https://ypqkmuflothekoaxwupn.supabase.co";
+const supabaseKey = "sb_publishable_xxxxxxx"; // 👈 حط key ديالك هنا
+
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+/* ELEMENTS */
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+
+/* SIGN UP */
+signupBtn.addEventListener("click", async () => {
+  const { data, error } = await supabase.auth.signUp({
+    email: email.value,
+    password: password.value
+  });
+
+  if(error){
+    alert(error.message);
+  } else {
+    alert("Check your email 📩");
+  }
+});
+
+/* LOGIN */
+loginBtn.addEventListener("click", async () => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.value,
+    password: password.value
+  });
+
+  if(error){
+    alert(error.message);
+  } else {
+    alert("Login success ✅");
+    console.log(data.user);
+  }
+});
+</script>
 
 </body>
 </html>
