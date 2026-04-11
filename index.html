@@ -22,6 +22,7 @@ height:100vh;
 display:flex;
 }
 
+/* SIDEBAR */
 .sidebar{
 width:260px;
 background:#0f172a;
@@ -47,6 +48,7 @@ cursor:pointer;
 text-align:center;
 }
 
+/* CHAT */
 .chat-area{
 flex:1;
 display:flex;
@@ -74,6 +76,12 @@ max-width:70%;
 padding:12px;
 border-radius:12px;
 word-wrap:break-word;
+animation:pop .2s ease;
+}
+
+@keyframes pop{
+from{transform:scale(0.9);opacity:0}
+to{transform:scale(1);opacity:1}
 }
 
 .user{
@@ -87,6 +95,7 @@ background:#111827;
 align-self:flex-start;
 }
 
+/* INPUT */
 .input-box{
 display:flex;
 padding:15px;
@@ -122,7 +131,7 @@ cursor:not-allowed;
 <body>
 
 <div class="sidebar">
-<div class="logo">Nexus AI</div>
+<div class="logo">1337 AI</div>
 <div class="new-chat" onclick="clearChat()">+ New Chat</div>
 </div>
 
@@ -163,6 +172,19 @@ messages.appendChild(div);
 messages.scrollTop = messages.scrollHeight;
 }
 
+function showTyping(){
+const div = document.createElement("div");
+div.className = "msg ai";
+div.id = "typing";
+div.innerText = "Typing...";
+document.getElementById("messages").appendChild(div);
+}
+
+function removeTyping(){
+const el = document.getElementById("typing");
+if(el) el.remove();
+}
+
 async function send(){
 
 const input = document.getElementById("input");
@@ -173,6 +195,7 @@ addMessage(text,"user");
 input.value="";
 
 setLoading(true);
+showTyping();
 
 try{
 
@@ -194,22 +217,26 @@ data = await res.json();
 throw new Error(await res.text());
 }
 
+removeTyping();
+
 let reply = "No response";
 
-// ✅ FIX HERE (IMPORTANT)
 if (data.reply) {
-  reply = data.reply;
+reply = data.reply;
 }
 else if (data.error) {
-  reply = typeof data.error === "string"
-    ? data.error
-    : JSON.stringify(data.error, null, 2);
+reply = typeof data.error === "string"
+? data.error
+: JSON.stringify(data.error, null, 2);
 }
 
 addMessage(reply,"ai");
 
 }catch(err){
+
+removeTyping();
 addMessage(err?.message || "Error", "ai");
+
 }
 
 setLoading(false);
