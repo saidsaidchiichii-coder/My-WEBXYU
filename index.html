@@ -13,7 +13,7 @@ body{
   color:#111;
   height:100vh;
   display:flex;
-  animation:fadeIn 0.6s ease;
+  animation:fadeIn .5s ease;
 }
 
 @keyframes fadeIn{
@@ -24,7 +24,7 @@ body{
 /* SIDEBAR */
 .sidebar{
   width:270px;
-  background:white;
+  background:#ffffff;
   padding:20px;
   display:flex;
   flex-direction:column;
@@ -32,10 +32,7 @@ body{
   border-right:1px solid #e5e5e5;
 }
 
-.logo{
-  font-weight:bold;
-  font-size:18px;
-}
+.logo{font-weight:bold;font-size:18px;}
 
 .newchat{
   margin-top:15px;
@@ -46,11 +43,8 @@ body{
   cursor:pointer;
   text-align:center;
   font-weight:600;
-  transition:0.2s;
 }
-.newchat:hover{
-  background:#0d8c6d;
-}
+.newchat:hover{background:#0d8c6d;}
 
 .recents{
   margin-top:20px;
@@ -63,6 +57,8 @@ body{
   display:flex;
   flex-direction:column;
   gap:8px;
+  max-height:400px;
+  overflow:auto;
 }
 
 .chatItem{
@@ -73,8 +69,11 @@ body{
   border-radius:10px;
   cursor:pointer;
 }
-.chatItem:hover{
-  background:#e7e7e7;
+.chatItem:hover{background:#e7e7e7;}
+
+.menuBtn{
+  cursor:pointer;
+  padding:0 5px;
 }
 
 /* PROFILE */
@@ -92,11 +91,12 @@ body{
   height:40px;
   border-radius:50%;
   background:#10a37f;
+  color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:white;
   font-weight:bold;
+  overflow:hidden;
 }
 
 .logout{
@@ -110,11 +110,7 @@ body{
 }
 
 /* CHAT */
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
+.chat{flex:1;display:flex;flex-direction:column;}
 
 .messages{
   flex:1;
@@ -146,22 +142,16 @@ body{
 }
 
 /* THINKING */
-.thinking{
-  display:flex;
-  gap:5px;
-}
+.thinking{display:flex;gap:5px;}
 .dot{
-  width:6px;
-  height:6px;
-  background:#999;
-  border-radius:50%;
+  width:6px;height:6px;background:#999;border-radius:50%;
   animation:blink 1s infinite;
 }
-.dot:nth-child(2){animation-delay:0.2s;}
-.dot:nth-child(3){animation-delay:0.4s;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
 
 @keyframes blink{
-  0%,100%{opacity:0.2;}
+  0%,100%{opacity:.2;}
   50%{opacity:1;}
 }
 
@@ -178,7 +168,6 @@ input{
   padding:12px;
   border:1px solid #ddd;
   border-radius:10px;
-  background:white;
 }
 
 .sendBtn{
@@ -191,6 +180,22 @@ input{
   cursor:pointer;
   font-size:18px;
 }
+
+/* DROPDOWN */
+.dropdown{
+  position:absolute;
+  background:white;
+  border:1px solid #ddd;
+  border-radius:10px;
+  display:none;
+  flex-direction:column;
+}
+.dropdown div{
+  padding:10px;
+  cursor:pointer;
+}
+.dropdown div:hover{background:#f1f1f1;}
+
 </style>
 </head>
 
@@ -206,13 +211,19 @@ input{
   </div>
 
   <div class="profile">
-    <div class="avatar">U</div>
+    <div class="avatar" onclick="uploadPhoto()">
+      <img id="avatarImg" style="width:100%;height:100%;display:none;">
+      <span id="avatarText">U</span>
+    </div>
+
     <div>
-      <div>User</div>
-      <div style="font-size:12px;color:#777;">user@email.com</div>
+      <div id="profileName">User</div>
+      <div id="profileEmail" style="font-size:12px;color:#777;"></div>
       <button class="logout" onclick="logout()">Logout</button>
     </div>
   </div>
+
+  <input type="file" id="fileInput" hidden onchange="handlePhoto(event)">
 </div>
 
 <div class="chat">
@@ -220,20 +231,135 @@ input{
 
   <div class="input">
     <input id="input" placeholder="Send a message..."
-    onkeydown="if(event.key==='Enter') send()">
+      onkeydown="if(event.key==='Enter') send()">
     <button class="sendBtn" onclick="send()">➤</button>
   </div>
 </div>
 
+<div id="dropdown" class="dropdown"></div>
+
 <script>
 
 let currentChatId=null;
+let activeMenuId=null;
 
+/* USER LOAD */
+window.onload=()=>{
+  const user=JSON.parse(localStorage.getItem("user"));
+  if(user){
+    document.getElementById("profileEmail").innerText=user.email;
+    document.getElementById("avatarText").innerText=user.email[0].toUpperCase();
+    loadChats();
+  }
+};
+
+/* STORAGE */
+function getUserKey(){
+  const user=JSON.parse(localStorage.getItem("user"));
+  return "chats_"+user.email;
+}
+
+/* LOAD CHATS */
+function loadChats(){
+  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  const list=document.getElementById("chatList");
+  list.innerHTML="";
+
+  chats.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="chatItem";
+
+    div.innerHTML=`
+      <div onclick="openChat(${c.id})">${c.title}</div>
+      <div class="menuBtn" onclick="toggleMenu(event,${c.id})">⋯</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+/* MENU */
+function toggleMenu(e,id){
+  e.stopPropagation();
+  activeMenuId=id;
+
+  const menu=document.getElementById("dropdown");
+  menu.style.display="flex";
+  menu.style.top=e.pageY+"px";
+  menu.style.left=e.pageX+"px";
+
+  menu.innerHTML=`
+    <div onclick="renameChat()">Rename</div>
+    <div onclick="deleteChat()">Delete</div>
+  `;
+}
+
+document.addEventListener("click",()=>{
+  document.getElementById("dropdown").style.display="none";
+});
+
+/* DELETE */
+function deleteChat(){
+  let chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  chats=chats.filter(c=>c.id!==activeMenuId);
+  localStorage.setItem(getUserKey(),JSON.stringify(chats));
+  loadChats();
+}
+
+/* RENAME */
+function renameChat(){
+  const name=prompt("New name:");
+  if(!name) return;
+
+  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  const chat=chats.find(c=>c.id===activeMenuId);
+  chat.title=name;
+
+  localStorage.setItem(getUserKey(),JSON.stringify(chats));
+  loadChats();
+}
+
+/* NEW CHAT */
 function newChat(){
+  currentChatId=Date.now();
+
+  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  chats.push({id:currentChatId,title:"New chat",messages:[]});
+  localStorage.setItem(getUserKey(),JSON.stringify(chats));
+
+  loadChats();
   document.getElementById("messages").innerHTML="";
 }
 
-/* ADD MESSAGE */
+/* OPEN */
+function openChat(id){
+  currentChatId=id;
+  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  const chat=chats.find(c=>c.id===id);
+
+  const box=document.getElementById("messages");
+  box.innerHTML="";
+
+  chat.messages.forEach(m=>{
+    addMessage(m.text,m.type);
+  });
+}
+
+/* SAVE */
+function saveMessage(text,type){
+  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  const chat=chats.find(c=>c.id===currentChatId);
+
+  chat.messages.push({text,type});
+
+  if(chat.messages.length===1){
+    chat.title=text.slice(0,25);
+  }
+
+  localStorage.setItem(getUserKey(),JSON.stringify(chats));
+  loadChats();
+}
+
+/* MESSAGE */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -271,24 +397,61 @@ function removeThinking(){
 
 /* SEND */
 async function send(){
+  if(!currentChatId){
+    newChat();
+  }
+
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
   addMessage(text,"user");
+  saveMessage(text,"user");
   input.value="";
 
   showThinking();
 
-  setTimeout(()=>{
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
+
+    const data=await res.json();
+
     removeThinking();
-    addMessage("This is AI response ✨","ai");
-  },1000);
+    addMessage(data.reply || "AI","ai");
+    saveMessage(data.reply || "AI","ai");
+
+  }catch{
+    removeThinking();
+    addMessage("⚠️ Error","ai");
+  }
+}
+
+/* PHOTO */
+function uploadPhoto(){
+  document.getElementById("fileInput").click();
+}
+
+function handlePhoto(e){
+  const file=e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=()=>{
+    document.getElementById("avatarImg").src=reader.result;
+    document.getElementById("avatarImg").style.display="block";
+    document.getElementById("avatarText").style.display="none";
+  };
+  reader.readAsDataURL(file);
 }
 
 /* LOGOUT */
 function logout(){
-  alert("Logged out");
+  localStorage.removeItem("user");
+  location.reload();
 }
 
 </script>
