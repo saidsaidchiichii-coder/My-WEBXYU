@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AI Chat</title>
 
-<!-- ✅ FIXED SUPABASE -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
@@ -28,6 +27,9 @@ body{
   width:260px;
   background:#111;
   padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
 .logo{
@@ -39,7 +41,7 @@ body{
   padding:10px;
   background:#1a1a1a;
   border-radius:10px;
-  margin-top:10px;
+  cursor:pointer;
 }
 
 /* CHAT */
@@ -49,7 +51,6 @@ body{
   flex-direction:column;
   filter: blur(6px);
   pointer-events:none;
-  transition:0.3s;
 }
 
 .chat.active{
@@ -108,7 +109,61 @@ button{
   cursor:pointer;
 }
 
-/* LOGIN */
+/* 🌈 LOGIN DESIGN */
+.loginBox{
+  position:relative;
+  width:340px;
+  padding:30px 25px;
+  border-radius:18px;
+  text-align:center;
+  overflow:hidden;
+}
+
+.loginBox::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:linear-gradient(90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c);
+  background-size:300% 300%;
+  animation:rgbMove 5s linear infinite;
+  filter:blur(8px);
+  z-index:-1;
+}
+
+.loginBox::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  background:#111;
+  border-radius:16px;
+  z-index:-1;
+}
+
+@keyframes rgbMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+/* INPUT LOGIN */
+.loginBox input{
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border-radius:12px;
+  border:1px solid #222;
+  background:#0f0f0f;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+}
+
+/* OVERLAY */
 .overlay{
   position:fixed;
   inset:0;
@@ -119,43 +174,9 @@ button{
   z-index:999;
 }
 
-/* 🌈 RGB LOGIN BOX */
-.loginBox{
-  position:relative;
-  width:320px;
-  padding:25px;
-  text-align:center;
-  border-radius:16px;
-  overflow:hidden;
-  z-index:1;
-}
-
-.loginBox::before{
-  content:"";
-  position:absolute;
-  inset:-3px;
-  background:linear-gradient(
-    90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c
-  );
-  background-size:300% 300%;
-  animation:rgbMove 4s linear infinite;
-  filter:blur(12px);
-  z-index:-1;
-}
-
-.loginBox::after{
-  content:"";
-  position:absolute;
-  inset:2px;
-  background:#111;
-  border-radius:14px;
-  z-index:-1;
-}
-
-@keyframes rgbMove{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
+/* SETTINGS */
+#settingsPanel{
+  display:none;
 }
 
 /* TOAST */
@@ -166,11 +187,9 @@ button{
   padding:12px 14px;
   border-radius:10px;
   color:white;
-  font-size:14px;
   opacity:0;
   transform:translateY(-15px);
   transition:0.3s;
-  z-index:9999;
 }
 
 .toast.show{
@@ -195,14 +214,27 @@ button{
     <input id="password" type="password" placeholder="Password">
 
     <button onclick="login()">Login</button>
+    <button onclick="signup()" style="background:#3b82f6;">Create Account</button>
+    <button onclick="ownerSkip()" style="background:#9333ea;">Skip (Owner)</button>
+  </div>
+</div>
 
-    <button onclick="signup()" style="margin-top:10px;background:#3b82f6;">
-      Create Account
-    </button>
+<!-- SETTINGS -->
+<div class="overlay" id="settingsPanel">
+  <div class="loginBox">
+    <h2>Settings ⚙️</h2>
 
-    <button onclick="ownerSkip()" style="margin-top:10px;background:#9333ea;">
-      Skip Login (Owner)
-    </button>
+    <p>Language</p>
+    <select style="width:100%;padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
+      <option>English</option>
+      <option>Français</option>
+      <option>العربية</option>
+    </select>
+
+    <p style="margin-top:10px;">Users</p>
+    <div id="usersList"></div>
+
+    <button onclick="closeSettings()" style="background:#ef4444;margin-top:10px;">Close</button>
   </div>
 </div>
 
@@ -210,6 +242,7 @@ button{
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
   <div class="newchat">+ New Chat</div>
+  <div class="newchat" onclick="openSettings()">⚙️ Settings</div>
 </div>
 
 <!-- CHAT -->
@@ -229,12 +262,12 @@ button{
 
 <script>
 
-/* ✅ FIXED SUPABASE INIT */
-const supabaseUrl = "https://idjgsgtupuymysptxrbl.supabase.co";
-const supabaseKey = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
-
+/* SUPABASE */
 const { createClient } = supabase;
-const supabaseClient = createClient(supabaseUrl, supabaseKey);
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
 
 let loggedIn = false;
 
@@ -244,81 +277,68 @@ function notify(msg,type="success"){
   t.className=`toast ${type}`;
   t.innerText=msg;
   document.body.appendChild(t);
-
   setTimeout(()=>t.classList.add("show"),10);
-
-  setTimeout(()=>{
-    t.classList.remove("show");
-    setTimeout(()=>t.remove(),300);
-  },2500);
+  setTimeout(()=>t.remove(),3000);
 }
 
 /* LOGIN */
 async function login(){
-
   const email=document.getElementById("email").value;
   const password=document.getElementById("password").value;
 
-  if(!email || !password){
-    notify("Fill all fields","error");
-    return;
-  }
+  const {error} = await supabaseClient.auth.signInWithPassword({email,password});
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
+  if(error){ notify(error.message,"error"); return; }
 
-  if(error){
-    notify(error.message,"error");
-    return;
-  }
-
-  notify("Login success","success");
+  saveUser(email);
+  notify("Login success");
 
   document.getElementById("loginOverlay").style.display="none";
   document.getElementById("chat").classList.add("active");
-
   loggedIn=true;
 }
 
 /* SIGNUP */
 async function signup(){
-
   const email=document.getElementById("email").value;
   const password=document.getElementById("password").value;
 
-  if(!email || !password){
-    notify("Fill all fields","error");
-    return;
-  }
+  const {error} = await supabaseClient.auth.signUp({email,password});
 
-  const { error } = await supabaseClient.auth.signUp({
-    email,
-    password
-  });
+  if(error){ notify(error.message,"error"); return; }
 
-  if(error){
-    notify(error.message,"error");
-    return;
-  }
-
-  notify("Account created! Now login","success");
+  notify("Account created");
 }
 
-/* OWNER SKIP */
+/* OWNER */
 function ownerSkip(){
-
-  const key = prompt("Enter OWNER KEY:");
-
-  if(key === "ADMIN123"){
-    notify("Owner access granted","success");
+  const key=prompt("Owner key");
+  if(key==="ADMIN123"){
     document.getElementById("loginOverlay").style.display="none";
     document.getElementById("chat").classList.add("active");
     loggedIn=true;
-  }else{
-    notify("Wrong owner key","error");
   }
+}
+
+/* SAVE USERS */
+function saveUser(email){
+  let users=JSON.parse(localStorage.getItem("users")||"[]");
+  if(!users.includes(email)){
+    users.push(email);
+    localStorage.setItem("users",JSON.stringify(users));
+  }
+}
+
+/* SETTINGS */
+function openSettings(){
+  document.getElementById("settingsPanel").style.display="flex";
+
+  const users=JSON.parse(localStorage.getItem("users")||[]);
+  document.getElementById("usersList").innerText=users.join("\n");
+}
+
+function closeSettings(){
+  document.getElementById("settingsPanel").style.display="none";
 }
 
 /* CHAT */
@@ -326,17 +346,14 @@ function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
-
-  const box=document.getElementById("messages");
-  box.appendChild(div);
-  box.scrollTop=box.scrollHeight;
+  document.getElementById("messages").appendChild(div);
 }
 
 /* SEND */
 async function send(){
 
   if(!loggedIn){
-    notify("Login required","error");
+    notify("Login first","error");
     return;
   }
 
@@ -348,7 +365,6 @@ async function send(){
   input.value="";
 
   try{
-
     const res=await fetch("/api/chat",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -358,7 +374,7 @@ async function send(){
     const data=await res.json();
     addMessage(data.reply || "No response","ai");
 
-  }catch(err){
+  }catch{
     notify("Chat error","error");
   }
 }
