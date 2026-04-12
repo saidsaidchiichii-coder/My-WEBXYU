@@ -18,17 +18,28 @@ body{
   overflow:hidden;
 }
 
-/* 3D */
-.fadeOut{animation:zoomOut .5s forwards;}
-.fadeIn{animation:zoomIn .5s forwards;}
+/* GLOBAL 3D */
+.glass{
+  backdrop-filter:blur(10px);
+  background:rgba(255,255,255,0.7);
+}
+
+/* 3D ANIMATIONS */
+.fadeOut{animation:zoomOut .6s forwards;}
+.fadeIn{animation:zoomIn .6s forwards;}
+.slideUp{animation:slideUp .5s ease;}
 
 @keyframes zoomOut{
-  from{opacity:1;transform:scale(1);}
-  to{opacity:0;transform:scale(1.1);}
+  from{opacity:1;transform:scale(1) rotateX(0deg);}
+  to{opacity:0;transform:scale(1.1) rotateX(10deg);}
 }
 @keyframes zoomIn{
-  from{opacity:0;transform:scale(0.9);}
-  to{opacity:1;transform:scale(1);}
+  from{opacity:0;transform:scale(0.9) rotateX(-10deg);}
+  to{opacity:1;transform:scale(1) rotateX(0deg);}
+}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;}
 }
 
 /* PARTICLES */
@@ -54,7 +65,9 @@ canvas{
   border-radius:999px;
   border:none;
   cursor:pointer;
+  transition:.2s;
 }
+.btn:hover{transform:scale(1.05);}
 
 .login{background:#eee;}
 .signup{background:#111;color:white;}
@@ -67,6 +80,7 @@ canvas{
   align-items:center;
   justify-content:center;
   gap:25px;
+  transition:.5s;
 }
 
 .title{
@@ -82,6 +96,10 @@ canvas{
   padding:12px 15px;
   display:flex;
   box-shadow:0 5px 20px rgba(0,0,0,0.05);
+  transition:.3s;
+}
+.inputBox:hover{
+  transform:scale(1.02);
 }
 
 .inputBox input{
@@ -122,6 +140,7 @@ canvas{
   max-width:65%;
   padding:12px;
   border-radius:12px;
+  animation:slideUp .3s ease;
 }
 
 .user{
@@ -169,18 +188,21 @@ canvas{
 .overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.7);
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(10px);
   display:none;
   align-items:center;
   justify-content:center;
+  z-index:999;
 }
 
 .loginBox{
-  background:#111;
+  background:white;
   padding:30px;
-  border-radius:15px;
+  border-radius:20px;
   width:300px;
   text-align:center;
+  animation:zoomIn .4s ease;
 }
 
 .loginBox input{
@@ -188,9 +210,7 @@ canvas{
   padding:12px;
   margin:6px 0;
   border-radius:10px;
-  border:none;
-  background:#1a1a1a;
-  color:white;
+  border:1px solid #ddd;
 }
 
 .loginBox button{
@@ -251,10 +271,9 @@ canvas{
 
 <script>
 
-/* NO AUTO LOGIN ❌ */
 let loggedIn=false;
 
-/* OPEN LOGIN ONLY ON CLICK ✔ */
+/* OPEN LOGIN */
 function openLogin(){
   loginOverlay.style.display="flex";
 }
@@ -291,7 +310,7 @@ async function signup(){
   alert("Check email 📩");
 }
 
-/* SHIFT ENTER ✔ */
+/* SHIFT ENTER */
 function handleKey(e){
   if(e.key==="Enter" && !e.shiftKey){
     e.preventDefault();
@@ -299,7 +318,7 @@ function handleKey(e){
   }
 }
 
-/* START CHAT WITH 3D ✔ */
+/* START CHAT */
 function startChat(){
   const text=homeInput.value.trim();
   if(!text)return;
@@ -349,7 +368,7 @@ function scrollBottom(){
   messages.scrollTop=messages.scrollHeight;
 }
 
-/* API LOGIC (FROM YOUR CODE ✔) */
+/* AI */
 async function askAI(text){
   const t=showThinking();
 
@@ -383,7 +402,7 @@ function send(){
   askAI(text);
 }
 
-/* PARTICLES ✔ */
+/* PARTICLES */
 const canvas=document.getElementById("particles");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
