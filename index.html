@@ -1,174 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
-/* 🌈 BACKGROUND */
 body{
-  background:linear-gradient(135deg,#f8fafc,#e2e8f0);
+  background:#f7f7f8;
   color:#111;
   height:100vh;
   display:flex;
-  animation:fadeIn 0.7s ease;
+  animation:fadeIn 0.6s ease;
 }
 
 @keyframes fadeIn{
-  from{opacity:0;transform:scale(0.97);}
-  to{opacity:1;transform:scale(1);}
-}
-
-/* CLICK EFFECT */
-*{
-  transition:all .2s ease;
-}
-*:active{
-  transform:scale(0.97);
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;}
 }
 
 /* SIDEBAR */
 .sidebar{
   width:270px;
-  background:rgba(255,255,255,0.6);
-  backdrop-filter:blur(20px);
+  background:white;
   padding:20px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  border-right:1px solid #ddd;
-  box-shadow:5px 0 20px rgba(0,0,0,0.1);
+  border-right:1px solid #e5e5e5;
 }
 
 .logo{
   font-weight:bold;
   font-size:18px;
-  color:#16a34a;
 }
 
-/* NEW CHAT */
 .newchat{
   margin-top:15px;
   padding:12px;
-  background:#16a34a;
+  background:#10a37f;
   color:white;
-  border-radius:12px;
+  border-radius:10px;
   cursor:pointer;
   text-align:center;
   font-weight:600;
-  box-shadow:0 5px 15px rgba(22,163,74,0.3);
+  transition:0.2s;
 }
 .newchat:hover{
-  background:#15803d;
-  transform:translateY(-2px);
+  background:#0d8c6d;
 }
 
-/* RECENTS */
 .recents{
-  margin-top:15px;
+  margin-top:20px;
   font-size:12px;
-  color:#555;
+  color:#777;
 }
 
 .chatList{
-  max-height:400px;
-  overflow-y:auto;
   margin-top:10px;
   display:flex;
   flex-direction:column;
   gap:8px;
 }
 
-/* CHAT ITEM */
 .chatItem{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:10px;
-  background:white;
+  background:#f1f1f1;
   border-radius:10px;
   cursor:pointer;
-  font-size:13px;
-  box-shadow:0 5px 10px rgba(0,0,0,0.05);
 }
 .chatItem:hover{
-  background:#f1f5f9;
-}
-
-.chatTitle{
-  flex:1;
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
-}
-
-.menuBtn{
-  padding:3px 6px;
-  border-radius:6px;
-}
-.menuBtn:hover{
-  background:#eee;
-}
-
-/* DROPDOWN */
-.dropdown{
-  position:absolute;
-  background:white;
-  border:1px solid #ddd;
-  border-radius:10px;
-  display:none;
-  flex-direction:column;
-  box-shadow:0 10px 25px rgba(0,0,0,0.15);
-}
-.dropdown div{
-  padding:10px;
-  cursor:pointer;
-}
-.dropdown div:hover{
-  background:#f1f5f9;
+  background:#e7e7e7;
 }
 
 /* PROFILE */
 .profile{
-  background:white;
+  background:#f1f1f1;
   padding:10px;
   border-radius:12px;
   display:flex;
   gap:10px;
   align-items:center;
-  box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
 
 .avatar{
   width:40px;
   height:40px;
   border-radius:50%;
-  background:#16a34a;
+  background:#10a37f;
   display:flex;
   align-items:center;
   justify-content:center;
   color:white;
-  cursor:pointer;
-  overflow:hidden;
+  font-weight:bold;
 }
 
-.profileInfo{font-size:12px;}
-
-.profile button{
+.logout{
   margin-top:5px;
-  width:100%;
-  padding:7px;
+  padding:6px;
   border:none;
   border-radius:8px;
-  background:#ef4444;
+  background:#111;
   color:white;
   cursor:pointer;
-}
-.profile button:hover{
-  background:#dc2626;
 }
 
 /* CHAT */
@@ -187,9 +125,8 @@ body{
   gap:12px;
 }
 
-/* MSG */
 .msg{
-  max-width:70%;
+  max-width:65%;
   padding:14px;
   border-radius:14px;
   font-size:14px;
@@ -198,14 +135,34 @@ body{
 
 .user{
   align-self:flex-end;
-  background:#16a34a;
+  background:#10a37f;
   color:white;
 }
 
 .ai{
   align-self:flex-start;
   background:white;
-  border:1px solid #ddd;
+  border:1px solid #e5e5e5;
+}
+
+/* THINKING */
+.thinking{
+  display:flex;
+  gap:5px;
+}
+.dot{
+  width:6px;
+  height:6px;
+  background:#999;
+  border-radius:50%;
+  animation:blink 1s infinite;
+}
+.dot:nth-child(2){animation-delay:0.2s;}
+.dot:nth-child(3){animation-delay:0.4s;}
+
+@keyframes blink{
+  0%,100%{opacity:0.2;}
+  50%{opacity:1;}
 }
 
 /* INPUT */
@@ -213,32 +170,26 @@ body{
   display:flex;
   padding:15px;
   background:white;
-  border-top:1px solid #ddd;
+  border-top:1px solid #e5e5e5;
 }
 
 input{
   flex:1;
   padding:12px;
-  border:none;
+  border:1px solid #ddd;
   border-radius:10px;
-  background:#f1f5f9;
+  background:white;
 }
 
-/* SEND ICON BUTTON */
 .sendBtn{
+  margin-left:10px;
   width:45px;
-  height:45px;
-  border-radius:50%;
-  background:#16a34a;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  border:none;
+  border-radius:10px;
+  background:#10a37f;
   color:white;
   cursor:pointer;
   font-size:18px;
-}
-.sendBtn:hover{
-  background:#15803d;
 }
 </style>
 </head>
@@ -247,214 +198,97 @@ input{
 
 <div class="sidebar">
   <div>
-    <div class="logo">◆ ILYASS AI</div>
-
+    <div class="logo">ILYASS AI</div>
     <div class="newchat" onclick="newChat()">+ New Chat</div>
 
     <div class="recents">Recents</div>
-    <div class="chatList" id="chatList"></div>
+    <div id="chatList" class="chatList"></div>
   </div>
 
   <div class="profile">
-    <div class="avatar" onclick="uploadPhoto()">
-      <img id="avatarImg" style="width:100%;height:100%;display:none;">
-      <span id="avatarText">U</span>
-    </div>
-
-    <div class="profileInfo">
-      <div id="profileName">User</div>
-      <div id="profileEmail" style="opacity:.6"></div>
-      <button onclick="logout()">Logout</button>
+    <div class="avatar">U</div>
+    <div>
+      <div>User</div>
+      <div style="font-size:12px;color:#777;">user@email.com</div>
+      <button class="logout" onclick="logout()">Logout</button>
     </div>
   </div>
-
-  <input type="file" id="fileInput" hidden onchange="handlePhoto(event)">
 </div>
 
 <div class="chat">
-  <div class="messages" id="messages"></div>
+  <div id="messages" class="messages"></div>
 
   <div class="input">
-    <input id="input" placeholder="Ask anything..."
-      onkeydown="if(event.key==='Enter') send()" />
-    <div class="sendBtn" onclick="send()">➤</div>
+    <input id="input" placeholder="Send a message..."
+    onkeydown="if(event.key==='Enter') send()">
+    <button class="sendBtn" onclick="send()">➤</button>
   </div>
 </div>
 
-<div id="dropdown" class="dropdown"></div>
-
 <script>
 
-/* 🔥 نفس JS ديالك بلا تغيير */
-
 let currentChatId=null;
-let activeMenuId=null;
-
-window.onload=()=>{
-  const user=JSON.parse(localStorage.getItem("user"));
-  if(user){
-    document.getElementById("profileEmail").innerText=user.email;
-    document.getElementById("avatarText").innerText=user.email[0].toUpperCase();
-    loadChats();
-  }
-};
-
-function getUserKey(){
-  const user=JSON.parse(localStorage.getItem("user"));
-  return "chats_"+user.email;
-}
-
-function loadChats(){
-  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  const list=document.getElementById("chatList");
-  list.innerHTML="";
-
-  chats.forEach(c=>{
-    const div=document.createElement("div");
-    div.className="chatItem";
-
-    div.innerHTML=`
-      <div class="chatTitle" onclick="openChat(${c.id})">${c.title}</div>
-      <div class="menuBtn" onclick="toggleMenu(event, ${c.id})">⋯</div>
-    `;
-
-    list.appendChild(div);
-  });
-}
-
-function toggleMenu(e,id){
-  e.stopPropagation();
-  activeMenuId=id;
-
-  const menu=document.getElementById("dropdown");
-  menu.style.display="flex";
-  menu.style.top=e.pageY+"px";
-  menu.style.left=e.pageX+"px";
-
-  menu.innerHTML=`
-    <div onclick="renameChat()">Rename</div>
-    <div onclick="deleteChat()">Delete</div>
-  `;
-}
-
-document.addEventListener("click",()=>{
-  document.getElementById("dropdown").style.display="none";
-});
-
-function deleteChat(){
-  let chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  chats=chats.filter(c=>c.id!==activeMenuId);
-  localStorage.setItem(getUserKey(),JSON.stringify(chats));
-  loadChats();
-}
-
-function renameChat(){
-  const name=prompt("New name:");
-  if(!name) return;
-
-  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  const chat=chats.find(c=>c.id===activeMenuId);
-  chat.title=name;
-
-  localStorage.setItem(getUserKey(),JSON.stringify(chats));
-  loadChats();
-}
 
 function newChat(){
-  currentChatId=Date.now();
-  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-
-  chats.push({id:currentChatId,title:"New chat",messages:[]});
-  localStorage.setItem(getUserKey(),JSON.stringify(chats));
-
-  loadChats();
   document.getElementById("messages").innerHTML="";
 }
 
-function openChat(id){
-  currentChatId=id;
-  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  const chat=chats.find(c=>c.id===id);
-
-  const box=document.getElementById("messages");
-  box.innerHTML="";
-
-  chat.messages.forEach(m=>{
-    addMessage(m.text,m.type);
-  });
-}
-
-function saveMessage(text,type){
-  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  const chat=chats.find(c=>c.id===currentChatId);
-
-  chat.messages.push({text,type});
-
-  if(chat.messages.length===1){
-    chat.title=text.slice(0,25);
-  }
-
-  localStorage.setItem(getUserKey(),JSON.stringify(chats));
-  loadChats();
-}
-
+/* ADD MESSAGE */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
-  div.innerText=text;
+  document.getElementById("messages").appendChild(div);
+  typeText(div,text);
+}
+
+/* TYPING EFFECT */
+function typeText(el,text){
+  let i=0;
+  el.innerHTML="";
+  const interval=setInterval(()=>{
+    el.innerHTML+=text[i];
+    i++;
+    if(i>=text.length) clearInterval(interval);
+  },15);
+}
+
+/* THINKING */
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`<div class="thinking">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>`;
   document.getElementById("messages").appendChild(div);
 }
 
-async function send(){
-  if(!currentChatId){
-    newChat();
-  }
+function removeThinking(){
+  const t=document.querySelector(".thinking");
+  if(t) t.parentElement.remove();
+}
 
+/* SEND */
+async function send(){
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
   addMessage(text,"user");
-  saveMessage(text,"user");
   input.value="";
 
-  try{
-    const res=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text})
-    });
+  showThinking();
 
-    const data=await res.json();
-
-    addMessage(data.reply || "AI","ai");
-    saveMessage(data.reply || "AI","ai");
-
-  }catch{
-    addMessage("⚠️ Error","ai");
-  }
+  setTimeout(()=>{
+    removeThinking();
+    addMessage("This is AI response ✨","ai");
+  },1000);
 }
 
-function uploadPhoto(){
-  document.getElementById("fileInput").click();
-}
-
-function handlePhoto(e){
-  const file=e.target.files[0];
-  if(!file) return;
-
-  const reader=new FileReader();
-  reader.onload=()=>{
-    document.getElementById("avatarImg").src=reader.result;
-    document.getElementById("avatarImg").style.display="block";
-    document.getElementById("avatarText").style.display="none";
-  };
-  reader.readAsDataURL(file);
-}
-
+/* LOGOUT */
 function logout(){
-  localStorage.removeItem("user");
-  location.reload();
+  alert("Logged out");
 }
 
 </script>
