@@ -6,204 +6,58 @@
 <title>AI Chat</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Inter, Arial;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family: Inter, Arial;}
+body{background:#0f0f0f;color:white;height:100vh;display:flex;}
 
-body{
-  background:#0f0f0f;
-  color:white;
-  height:100vh;
-  display:flex;
-}
-
-/* 🔥 TOP RIGHT AUTH BUTTONS */
 .topAuth{
-  position:fixed;
-  top:15px;
-  right:20px;
-  display:flex;
-  gap:10px;
-  z-index:999;
+  position:fixed;top:15px;right:20px;display:flex;gap:10px;z-index:999;
 }
 
 .topAuth button{
-  padding:8px 16px;
-  border-radius:999px;
-  font-size:13px;
-  font-weight:500;
-  cursor:pointer;
-  transition:all 0.25s ease;
-  border:1px solid transparent;
+  padding:8px 16px;border-radius:999px;font-size:13px;cursor:pointer;
+  transition:all .25s;border:1px solid transparent;
 }
 
-.loginBtn{
-  background:transparent;
-  color:#aaa;
-  border:1px solid #2a2a2a;
-}
+.loginBtn{background:transparent;color:#aaa;border:1px solid #2a2a2a;}
+.loginBtn:hover{background:#1a1a1a;color:white;}
+.signupBtn{background:linear-gradient(135deg,#22c55e,#16a34a);color:black;}
 
-.loginBtn:hover{
-  background:#1a1a1a;
-  color:white;
-  border-color:#444;
-}
+.sidebar{width:260px;background:#111;padding:20px;display:flex;flex-direction:column;gap:10px;}
+.logo{font-size:18px;font-weight:bold;}
+.newchat{padding:10px;background:#1a1a1a;border-radius:10px;cursor:pointer;}
 
-.signupBtn{
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:black;
-}
+.chat{flex:1;display:flex;flex-direction:column;}
+.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
 
-/* SIDEBAR */
-.sidebar{
-  width:260px;
-  background:#111;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+.msg{max-width:75%;padding:12px 14px;border-radius:14px;}
+.user{align-self:flex-end;background:#22c55e;color:black;}
+.ai{align-self:flex-start;background:#1f1f1f;}
 
-.logo{
-  font-size:18px;
-  font-weight:bold;
-}
+.input{display:flex;padding:15px;background:#111;}
+input{flex:1;padding:12px;border:none;border-radius:10px;background:#1a1a1a;color:white;}
 
-.newchat{
-  padding:10px;
-  background:#1a1a1a;
-  border-radius:10px;
-  cursor:pointer;
-}
+button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px;background:#22c55e;cursor:pointer;}
 
-/* CHAT */
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-.messages{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.msg{
-  max-width:75%;
-  padding:12px 14px;
-  border-radius:14px;
-}
-
-.user{
-  align-self:flex-end;
-  background:#22c55e;
-  color:black;
-}
-
-.ai{
-  align-self:flex-start;
-  background:#1f1f1f;
-}
-
-/* INPUT */
-.input{
-  display:flex;
-  padding:15px;
-  background:#111;
-}
-
-input{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#1a1a1a;
-  color:white;
-}
-
-button.sendBtn{
-  margin-left:10px;
-  padding:12px 18px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  cursor:pointer;
-}
-
-/* MODAL */
 .modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.6);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
+  position:fixed;inset:0;background:rgba(0,0,0,0.6);
+  display:none;align-items:center;justify-content:center;z-index:9999;
 }
 
 .modalBox{
-  background:#111;
-  padding:25px;
-  border-radius:16px;
-  width:300px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  background:#111;padding:25px;border-radius:16px;width:300px;
+  display:flex;flex-direction:column;gap:10px;
 }
 
-.modalBox input{
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  background:#1a1a1a;
-  color:white;
-}
+.modalBox input{padding:10px;border-radius:8px;border:none;background:#1a1a1a;color:white;}
+.modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
+.modalBox label{font-size:12px;}
+.error{font-size:12px;color:red;}
 
-.modalBox button{
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#22c55e;
-  cursor:pointer;
-}
-
-.modalBox label{
-  font-size:12px;
-}
-
-.error{
-  color:red;
-  font-size:12px;
-}
-
-/* THINKING */
-.thinking{
-  display:flex;
-  gap:5px;
-}
-
-.dot{
-  width:6px;
-  height:6px;
-  background:#aaa;
-  border-radius:50%;
-  animation:bounce 0.5s infinite ease-in-out;
-}
-
-.dot:nth-child(2){animation-delay:0.1s;}
-.dot:nth-child(3){animation-delay:0.2s;}
-
-@keyframes bounce{
-  0%,100%{transform:translateY(0); opacity:0.4;}
-  50%{transform:translateY(-4px); opacity:1;}
-}
+.thinking{display:flex;gap:5px;}
+.dot{width:6px;height:6px;background:#aaa;border-radius:50%;animation:bounce .5s infinite;}
+.dot:nth-child(2){animation-delay:.1s;}
+.dot:nth-child(3){animation-delay:.2s;}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.4;}50%{transform:translateY(-4px);opacity:1;}}
 </style>
 </head>
 
@@ -220,7 +74,6 @@ button.sendBtn{
 </div>
 
 <div class="chat">
-
   <div class="messages" id="messages">
     <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
   </div>
@@ -230,7 +83,6 @@ button.sendBtn{
       onkeydown="if(event.key==='Enter') send()" />
     <button class="sendBtn" onclick="send()">Send</button>
   </div>
-
 </div>
 
 <!-- LOGIN -->
@@ -250,9 +102,6 @@ button.sendBtn{
 
     <input id="username" placeholder="Username">
     <input id="signupEmail" placeholder="Email">
-    <button onclick="sendCode()">Send Code</button>
-
-    <input id="verificationCode" placeholder="Verification code">
     <input id="age" type="number" placeholder="Age">
 
     <label>
@@ -266,103 +115,104 @@ button.sendBtn{
 
 <script>
 
+const SUPABASE_URL = "YOUR_PROJECT_URL";
+const SUPABASE_KEY = "YOUR_ANON_KEY";
+
 let thinkingEl = null;
-let generatedCode = null;
 
 /* MODALS */
-function openLogin(){
-  document.getElementById("loginModal").style.display="flex";
-}
-function openSignup(){
-  document.getElementById("signupModal").style.display="flex";
-}
-function closeLogin(){
-  document.getElementById("loginModal").style.display="none";
-}
-function closeSignup(){
-  document.getElementById("signupModal").style.display="none";
-}
+function openLogin(){document.getElementById("loginModal").style.display="flex";}
+function openSignup(){document.getElementById("signupModal").style.display="flex";}
+function closeLogin(){document.getElementById("loginModal").style.display="none";}
+function closeSignup(){document.getElementById("signupModal").style.display="none";}
 
-/* SEND CODE */
-function sendCode(){
-  const email = document.getElementById("signupEmail").value;
-
-  if(!email){
-    document.getElementById("signupError").innerText="Enter email first";
-    return;
-  }
-
-  generatedCode = Math.floor(100000 + Math.random() * 900000);
-
-  alert("Your verification code is: " + generatedCode);
-
-  // expire after 1 min
-  setTimeout(()=>{
-    generatedCode = null;
-  }, 60000);
-}
-
-/* SIGNUP WITH VERIFY */
-function doSignup(){
+/* SIGNUP */
+async function doSignup(){
 
   const username = document.getElementById("username").value;
   const email = document.getElementById("signupEmail").value;
   const age = document.getElementById("age").value;
   const agree = document.getElementById("agree").checked;
-  const code = document.getElementById("verificationCode").value;
 
-  if(!username || !email || !age || !code){
-    document.getElementById("signupError").innerText="Fill all fields";
+  if(!username || !email || !age){
+    document.getElementById("signupError").innerText="Fill all fields ❌";
     return;
   }
 
   if(!agree){
-    document.getElementById("signupError").innerText="You must agree";
+    document.getElementById("signupError").innerText="You must agree ❌";
     return;
   }
 
-  if(!generatedCode){
-    document.getElementById("signupError").innerText="Code expired or not sent";
-    return;
+  try{
+    const res = await fetch(SUPABASE_URL + "/auth/v1/signup",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SUPABASE_KEY
+      },
+      body:JSON.stringify({
+        email:email,
+        password:"12345678"
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.error){
+      document.getElementById("signupError").innerText =
+      "❌ Email already used or invalid";
+      return;
+    }
+
+    document.getElementById("signupError").style.color="lightgreen";
+    document.getElementById("signupError").innerText =
+    "✔ Check your email and verify your account";
+
+  }catch(err){
+    document.getElementById("signupError").innerText="Signup error ❌";
   }
-
-  if(parseInt(code) !== generatedCode){
-    document.getElementById("signupError").innerText="Wrong verification code";
-    return;
-  }
-
-  const user = {username,email,age};
-
-  localStorage.setItem("userData", JSON.stringify(user));
-
-  alert("Account created ✅");
-  closeSignup();
 }
 
 /* LOGIN */
-function doLogin(){
+async function doLogin(){
 
   const email = document.getElementById("loginEmail").value;
-  const savedUser = JSON.parse(localStorage.getItem("userData"));
 
-  if(!savedUser){
-    document.getElementById("loginError").innerText="No account found";
-    return;
-  }
+  try{
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SUPABASE_KEY
+      },
+      body:JSON.stringify({
+        email:email,
+        password:"12345678"
+      })
+    });
 
-  if(savedUser.email === email){
-    localStorage.setItem("user", JSON.stringify(savedUser));
+    const data = await res.json();
+
+    if(data.error){
+      document.getElementById("loginError").innerText =
+      "❌ You're not signed up or email not confirmed";
+      return;
+    }
+
+    localStorage.setItem("user", JSON.stringify(data));
     closeLogin();
     alert("Logged in ✅");
-  }else{
-    document.getElementById("loginError").innerText="Wrong email";
+
+  }catch(err){
+    document.getElementById("loginError").innerText="Login error ❌";
   }
 }
 
 /* CHAT SAME */
 function scrollToBottom(){
-  const box = document.getElementById("messages");
-  box.scrollTop = box.scrollHeight;
+  const box=document.getElementById("messages");
+  box.scrollTop=box.scrollHeight;
 }
 
 function addMessage(text,type){
@@ -377,35 +227,22 @@ function addMessage(text,type){
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
-  div.innerHTML=`
-    <div class="thinking">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
-  `;
+  div.innerHTML=`<div class="thinking">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
   document.getElementById("messages").appendChild(div);
-  thinkingEl = div;
-  scrollToBottom();
+  thinkingEl=div;scrollToBottom();
 }
 
 function hideThinking(){
-  if(thinkingEl){
-    thinkingEl.remove();
-    thinkingEl=null;
-  }
+  if(thinkingEl){thinkingEl.remove();thinkingEl=null;}
 }
 
-function typeText(element, text, speed = 10){
-  let i = 0;
-  element.innerHTML = "";
-  const interval = setInterval(() => {
-    element.innerHTML += text[i];
-    i++;
-    if(i >= text.length){
-      clearInterval(interval);
-    }
-  }, speed);
+function typeText(element,text,speed=10){
+  let i=0;element.innerHTML="";
+  const interval=setInterval(()=>{
+    element.innerHTML+=text[i];i++;
+    if(i>=text.length) clearInterval(interval);
+  },speed);
 }
 
 function newChat(){
@@ -414,14 +251,12 @@ function newChat(){
 }
 
 async function send(){
-
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
   addMessage(text,"user");
   input.value="";
-
   showThinking();
 
   try{
@@ -432,10 +267,9 @@ async function send(){
     });
 
     const data=await res.json();
-
     hideThinking();
 
-    const msg = addMessage("", "ai");
+    const msg=addMessage("", "ai");
     typeText(msg, data.reply || "No response", 10);
 
   }catch(err){
