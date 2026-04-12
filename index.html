@@ -20,6 +20,34 @@ body{
   display:flex;
 }
 
+/* 🔥 TOP LEFT AUTH BUTTONS */
+.topAuth{
+  position:fixed;
+  top:10px;
+  left:10px;
+  display:flex;
+  gap:8px;
+  z-index:999;
+}
+
+.topAuth button{
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.loginBtn{
+  background:#22c55e;
+  color:black;
+}
+
+.signupBtn{
+  background:#3b82f6;
+  color:white;
+}
+
 /* SIDEBAR */
 .sidebar{
   width:260px;
@@ -62,54 +90,19 @@ body{
   padding:12px 14px;
   border-radius:14px;
   white-space: pre-wrap;
-  position:relative;
   word-wrap: break-word;
+  position:relative;
 }
 
-/* USER */
 .user{
   align-self:flex-end;
   background:#22c55e;
   color:black;
 }
 
-/* AI */
 .ai{
   align-self:flex-start;
   background:#1f1f1f;
-}
-
-/* 🔥 CODE BLOCK FIX */
-pre{
-  background:#000;
-  padding:10px;
-  border-radius:10px;
-  overflow-x:auto;
-  font-size:13px;
-  white-space: pre;
-}
-
-code{
-  font-family: monospace;
-}
-
-/* COPY BUTTON */
-.copyBtn{
-  position:absolute;
-  top:5px;
-  right:5px;
-  font-size:10px;
-  padding:3px 6px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  background:#333;
-  color:white;
-  opacity:0;
-}
-
-.msg.ai:hover .copyBtn{
-  opacity:1;
 }
 
 /* INPUT */
@@ -164,6 +157,12 @@ button{
 
 <body>
 
+<!-- 🔥 TOP LEFT BUTTONS -->
+<div class="topAuth">
+  <button class="loginBtn" onclick="alert('Login clicked')">Login</button>
+  <button class="signupBtn" onclick="alert('Sign up clicked')">Sign up</button>
+</div>
+
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
   <div class="newchat">+ New Chat</div>
@@ -187,13 +186,13 @@ button{
 
 let thinkingEl = null;
 
-/* AUTO SCROLL */
+/* scroll */
 function scrollToBottom(){
   const box = document.getElementById("messages");
   box.scrollTop = box.scrollHeight;
 }
 
-/* ADD MESSAGE */
+/* add message */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -203,24 +202,7 @@ function addMessage(text,type){
   return div;
 }
 
-/* AI MESSAGE WITH COPY */
-function addAIMessage(text){
-  const div=document.createElement("div");
-  div.className="msg ai";
-
-  const btn=document.createElement("button");
-  btn.className="copyBtn";
-  btn.innerText="Copy";
-  btn.onclick=()=>navigator.clipboard.writeText(div.innerText);
-
-  div.appendChild(btn);
-  document.getElementById("messages").appendChild(div);
-
-  scrollToBottom();
-  return div;
-}
-
-/* THINKING */
+/* thinking */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -243,8 +225,8 @@ function hideThinking(){
   }
 }
 
-/* TYPE (FIXED for CODE too) */
-function typeText(element, text, speed = 10){
+/* typing */
+function typeText(element, text, speed = 8){
   let i = 0;
   element.innerHTML = "";
 
@@ -260,7 +242,7 @@ function typeText(element, text, speed = 10){
   }, speed);
 }
 
-/* SEND */
+/* send */
 async function send(){
 
   const input=document.getElementById("input");
@@ -284,8 +266,8 @@ async function send(){
     hideThinking();
 
     setTimeout(()=>{
-      const msg = addAIMessage("");
-      typeText(msg, data.reply || "No response", 8);
+      const msg = addMessage("", "ai");
+      typeText(msg, data.reply || "No response", 10);
     }, 300);
 
   }catch{
