@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
@@ -159,18 +161,64 @@ body{
   border-radius:10px;
   border:1px solid #ddd;
 }
+
+/* LOGIN OVERLAY */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.loginBox{
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  width:300px;
+  text-align:center;
+}
+
+.loginBox input{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:none;
+  background:#1a1a1a;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
+<div class="overlay" id="loginOverlay">
+  <div class="loginBox">
+    <h2>Login</h2>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign up</button>
+  </div>
+</div>
+
 <div class="top">
   <div class="logo">ILYASS AI</div>
-
-  <div class="auth">
-    <button class="btn login">Login</button>
-    <button class="btn signup">Sign up</button>
-  </div>
 </div>
 
 <!-- HOME -->
@@ -196,11 +244,44 @@ body{
 
 <script>
 
-const SUPABASE_URL = "https://idjgsgtupuymysptxrbl.supabase.co";
-const SUPABASE_KEY = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
+/* SUPABASE */
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
+
+let loggedIn = false;
+
+/* LOGIN */
+async function login(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error} = await supabaseClient.auth.signInWithPassword({email,password});
+
+  if(error){ alert(error.message); return; }
+
+  document.getElementById("loginOverlay").style.display="none";
+  loggedIn=true;
+}
+
+/* SIGNUP */
+async function signup(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error} = await supabaseClient.auth.signUp({email,password});
+
+  if(error){ alert(error.message); return; }
+
+  alert("Check your email 📩");
+}
 
 /* START */
 function startChat(){
+  if(!loggedIn){ alert("Login first"); return; }
+
   const text=document.getElementById("homeInput").value.trim();
   if(!text) return;
 
@@ -213,13 +294,11 @@ function startChat(){
   askAI(text);
 }
 
-/* ADD MESSAGE (FIXED) */
+/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
-
-  // 🔥 FIX مهم
-  div.dataset.text = text;
+  div.dataset.text=text;
 
   const content=document.createElement("div");
   div.appendChild(content);
@@ -272,7 +351,7 @@ function scrollBottom(){
   box.scrollTop=box.scrollHeight;
 }
 
-/* AI REAL */
+/* AI */
 async function askAI(text){
 
   const t=showThinking();
@@ -297,6 +376,8 @@ async function askAI(text){
 
 /* SEND */
 function send(){
+  if(!loggedIn){ alert("Login first"); return; }
+
   const input=document.getElementById("chatInput");
   const text=input.value.trim();
   if(!text) return;
@@ -312,7 +393,7 @@ function copyText(el){
   navigator.clipboard.writeText(msg.dataset.text);
 }
 
-/* RETRY (FIX 🔥) */
+/* RETRY */
 function retry(el){
   const msg = el.closest(".msg");
 
