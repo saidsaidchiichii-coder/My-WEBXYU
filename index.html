@@ -9,22 +9,30 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
 body{
-  background:linear-gradient(135deg,#0b0b0b,#0f172a);
+  background:radial-gradient(circle at top left,#1a1a1a,#0b0b0b);
   color:white;
   height:100vh;
   display:flex;
+  animation:fadeIn 0.8s ease;
 }
 
-/* SIDEBAR */
+/* FADE ANIMATION */
+@keyframes fadeIn{
+  from{opacity:0;transform:scale(0.98);}
+  to{opacity:1;transform:scale(1);}
+}
+
+/* SIDEBAR (3D GLASS) */
 .sidebar{
   width:270px;
-  background:rgba(20,20,20,0.7);
-  backdrop-filter:blur(12px);
+  background:rgba(20,20,20,0.6);
+  backdrop-filter:blur(20px);
   padding:20px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
   border-right:1px solid rgba(255,255,255,0.05);
+  box-shadow:5px 0 30px rgba(0,0,0,0.6);
 }
 
 .logo{
@@ -44,11 +52,12 @@ body{
   cursor:pointer;
   text-align:center;
   font-weight:600;
-  transition:0.2s;
+  transition:0.25s;
+  box-shadow:0 5px 15px rgba(34,197,94,0.3);
 }
 .newchat:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 10px #22c55e;
+  transform:translateY(-2px) scale(1.05);
+  box-shadow:0 10px 25px rgba(34,197,94,0.5);
 }
 
 .recents{
@@ -66,6 +75,7 @@ body{
   gap:8px;
 }
 
+/* CHAT ITEM (3D FLOAT) */
 .chatItem{
   display:flex;
   justify-content:space-between;
@@ -75,9 +85,11 @@ body{
   border-radius:10px;
   cursor:pointer;
   font-size:13px;
-  transition:0.2s;
+  transition:0.25s;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
 }
 .chatItem:hover{
+  transform:translateX(5px) scale(1.02);
   background:rgba(255,255,255,0.1);
 }
 
@@ -110,6 +122,7 @@ body{
   display:none;
   flex-direction:column;
   overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.6);
 }
 .dropdown div{
   padding:10px;
@@ -119,7 +132,7 @@ body{
   background:#222;
 }
 
-/* PROFILE */
+/* PROFILE (GLASS + DEPTH) */
 .profile{
   background:rgba(255,255,255,0.05);
   padding:10px;
@@ -127,6 +140,7 @@ body{
   display:flex;
   gap:10px;
   align-items:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.5);
 }
 
 .avatar{
@@ -139,6 +153,7 @@ body{
   justify-content:center;
   cursor:pointer;
   overflow:hidden;
+  box-shadow:0 0 15px rgba(34,197,94,0.6);
 }
 
 .profileInfo{font-size:12px;}
@@ -152,6 +167,11 @@ body{
   background:linear-gradient(135deg,#ef4444,#dc2626);
   color:white;
   cursor:pointer;
+  transition:0.2s;
+}
+.profile button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 5px 15px rgba(239,68,68,0.5);
 }
 
 /* CHAT */
@@ -170,18 +190,21 @@ body{
   gap:12px;
 }
 
+/* MESSAGE 3D */
 .msg{
   max-width:70%;
   padding:14px;
   border-radius:14px;
   font-size:14px;
   line-height:1.5;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
 }
 
 .user{
   align-self:flex-end;
   background:linear-gradient(135deg,#22c55e,#16a34a);
   color:black;
+  box-shadow:0 5px 20px rgba(34,197,94,0.4);
 }
 
 .ai{
@@ -215,15 +238,22 @@ button{
   background:linear-gradient(135deg,#22c55e,#16a34a);
   cursor:pointer;
   font-weight:bold;
+  box-shadow:0 5px 15px rgba(34,197,94,0.3);
+  transition:0.2s;
 }
 button:hover{
-  box-shadow:0 0 10px #22c55e;
+  transform:translateY(-2px);
+  box-shadow:0 10px 25px rgba(34,197,94,0.5);
+}
+button:active{
+  transform:translateY(1px);
 }
 </style>
 </head>
 
 <body>
 
+<!-- ✅ نفس HTML ديالك بلا تغيير -->
 <div class="sidebar">
   <div>
     <div class="logo">◆ ILYASS AI</div>
@@ -263,10 +293,11 @@ button:hover{
 
 <script>
 
+/* 🔥 نفس JS ديالك 100% بلا تغيير */
+
 let currentChatId=null;
 let activeMenuId=null;
 
-/* USER */
 window.onload=()=>{
   const user=JSON.parse(localStorage.getItem("user"));
   if(user){
@@ -276,13 +307,11 @@ window.onload=()=>{
   }
 };
 
-/* STORAGE */
 function getUserKey(){
   const user=JSON.parse(localStorage.getItem("user"));
   return "chats_"+user.email;
 }
 
-/* LOAD */
 function loadChats(){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const list=document.getElementById("chatList");
@@ -301,7 +330,6 @@ function loadChats(){
   });
 }
 
-/* MENU */
 function toggleMenu(e,id){
   e.stopPropagation();
   activeMenuId=id;
@@ -321,7 +349,6 @@ document.addEventListener("click",()=>{
   document.getElementById("dropdown").style.display="none";
 });
 
-/* DELETE */
 function deleteChat(){
   let chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   chats=chats.filter(c=>c.id!==activeMenuId);
@@ -329,7 +356,6 @@ function deleteChat(){
   loadChats();
 }
 
-/* RENAME */
 function renameChat(){
   const name=prompt("New name:");
   if(!name) return;
@@ -342,7 +368,6 @@ function renameChat(){
   loadChats();
 }
 
-/* NEW CHAT */
 function newChat(){
   currentChatId=Date.now();
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
@@ -354,7 +379,6 @@ function newChat(){
   document.getElementById("messages").innerHTML="";
 }
 
-/* OPEN */
 function openChat(id){
   currentChatId=id;
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
@@ -368,7 +392,6 @@ function openChat(id){
   });
 }
 
-/* SAVE */
 function saveMessage(text,type){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const chat=chats.find(c=>c.id===currentChatId);
@@ -383,7 +406,6 @@ function saveMessage(text,type){
   loadChats();
 }
 
-/* MESSAGE */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -391,7 +413,6 @@ function addMessage(text,type){
   document.getElementById("messages").appendChild(div);
 }
 
-/* SEND */
 async function send(){
   if(!currentChatId){
     newChat();
@@ -422,7 +443,6 @@ async function send(){
   }
 }
 
-/* PHOTO */
 function uploadPhoto(){
   document.getElementById("fileInput").click();
 }
@@ -440,7 +460,6 @@ function handlePhoto(e){
   reader.readAsDataURL(file);
 }
 
-/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location.reload();
