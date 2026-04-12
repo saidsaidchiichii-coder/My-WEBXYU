@@ -61,7 +61,6 @@ body{background:#0a0a0a;color:white;display:flex;height:100vh;}
   padding:10px;
   border-radius:10px;
   max-width:70%;
-  white-space:pre-wrap; /* 🔥 مهم باش يبان newline */
 }
 
 .user{margin-left:auto;background:#22c55e;color:black;}
@@ -71,27 +70,23 @@ body{background:#0a0a0a;color:white;display:flex;height:100vh;}
   display:flex;
   padding:10px;
   background:#111;
-  gap:10px;
 }
 
-textarea{
+input{
   flex:1;
   padding:10px;
   border:none;
   border-radius:10px;
   background:#1a1a1a;
   color:white;
-  resize:none;
-  min-height:40px;
-  max-height:120px;
 }
 
 button{
+  margin-left:10px;
   padding:10px;
   border:none;
   border-radius:10px;
   background:#22c55e;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -108,8 +103,7 @@ button{
   <div class="messages" id="messages"></div>
 
   <div class="input">
-    <textarea id="input" placeholder="Ask..."
-    onkeydown="handleKey(event)"></textarea>
+    <input id="input" placeholder="Ask..." onkeydown="handleKey(event)">
     <button onclick="send()">Send</button>
   </div>
 </div>
@@ -213,8 +207,9 @@ function addMessage(text,type){
 
   chat.messages.push({text,type});
 
-  if(chat.messages.length === 1 && type==="user"){
-    chat.title = text.slice(0,25);
+  /* 🔥 FIX الوحيد */
+  if(chat.title === "New Chat" && type==="user"){
+    chat.title = text.substring(0, 25);
   }
 
   save();
@@ -224,8 +219,7 @@ function addMessage(text,type){
 
 /* ENTER */
 function handleKey(e){
-  if(e.key==="Enter" && !e.shiftKey){
-    e.preventDefault();
+  if(e.key==="Enter"){
     send();
   }
 }
