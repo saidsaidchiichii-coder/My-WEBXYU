@@ -140,19 +140,18 @@ window.onload = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   if(user){
     showProfile(user);
+    loadMessages();
   }
 };
 
-/* PROFILE */
 function showProfile(data){
   document.getElementById("authButtons").style.display="none";
   document.getElementById("profileBox").style.display="block";
 
-  document.getElementById("profileName").innerText = data.username || "User";
+  document.getElementById("profileName").innerText = "User";
   document.getElementById("profileEmail").innerText = data.email;
 }
 
-/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location.reload();
@@ -166,17 +165,8 @@ function closeSignup(){document.getElementById("signupModal").style.display="non
 
 /* SIGNUP */
 async function doSignup(){
-
-  const username = document.getElementById("username").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
-  const age = document.getElementById("age").value;
-  const agree = document.getElementById("agree").checked;
   const errorEl = document.getElementById("signupError");
-
-  if(!username) return errorEl.innerText="❌ Username required";
-  if(!email) return errorEl.innerText="❌ Email required";
-  if(!age) return errorEl.innerText="❌ Age required";
-  if(!agree) return errorEl.innerText="❌ Accept terms";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/signup",{
@@ -199,20 +189,18 @@ async function doSignup(){
     }
 
     errorEl.style.color="lightgreen";
-    errorEl.innerText="✔ Check your email 📩 and confirm before login";
+    errorEl.innerText="✔ Check your email 📩";
 
   }catch{
     errorEl.innerText="❌ Network error";
   }
 }
 
-/* LOGIN (STRICT 🔥) */
+/* LOGIN */
 async function doLogin(){
 
   const email = document.getElementById("loginEmail").value.trim();
   const errorEl = document.getElementById("loginError");
-
-  if(!email) return errorEl.innerText="❌ Email required";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
@@ -230,29 +218,21 @@ async function doLogin(){
     const data = await res.json();
 
     if(data.error){
-
-      if(data.error.message.includes("Email not confirmed")){
-        return errorEl.innerText="❌ خاصك تفعل الإيميل 📩";
-      }
-
-      if(data.error.message.includes("Invalid login")){
-        return errorEl.innerText="❌ Email ما مسجلش";
-      }
-
       return errorEl.innerText="❌ " + data.error.message;
     }
 
-    /* 🔥 FINAL BLOCK */
     if(!data.user.email_confirmed_at){
-      return errorEl.innerText="❌ خاصك تفعّل الإيميل قبل الدخول";
+      return errorEl.innerText="❌ Confirm email first";
     }
 
     localStorage.setItem("user", JSON.stringify({
       email: data.user.email,
-      username: "User"
+      id: data.user.id,
+      token: data.access_token
     }));
 
-    showProfile({email:data.user.email, username:"User"});
+    showProfile(data.user);
+    loadMessages();
     closeLogin();
 
   }catch{
@@ -260,7 +240,33 @@ async function doLogin(){
   }
 }
 
-/* CHAT (same) */
+/* LOAD USER MESSAGES */
+async function loadMessages(){
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user) return;
+
+  const res = await fetch(
+    SUPABASE_URL + "/rest/v1/messages?user_id=eq." + user.id + "&order=created_at.asc",
+    {
+      headers:{
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + user.token
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+
+  data.forEach(msg=>{
+    addMessage(msg.text, msg.role);
+  });
+}
+
+/* CHAT */
 function scrollToBottom(){
   const box=document.getElementById("messages");
   box.scrollTop=box.scrollHeight;
@@ -275,57 +281,64 @@ function addMessage(text,type){
   return div;
 }
 
-function showThinking(){
-  const div=document.createElement("div");
-  div.className="msg ai";
-  div.innerHTML=`<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
-  document.getElementById("messages").appendChild(div);
-}
-
-function hideThinking(){
-  const thinking=document.querySelector(".thinking");
-  if(thinking) thinking.parentElement.remove();
-}
-
-function typeText(element,text,speed=10){
-  let i=0;element.innerHTML="";
-  const interval=setInterval(()=>{
-    element.innerHTML+=text[i];i++;
-    if(i>=text.length) clearInterval(interval);
-  },speed);
-}
-
-function newChat(){
-  document.getElementById("messages").innerHTML =
-  `<div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>`;
-}
-
 async function send(){
+
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user) return alert("Login first");
+
   addMessage(text,"user");
   input.value="";
-  showThinking();
 
-  try{
-    const res=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text})
-    });
+  /* SAVE USER MSG */
+  await fetch(SUPABASE_URL + "/rest/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "apikey":SUPABASE_KEY,
+      "Authorization":"Bearer "+user.token
+    },
+    body:JSON.stringify({
+      user_id:user.id,
+      text:text,
+      role:"user"
+    })
+  });
 
-    const data=await res.json();
-    hideThinking();
+  /* AI RESPONSE */
+  const res=await fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message:text})
+  });
 
-    const msg=addMessage("", "ai");
-    typeText(msg, data.reply || "No response", 10);
+  const data=await res.json();
 
-  }catch{
-    hideThinking();
-    addMessage("⚠️ Chat error","ai");
-  }
+  addMessage(data.reply,"ai");
+
+  /* SAVE AI MSG */
+  await fetch(SUPABASE_URL + "/rest/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "apikey":SUPABASE_KEY,
+      "Authorization":"Bearer "+user.token
+    },
+    body:JSON.stringify({
+      user_id:user.id,
+      text:data.reply,
+      role:"ai"
+    })
+  });
+
+}
+
+function newChat(){
+  document.getElementById("messages").innerHTML =
+  `<div class="msg ai">New chat 👋</div>`;
 }
 
 </script>
