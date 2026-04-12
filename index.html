@@ -5,201 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AI Chat</title>
 
+<link rel="stylesheet" href="css/style.css">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Inter, Arial;
-}
-
-body{
-  background:#0f0f0f;
-  color:white;
-  height:100vh;
-  display:flex;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:260px;
-  background:#111;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.logo{
-  font-size:18px;
-  font-weight:bold;
-}
-
-.newchat{
-  padding:10px;
-  background:#1a1a1a;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-/* CHAT */
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  filter: blur(6px);
-  pointer-events:none;
-}
-
-.chat.active{
-  filter:none;
-  pointer-events:auto;
-}
-
-.messages{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.msg{
-  max-width:70%;
-  padding:12px 14px;
-  border-radius:14px;
-}
-
-.user{
-  align-self:flex-end;
-  background:#22c55e;
-  color:black;
-}
-
-.ai{
-  align-self:flex-start;
-  background:#1f1f1f;
-}
-
-/* INPUT */
-.input{
-  display:flex;
-  padding:15px;
-  background:#111;
-}
-
-input{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#1a1a1a;
-  color:white;
-}
-
-button{
-  margin-left:10px;
-  padding:12px 18px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  cursor:pointer;
-}
-
-/* 🌈 LOGIN DESIGN */
-.loginBox{
-  position:relative;
-  width:340px;
-  padding:30px 25px;
-  border-radius:18px;
-  text-align:center;
-  overflow:hidden;
-}
-
-.loginBox::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  background:linear-gradient(90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c);
-  background-size:300% 300%;
-  animation:rgbMove 5s linear infinite;
-  filter:blur(8px);
-  z-index:-1;
-}
-
-.loginBox::after{
-  content:"";
-  position:absolute;
-  inset:2px;
-  background:#111;
-  border-radius:16px;
-  z-index:-1;
-}
-
-@keyframes rgbMove{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
-
-/* INPUT LOGIN */
-.loginBox input{
-  width:100%;
-  padding:14px;
-  margin:8px 0;
-  border-radius:12px;
-  border:1px solid #222;
-  background:#0f0f0f;
-  color:white;
-}
-
-.loginBox button{
-  width:100%;
-  margin-top:10px;
-  padding:12px;
-  border-radius:12px;
-}
-
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.9);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-}
-
-/* SETTINGS */
-#settingsPanel{
-  display:none;
-}
-
-/* TOAST */
-.toast{
-  position:fixed;
-  top:20px;
-  right:20px;
-  padding:12px 14px;
-  border-radius:10px;
-  color:white;
-  opacity:0;
-  transform:translateY(-15px);
-  transition:0.3s;
-}
-
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-.toast.success{background:#22c55e;}
-.toast.error{background:#ef4444;}
-</style>
+<script defer src="js/app.js"></script>
 </head>
 
 <body>
@@ -225,16 +33,16 @@ button{
     <h2>Settings ⚙️</h2>
 
     <p>Language</p>
-    <select style="width:100%;padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
+    <select>
       <option>English</option>
       <option>Français</option>
       <option>العربية</option>
     </select>
 
-    <p style="margin-top:10px;">Users</p>
+    <p>Users</p>
     <div id="usersList"></div>
 
-    <button onclick="closeSettings()" style="background:#ef4444;margin-top:10px;">Close</button>
+    <button onclick="closeSettings()">Close</button>
   </div>
 </div>
 
@@ -247,7 +55,6 @@ button{
 
 <!-- CHAT -->
 <div class="chat" id="chat">
-
   <div class="messages" id="messages">
     <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
   </div>
@@ -257,129 +64,7 @@ button{
     onkeydown="if(event.key==='Enter') send()" />
     <button onclick="send()">Send</button>
   </div>
-
 </div>
-
-<script>
-
-/* SUPABASE */
-const { createClient } = supabase;
-const supabaseClient = createClient(
-  "https://idjgsgtupuymysptxrbl.supabase.co",
-  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
-);
-
-let loggedIn = false;
-
-/* TOAST */
-function notify(msg,type="success"){
-  const t=document.createElement("div");
-  t.className=`toast ${type}`;
-  t.innerText=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.classList.add("show"),10);
-  setTimeout(()=>t.remove(),3000);
-}
-
-/* LOGIN */
-async function login(){
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
-
-  const {error} = await supabaseClient.auth.signInWithPassword({email,password});
-
-  if(error){ notify(error.message,"error"); return; }
-
-  saveUser(email);
-  notify("Login success");
-
-  document.getElementById("loginOverlay").style.display="none";
-  document.getElementById("chat").classList.add("active");
-  loggedIn=true;
-}
-
-/* SIGNUP */
-async function signup(){
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
-
-  const {error} = await supabaseClient.auth.signUp({email,password});
-
-  if(error){ notify(error.message,"error"); return; }
-
-  notify("Account created");
-}
-
-/* OWNER */
-function ownerSkip(){
-  const key=prompt("Owner key");
-  if(key==="ADMIN123"){
-    document.getElementById("loginOverlay").style.display="none";
-    document.getElementById("chat").classList.add("active");
-    loggedIn=true;
-  }
-}
-
-/* SAVE USERS */
-function saveUser(email){
-  let users=JSON.parse(localStorage.getItem("users")||"[]");
-  if(!users.includes(email)){
-    users.push(email);
-    localStorage.setItem("users",JSON.stringify(users));
-  }
-}
-
-/* SETTINGS */
-function openSettings(){
-  document.getElementById("settingsPanel").style.display="flex";
-
-  const users=JSON.parse(localStorage.getItem("users")||[]);
-  document.getElementById("usersList").innerText=users.join("\n");
-}
-
-function closeSettings(){
-  document.getElementById("settingsPanel").style.display="none";
-}
-
-/* CHAT */
-function addMessage(text,type){
-  const div=document.createElement("div");
-  div.className="msg "+type;
-  div.innerText=text;
-  document.getElementById("messages").appendChild(div);
-}
-
-/* SEND */
-async function send(){
-
-  if(!loggedIn){
-    notify("Login first","error");
-    return;
-  }
-
-  const input=document.getElementById("input");
-  const text=input.value.trim();
-  if(!text) return;
-
-  addMessage(text,"user");
-  input.value="";
-
-  try{
-    const res=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text})
-    });
-
-    const data=await res.json();
-    addMessage(data.reply || "No response","ai");
-
-  }catch{
-    notify("Chat error","error");
-  }
-}
-
-</script>
 
 </body>
 </html>
