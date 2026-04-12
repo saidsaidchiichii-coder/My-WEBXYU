@@ -48,57 +48,63 @@ body{
   margin-top:10px;
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:8px;
 }
 
 .chatItem{
-  padding:10px;
-  background:#151515;
-  border-radius:10px;
-  font-size:13px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  transition:0.2s;
-}
-
-.chatItem:hover{
-  background:#1f1f1f;
-}
-
-.chatItem.active{
-  background:#22c55e;
-  color:black;
-}
-
-.chatItem span{
-  flex:1;
+  padding:10px;
+  background:#151515;
+  border-radius:10px;
   cursor:pointer;
+  font-size:13px;
+}
+
+.chatItem:hover{background:#222;}
+
+.chatTitle{
+  flex:1;
+  white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  white-space:nowrap;
 }
 
-/* ACTIONS (hidden until hover) */
-.chatActions{
-  display:none;
-}
-
-.chatItem:hover .chatActions{
+/* THREE DOT MENU */
+.menuBtn{
+  width:25px;
+  height:25px;
+  border-radius:6px;
   display:flex;
-}
-
-.chatActions button{
-  background:none;
-  border:none;
-  color:#888;
-  font-size:11px;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
-  margin-left:6px;
 }
 
-.chatActions button:hover{
-  color:white;
+.menuBtn:hover{
+  background:#2a2a2a;
+}
+
+.dropdown{
+  position:absolute;
+  background:#1a1a1a;
+  border:1px solid #333;
+  border-radius:8px;
+  padding:5px;
+  display:none;
+  flex-direction:column;
+  z-index:999;
+}
+
+.dropdown div{
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:13px;
+}
+
+.dropdown div:hover{
+  background:#2a2a2a;
 }
 
 /* PROFILE */
@@ -131,13 +137,17 @@ body{
   padding:7px;
   border:none;
   border-radius:8px;
-  background:#ef4444;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
   color:white;
   cursor:pointer;
 }
 
 /* CHAT */
-.chat{flex:1;display:flex;flex-direction:column;}
+.chat{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
 
 .messages{
   flex:1;
@@ -152,7 +162,6 @@ body{
   max-width:70%;
   padding:14px;
   border-radius:14px;
-  line-height:1.5;
 }
 
 .user{
@@ -198,7 +207,7 @@ button{
 <div class="sidebar">
 
   <div>
-    <div class="logo">ILYASS AI</div>
+    <div class="logo">◆ ILYASS AI</div>
 
     <div class="newchat" onclick="newChat()">+ New Chat</div>
 
@@ -213,12 +222,13 @@ button{
     </div>
 
     <div class="profileInfo">
-      <div id="profileEmail"></div>
+      <div id="profileName">User</div>
+      <div id="profileEmail" style="opacity:.6"></div>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
 
-  <input type="file" id="fileInput" hidden accept="image/*" onchange="handlePhoto(event)">
+  <input type="file" id="fileInput" hidden onchange="handlePhoto(event)">
 
 </div>
 
@@ -232,100 +242,117 @@ button{
   </div>
 </div>
 
+<!-- DROPDOWN -->
+<div id="dropdown" class="dropdown"></div>
+
 <script>
 
 let currentChatId=null;
+let activeMenuId=null;
 
-function getUser(){
-  return JSON.parse(localStorage.getItem("user"));
-}
-
-function getUserKey(){
-  return "chats_"+getUser().email;
-}
-
+/* USER */
 window.onload=()=>{
-  const user=getUser();
+  const user=JSON.parse(localStorage.getItem("user"));
   if(user){
-    profileEmail.innerText=user.email;
-    avatarText.innerText=user.email[0].toUpperCase();
-
-    const saved=localStorage.getItem("avatar_"+user.email);
-    if(saved){
-      avatarImg.src=saved;
-      avatarImg.style.display="block";
-      avatarText.style.display="none";
-    }
-
+    document.getElementById("profileEmail").innerText=user.email;
+    document.getElementById("avatarText").innerText=user.email[0].toUpperCase();
     loadChats();
   }
 };
 
-/* PHOTO */
-function uploadPhoto(){
-  fileInput.click();
+/* STORAGE */
+function getUserKey(){
+  const user=JSON.parse(localStorage.getItem("user"));
+  return "chats_"+user.email;
 }
 
-function handlePhoto(e){
-  const file=e.target.files[0];
-  const reader=new FileReader();
-
-  reader.onload=()=>{
-    avatarImg.src=reader.result;
-    avatarImg.style.display="block";
-    avatarText.style.display="none";
-
-    localStorage.setItem("avatar_"+getUser().email,reader.result);
-  };
-
-  reader.readAsDataURL(file);
-}
-
-/* CHATS */
+/* LOAD CHATS */
 function loadChats(){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  chatList.innerHTML="";
+  const list=document.getElementById("chatList");
+  list.innerHTML="";
 
   chats.forEach(c=>{
     const div=document.createElement("div");
-    div.className="chatItem"+(c.id===currentChatId?" active":"");
+    div.className="chatItem";
 
     div.innerHTML=`
-      <span onclick="openChat(${c.id})">${c.title}</span>
-      <div class="chatActions">
-        <button onclick="renameChat(${c.id})">Rename</button>
-        <button onclick="deleteChat(${c.id})">Delete</button>
-      </div>
+      <div class="chatTitle" onclick="openChat(${c.id})">${c.title}</div>
+      <div class="menuBtn" onclick="toggleMenu(event, ${c.id})">⋯</div>
     `;
 
-    chatList.appendChild(div);
+    list.appendChild(div);
   });
 }
 
-function newChat(){
-  currentChatId=Date.now();
+/* MENU */
+function toggleMenu(e,id){
+  e.stopPropagation();
+  const menu=document.getElementById("dropdown");
+  activeMenuId=id;
+
+  menu.style.display="flex";
+  menu.style.top=e.pageY+"px";
+  menu.style.left=e.pageX+"px";
+
+  menu.innerHTML=`
+    <div onclick="renameChat()">Rename</div>
+    <div onclick="deleteChat()">Delete</div>
+  `;
+}
+
+document.addEventListener("click",()=>{
+  document.getElementById("dropdown").style.display="none";
+});
+
+/* DELETE */
+function deleteChat(){
+  let chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+  chats=chats.filter(c=>c.id!==activeMenuId);
+  localStorage.setItem(getUserKey(),JSON.stringify(chats));
+  loadChats();
+}
+
+/* RENAME */
+function renameChat(){
+  const name=prompt("New name:");
+  if(!name) return;
 
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-
-  chats.push({id:currentChatId,title:"New chat",messages:[]});
+  const chat=chats.find(c=>c.id===activeMenuId);
+  chat.title=name;
 
   localStorage.setItem(getUserKey(),JSON.stringify(chats));
   loadChats();
-  messages.innerHTML="";
 }
 
+/* NEW CHAT */
+function newChat(){
+  currentChatId=Date.now();
+  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
+
+  chats.push({id:currentChatId,title:"New chat",messages:[]});
+  localStorage.setItem(getUserKey(),JSON.stringify(chats));
+
+  loadChats();
+  document.getElementById("messages").innerHTML="";
+}
+
+/* OPEN CHAT */
 function openChat(id){
   currentChatId=id;
-
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const chat=chats.find(c=>c.id===id);
 
-  messages.innerHTML="";
-  chat.messages.forEach(m=>addMessage(m.text,m.type));
+  const box=document.getElementById("messages");
+  box.innerHTML="";
 
-  loadChats();
+  chat.messages.forEach(m=>{
+    addMessage(m.text,m.type);
+  });
 }
 
+/* SAVE */
 function saveMessage(text,type){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const chat=chats.find(c=>c.id===currentChatId);
@@ -340,47 +367,22 @@ function saveMessage(text,type){
   loadChats();
 }
 
-/* RENAME */
-function renameChat(id){
-  const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  const chat=chats.find(c=>c.id===id);
-
-  const name=prompt("Rename chat:",chat.title);
-  if(name){
-    chat.title=name;
-    localStorage.setItem(getUserKey(),JSON.stringify(chats));
-    loadChats();
-  }
-}
-
-/* DELETE */
-function deleteChat(id){
-  let chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  chats=chats.filter(c=>c.id!==id);
-
-  localStorage.setItem(getUserKey(),JSON.stringify(chats));
-
-  if(currentChatId===id){
-    messages.innerHTML="";
-    currentChatId=null;
-  }
-
-  loadChats();
-}
-
-/* UI */
+/* MESSAGE */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
-  messages.appendChild(div);
+  document.getElementById("messages").appendChild(div);
 }
 
 /* SEND */
 async function send(){
 
-  if(!currentChatId) newChat();
+  if(!currentChatId){
+    newChat();
+  }
 
+  const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
@@ -397,12 +399,30 @@ async function send(){
 
     const data=await res.json();
 
-    addMessage(data.reply||"AI response","ai");
-    saveMessage(data.reply||"AI response","ai");
+    addMessage(data.reply || "AI","ai");
+    saveMessage(data.reply || "AI","ai");
 
   }catch{
-    addMessage("Error","ai");
+    addMessage("⚠️ Error","ai");
   }
+}
+
+/* PHOTO */
+function uploadPhoto(){
+  document.getElementById("fileInput").click();
+}
+
+function handlePhoto(e){
+  const file=e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=()=>{
+    document.getElementById("avatarImg").src=reader.result;
+    document.getElementById("avatarImg").style.display="block";
+    document.getElementById("avatarText").style.display="none";
+  };
+  reader.readAsDataURL(file);
 }
 
 /* LOGOUT */
