@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Chat Pro - Professional Assistant</title>
+<title>AI Chat</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
@@ -13,96 +12,45 @@
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Inter, Arial;
 }
 
 body{
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color:#333;
+  background:#0f0f0f;
+  color:white;
   height:100vh;
   display:flex;
-  overflow:hidden;
 }
 
-/* SIDEBAR - Enhanced Professional Design */
+/* SIDEBAR */
 .sidebar{
-  width:280px;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  padding:25px;
+  width:260px;
+  background:#111;
+  padding:20px;
   display:flex;
   flex-direction:column;
-  gap:15px;
-  box-shadow: 5px 0 25px rgba(0,0,0,0.1);
+  gap:10px;
 }
 
 .logo{
-  font-size:24px;
-  font-weight:800;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom:10px;
+  font-size:18px;
+  font-weight:bold;
 }
 
-.logo span{ color:#ff6b6b; }
-
-.chat-history{
-  flex:1;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.chat-item{
-  padding:12px 16px;
-  background: rgba(102,126,234,0.1);
-  border-radius:12px;
+.newchat{
+  padding:10px;
+  background:#1a1a1a;
+  border-radius:10px;
   cursor:pointer;
-  transition: all 0.3s ease;
-  font-size:14px;
-  border-left: 3px solid transparent;
 }
 
-.chat-item:hover{
-  background: rgba(102,126,234,0.2);
-  transform: translateX(5px);
-}
-
-.chat-item.active{
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color:white;
-  border-left-color: #ff6b6b;
-}
-
-.newchat, .settings-btn{
-  padding:14px 18px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color:white;
-  border-radius:12px;
-  cursor:pointer;
-  font-weight:600;
-  transition: all 0.3s ease;
-  text-align:center;
-  box-shadow: 0 4px 15px rgba(102,126,234,0.3);
-}
-
-.newchat:hover, .settings-btn:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102,126,234,0.4);
-}
-
-/* MAIN CHAT - Professional Glassmorphism */
+/* CHAT */
 .chat{
   flex:1;
   display:flex;
   flex-direction:column;
   filter: blur(6px);
   pointer-events:none;
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(20px);
 }
 
 .chat.active{
@@ -110,488 +58,328 @@ body{
   pointer-events:auto;
 }
 
-.chat-header{
-  padding:25px 30px;
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.chat-title{
-  font-size:22px;
-  font-weight:700;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.header-actions{
-  display:flex;
-  gap:10px;
-}
-
-.header-btn{
-  padding:8px 16px;
-  background: rgba(255,255,255,0.3);
-  border: none;
-  border-radius:8px;
-  color:#333;
-  cursor:pointer;
-  font-size:14px;
-  transition: all 0.3s ease;
-}
-
-.header-btn:hover{ background: rgba(255,255,255,0.5); }
-
 .messages{
   flex:1;
-  padding:30px;
+  padding:20px;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:20px;
-  padding-bottom:100px;
+  gap:10px;
 }
 
 .msg{
-  max-width:75%;
-  padding:18px 22px;
-  border-radius:20px;
-  position:relative;
-  animation: slideIn 0.4s ease-out;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-@keyframes slideIn{
-  from{ opacity:0; transform: translateY(20px); }
-  to{ opacity:1; transform: translateY(0); }
+  max-width:70%;
+  padding:12px 14px;
+  border-radius:14px;
 }
 
 .user{
   align-self:flex-end;
-  background: linear-gradient(135deg, #ff6b6b, #feca57);
-  color:white;
-  border-bottom-right-radius:6px;
+  background:#22c55e;
+  color:black;
 }
 
 .ai{
   align-self:flex-start;
-  background: rgba(255,255,255,0.9);
-  color:#333;
-  border-bottom-left-radius:6px;
+  background:#1f1f1f;
 }
 
-.msg-time{
-  font-size:11px;
-  opacity:0.7;
-  margin-top:8px;
-}
-
-/* ENHANCED INPUT */
+/* INPUT */
 .input{
-  padding:25px 30px;
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255,255,255,0.2);
   display:flex;
-  gap:15px;
-  align-items:center;
+  padding:15px;
+  background:#111;
 }
 
-.input-actions{
-  display:flex;
-  gap:10px;
-}
-
-.action-btn{
-  width:45px;
-  height:45px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  font-size:18px;
-  transition: all 0.3s ease;
-  background: rgba(255,255,255,0.3);
-  color:#333;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.action-btn:hover{ background: rgba(255,255,255,0.5); transform: scale(1.05); }
-
-#input{
+input{
   flex:1;
-  padding:16px 20px;
+  padding:12px;
   border:none;
-  border-radius:25px;
-  background: rgba(255,255,255,0.9);
-  color:#333;
-  font-size:16px;
-  outline:none;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-radius:10px;
+  background:#1a1a1a;
+  color:white;
 }
 
-#input::placeholder{ color:#666; }
+button{
+  margin-left:10px;
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  cursor:pointer;
+}
 
-/* PROFESSIONAL LOGIN */
+/* 🌈 LOGIN DESIGN */
 .loginBox{
   position:relative;
-  width:420px;
-  padding:40px 35px;
-  border-radius:25px;
+  width:340px;
+  padding:30px 25px;
+  border-radius:18px;
   text-align:center;
   overflow:hidden;
-  backdrop-filter: blur(30px);
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
 }
 
 .loginBox::before{
   content:"";
   position:absolute;
-  inset:-3px;
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #feca57, #ff6b6b);
-  background-size:400% 400%;
-  animation: rainbowGlow 6s ease infinite;
-  filter:blur(10px);
+  inset:-2px;
+  background:linear-gradient(90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c);
+  background-size:300% 300%;
+  animation:rgbMove 5s linear infinite;
+  filter:blur(8px);
   z-index:-1;
-  border-radius:22px;
-}
-
-@keyframes rainbowGlow{
-  0%,100%{ background-position:0% 50%; }
-  50%{ background-position:100% 50%; }
 }
 
 .loginBox::after{
   content:"";
   position:absolute;
   inset:2px;
-  background: rgba(255,255,255,0.1);
-  border-radius:22px;
+  background:#111;
+  border-radius:16px;
   z-index:-1;
 }
 
-.loginBox h2{
-  font-size:28px;
-  font-weight:800;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom:10px;
+@keyframes rgbMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
 }
 
-.loginBox p{ 
-  color:rgba(255,255,255,0.8);
-  margin-bottom:30px;
-  font-size:16px;
-}
-
-/* LOGIN INPUTS */
+/* INPUT LOGIN */
 .loginBox input{
   width:100%;
-  padding:16px 20px;
-  margin:12px 0;
-  border-radius:15px;
-  border:1px solid rgba(255,255,255,0.3);
-  background:rgba(255,255,255,0.9);
-  color:#333;
-  font-size:16px;
-  transition: all 0.3s ease;
-}
-
-.loginBox input:focus{
-  outline:none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+  padding:14px;
+  margin:8px 0;
+  border-radius:12px;
+  border:1px solid #222;
+  background:#0f0f0f;
+  color:white;
 }
 
 .loginBox button{
   width:100%;
-  margin:8px 0;
-  padding:16px;
-  border-radius:15px;
-  font-size:16px;
-  font-weight:600;
-  cursor:pointer;
-  transition: all 0.3s ease;
-  border:none;
-}
-
-.btn-primary{ background: linear-gradient(135deg, #667eea, #764ba2); color:white; }
-.btn-secondary{ background: linear-gradient(135deg, #4ecdc4, #45b7d1); color:white; }
-.btn-owner{ background: linear-gradient(135deg, #ff6b6b, #feca57); color:white; }
-
-.loginBox button:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
 }
 
 /* OVERLAY */
 .overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.7);
-  backdrop-filter: blur(10px);
+  background:rgba(0,0,0,0.9);
   display:flex;
   align-items:center;
   justify-content:center;
   z-index:999;
 }
 
-/* ENHANCED SETTINGS */
+/* SETTINGS */
 #settingsPanel{
   display:none;
 }
 
-.settings-content{
-  max-height:70vh;
-  overflow-y:auto;
-  padding-right:10px;
-}
-
-.settings-section{
-  margin-bottom:25px;
-  padding-bottom:20px;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-
-.settings-section h3{
-  color: #667eea;
-  margin-bottom:12px;
-  font-size:18px;
-}
-
-.settings-section select,
-.settings-section input{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.3);
-  background:rgba(255,255,255,0.9);
-  color:#333;
-}
-
-/* USERS LIST */
-.user-item{
-  padding:10px;
-  background:rgba(102,126,234,0.1);
-  border-radius:8px;
-  margin:5px 0;
-  font-size:14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.user-delete{
-  background:#ff6b6b;
-  color:white;
-  border:none;
-  padding:4px 8px;
-  border-radius:5px;
-  cursor:pointer;
-  font-size:12px;
-}
-
-/* TOAST - Enhanced */
+/* TOAST */
 .toast{
   position:fixed;
-  top:30px;
-  right:30px;
-  padding:16px 20px;
-  border-radius:12px;
+  top:20px;
+  right:20px;
+  padding:12px 14px;
+  border-radius:10px;
   color:white;
   opacity:0;
-  transform:translateY(-20px) scale(0.9);
-  transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
-  font-weight:600;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  z-index:1000;
-  min-width:300px;
+  transform:translateY(-15px);
+  transition:0.3s;
 }
 
 .toast.show{
   opacity:1;
-  transform:translateY(0) scale(1);
+  transform:translateY(0);
 }
 
-.toast.success{ background: linear-gradient(135deg, #22c55e, #51cf66); }
-.toast.error{ background: linear-gradient(135deg, #ef4444, #f87171); }
-.toast.info{ background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-
-/* RESPONSIVE */
-@media (max-width:768px){
-  .sidebar{ width:70px; }
-  .sidebar .logo{ font-size:18px; }
-  .chat-history{ display:none; }
-  .newchat, .settings-btn{ padding:12px; }
-}
-
-/* LOADING ANIMATION */
-.loading{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-}
-
-.loading-dots{
-  display:inline-flex;
-  gap:4px;
-}
-
-.loading-dots span{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background: rgba(255,255,255,0.5);
-  animation: loadingBounce 1.4s infinite ease-in-out both;
-}
-
-.loading-dots span:nth-child(1){ animation-delay: -0.32s; }
-.loading-dots span:nth-child(2){ animation-delay: -0.16s; }
-
-@keyframes loadingBounce{
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
-}
-
-/* TYPING INDICATOR */
-.typing-indicator{
-  background: rgba(102,126,234,0.1);
-  padding:15px 20px;
-  border-radius:18px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-style:italic;
-  color:#666;
-}
-
-.typing-dots{
-  display:flex;
-  gap:3px;
-}
-
-.typing-dots span{
-  width:6px;
-  height:6px;
-  background:#667eea;
-  border-radius:50%;
-  animation: typingBounce 1.2s infinite ease-in-out;
-}
-
-.typing-dots span:nth-child(2){ animation-delay:0.2s; }
-.typing-dots span:nth-child(3){ animation-delay:0.4s; }
-
-@keyframes typingBounce{
-  0%, 60%, 100%{ transform: translateY(0); }
-  30%{ transform: translateY(-10px); }
-}
+.toast.success{background:#22c55e;}
+.toast.error{background:#ef4444;}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN OVERLAY -->
+<!-- LOGIN -->
 <div class="overlay" id="loginOverlay">
   <div class="loginBox">
-    <h2>🚀 AI Chat Pro</h2>
-    <p>Access your professional AI assistant</p>
+    <h2>Welcome</h2>
+    <p>Login to continue</p>
 
-    <input id="email" placeholder="📧 Email address">
-    <input id="password" type="password" placeholder="🔒 Password">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
 
-    <button class="btn-primary" onclick="login()">Login</button>
-    <button class="btn-secondary" onclick="signup()">Create Account</button>
-    <button class="btn-owner" onclick="ownerSkip()">Skip (Owner Mode)</button>
-    
-    <p style="margin-top:20px; font-size:13px; opacity:0.8;">
-      Secure • Fast • Professional
-    </p>
+    <button onclick="login()">Login</button>
+    <button onclick="signup()" style="background:#3b82f6;">Create Account</button>
+    <button onclick="ownerSkip()" style="background:#9333ea;">Skip (Owner)</button>
   </div>
 </div>
 
-<!-- SETTINGS PANEL -->
+<!-- SETTINGS -->
 <div class="overlay" id="settingsPanel">
-  <div class="loginBox" style="width:500px; max-width:90vw;">
-    <h2>⚙️ Settings & Admin</h2>
-    
-    <div class="settings-content">
-      <div class="settings-section">
-        <h3>🌐 Language</h3>
-        <select id="languageSelect" onchange="changeLanguage()">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="ar">العربية</option>
-          <option value="es">Español</option>
-        </select>
-      </div>
+  <div class="loginBox">
+    <h2>Settings ⚙️</h2>
 
-      <div class="settings-section">
-        <h3>👥 Registered Users</h3>
-        <div id="usersList" style="max-height:200px; overflow-y:auto;"></div>
-      </div>
+    <p>Language</p>
+    <select style="width:100%;padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
+      <option>English</option>
+      <option>Français</option>
+      <option>العربية</option>
+    </select>
 
-      <div class="settings-section">
-        <h3>📊 Statistics</h3>
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-          <div style="text-align:center;">
-            <div style="font-size:24px; font-weight:bold; color:#4ecdc4;" id="totalUsers">0</div>
-            <div>Total Users</div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:24px; font-weight:bold; color:#ff6b6b;" id="totalChats">0</div>
-            <div>Total Chats</div>
-          </div>
-        </div>
-      </div>
+    <p style="margin-top:10px;">Users</p>
+    <div id="usersList"></div>
 
-      <div class="settings-section">
-        <h3>🔧 Admin Controls</h3>
-        <button class="btn-owner" onclick="clearAllData()" style="width:48%; margin-right:4%;">
-          Clear All Data
-        </button>
-        <button class="btn-primary" onclick="exportData()" style="width:48%;">
-          Export Data
-        </button>
-      </div>
-    </div>
-
-    <button class="btn-primary" onclick="closeSettings()" style="margin-top:20px;">Close Settings</button>
+    <button onclick="closeSettings()" style="background:#ef4444;margin-top:10px;">Close</button>
   </div>
 </div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="logo">AI<span>Chat</span> Pro</div>
-  
-  <div class="newchat" onclick="newChat()">➕ New Chat</div>
-  <div class="chat-history" id="chatHistory"></div>
-  
-  <div class="settings-btn" onclick="openSettings()">⚙️ Settings</div>
+  <div class="logo">◆ ILYASS AI</div>
+  <div class="newchat">+ New Chat</div>
+  <div class="newchat" onclick="openSettings()">⚙️ Settings</div>
 </div>
 
-<!-- MAIN CHAT -->
+<!-- CHAT -->
 <div class="chat" id="chat">
-  <div class="chat-header">
-    <div class="chat-title" id="chatTitle">New Conversation</div>
-    <div class="header-actions">
-      <button class="header-btn" onclick="newChat()">➕ New</button>
-      <button class="header-btn" onclick="clearChat()">🗑️ Clear</button>
-      <button class="header-btn" onclick="exportChat()">📤 Export</button>
-    </div>
-  </div>
 
   <div class="messages" id="messages">
-    <div class="msg ai" style="background: rgba(102,126,234,0.2); text-align:center; font-style:italic;">
-      🎉 Welcome to AI Chat Pro! I'm your professional assistant ready to help with anything.
-    </div>
+    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
   </div>
 
   <div class="input">
+    <input id="input" placeholder="Ask anything..."
+    onkeydown="if(event.key==='Enter') send()" />
+    <button onclick="send()">Send</button>
+  </div>
+
+</div>
+
+<script>
+
+/* SUPABASE */
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
+
+let loggedIn = false;
+
+/* TOAST */
+function notify(msg,type="success"){
+  const t=document.createElement("div");
+  t.className=`toast ${type}`;
+  t.innerText=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.classList.add("show"),10);
+  setTimeout(()=>t.remove(),3000);
+}
+
+/* LOGIN */
+async function login(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error} = await supabaseClient.auth.signInWithPassword({email,password});
+
+  if(error){ notify(error.message,"error"); return; }
+
+  saveUser(email);
+  notify("Login success");
+
+  document.getElementById("loginOverlay").style.display="none";
+  document.getElementById("chat").classList.add("active");
+  loggedIn=true;
+}
+
+/* SIGNUP */
+async function signup(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error} = await supabaseClient.auth.signUp({email,password});
+
+  if(error){ notify(error.message,"error"); return; }
+
+  notify("Account created");
+}
+
+/* OWNER */
+function ownerSkip(){
+  const key=prompt("Owner key");
+  if(key==="ADMIN123"){
+    document.getElementById("loginOverlay").style.display="none";
+    document.getElementById("chat").classList.add("active");
+    loggedIn=true;
+  }
+}
+
+/* SAVE USERS */
+function saveUser(email){
+  let users=JSON.parse(localStorage.getItem("users")||"[]");
+  if(!users.includes(email)){
+    users.push(email);
+    localStorage.setItem("users",JSON.stringify(users));
+  }
+}
+
+/* SETTINGS */
+function openSettings(){
+  document.getElementById("settingsPanel").style.display="flex";
+
+  const users=JSON.parse(localStorage.getItem("users")||[]);
+  document.getElementById("usersList").innerText=users.join("\n");
+}
+
+function closeSettings(){
+  document.getElementById("settingsPanel").style.display="none";
+}
+
+/* CHAT */
+function addMessage(text,type){
+  const div=document.createElement("div");
+  div.className="msg "+type;
+  div.innerText=text;
+  document.getElementById("messages").appendChild(div);
+}
+
+/* SEND */
+async function send(){
+
+  if(!loggedIn){
+    notify("Login first","error");
+    return;
+  }
+
+  const input=document.getElementById("input");
+  const text=input.value.trim();
+  if(!text) return;
+
+  addMessage(text,"user");
+  input.value="";
+
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
+
+    const data=await res.json();
+    addMessage(data.reply || "No response","ai");
+
+  }catch{
+    notify("Chat error","error");
+  }
+}
+
+</script>
+
+</body>
+</html>
