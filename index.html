@@ -13,45 +13,75 @@ body{background:#0a0a0a;color:white;height:100vh;display:flex;}
 
 /* SIDEBAR */
 .sidebar{
-  width:260px;background:#111;padding:15px;
-  display:flex;flex-direction:column;gap:10px;
+  width:260px;
+  background:#111;
+  padding:15px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
   border-right:1px solid #222;
 }
+
+.logo{font-weight:bold;margin-bottom:10px;}
 
 .chatItem{
   padding:10px;
   border-radius:10px;
   background:#1a1a1a;
   cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 .chatItem.active{background:#22c55e;color:black}
+
+.smallBtn{
+  font-size:12px;
+  opacity:0.6;
+}
 
 /* CHAT */
 .chat{flex:1;display:flex;flex-direction:column;}
 
 .messages{
-  flex:1;padding:20px;overflow-y:auto;
-  display:flex;flex-direction:column;gap:10px;
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
-.msg{max-width:65%;padding:12px;border-radius:14px;}
+.msg{
+  max-width:65%;
+  padding:12px;
+  border-radius:14px;
+}
 .user{margin-left:auto;background:#22c55e;color:black;}
 .ai{background:#1f1f1f;}
 
-.input{display:flex;padding:10px;background:#111;}
-input{flex:1;padding:12px;border-radius:10px;border:none;background:#1a1a1a;color:white;}
-button{margin-left:10px;padding:10px;border:none;border-radius:10px;background:#22c55e;}
-
-/* SUGGESTIONS */
-.suggestions{
+/* INPUT */
+.input{
   display:flex;
-  gap:10px;
-  padding:10px;
+  padding:12px;
+  background:#111;
 }
-.suggestions div{
-  padding:8px 12px;
-  background:#1a1a1a;
+
+input{
+  flex:1;
+  padding:12px;
+  border:none;
   border-radius:10px;
+  background:#1a1a1a;
+  color:white;
+}
+
+button{
+  margin-left:10px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
   cursor:pointer;
 }
 </style>
@@ -59,23 +89,22 @@ button{margin-left:10px;padding:10px;border:none;border-radius:10px;background:#
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
-  <div onclick="newChat()">+ New Chat</div>
+  <div class="logo">◆ ILYASS AI</div>
+
+  <button onclick="newChat()">+ New Chat</button>
+
   <div id="chatList"></div>
 </div>
 
+<!-- CHAT -->
 <div class="chat">
-
-  <div class="suggestions">
-    <div onclick="quick('Write a C++ code')">💻 Code</div>
-    <div onclick="quick('Translate to French')">🌍 Translate</div>
-    <div onclick="quick('Explain simply')">🧠 Explain</div>
-  </div>
 
   <div class="messages" id="messages"></div>
 
   <div class="input">
-    <input id="input" onkeydown="handleKey(event)" placeholder="Ask..." />
+    <input id="input" placeholder="Ask anything..." onkeydown="handleKey(event)">
     <button onclick="send()">Send</button>
   </div>
 
@@ -83,114 +112,136 @@ button{margin-left:10px;padding:10px;border:none;border-radius:10px;background:#
 
 <script>
 
-/* CHAT STORAGE */
-let chats = JSON.parse(localStorage.getItem("chats")||"{}");
-let currentChat = null;
+/* =========================
+   CHAT SYSTEM (FULL LOGIC)
+========================= */
+
+let chats = JSON.parse(localStorage.getItem("chats") || "{}");
+let currentChat = localStorage.getItem("currentChat");
+
+/* CREATE FIRST CHAT IF EMPTY */
+if(!currentChat || !chats[currentChat]){
+  newChat();
+}
+
+/* SAVE */
+function save(){
+  localStorage.setItem("chats", JSON.stringify(chats));
+  localStorage.setItem("currentChat", currentChat);
+}
 
 /* NEW CHAT */
 function newChat(){
-  const id = Date.now();
+  const id = Date.now().toString();
   chats[id] = [];
   currentChat = id;
-  saveChats();
+  save();
   renderChats();
   renderMessages();
 }
 
-/* SAVE */
-function saveChats(){
-  localStorage.setItem("chats", JSON.stringify(chats));
+/* SWITCH CHAT */
+function switchChat(id){
+  currentChat = id;
+  save();
+  renderChats();
+  renderMessages();
+}
+
+/* DELETE CHAT */
+function deleteChat(id){
+  delete chats[id];
+  if(currentChat === id){
+    const keys = Object.keys(chats);
+    currentChat = keys.length ? keys[0] : null;
+  }
+  save();
+  renderChats();
+  renderMessages();
 }
 
 /* RENDER SIDEBAR */
 function renderChats(){
-  const list=document.getElementById("chatList");
-  list.innerHTML="";
-  for(let id in chats){
-    const div=document.createElement("div");
-    div.className="chatItem "+(id==currentChat?"active":"");
-    div.innerText="Chat "+id;
-    div.onclick=()=>{
-      currentChat=id;
-      renderChats();
-      renderMessages();
-    };
+  const list = document.getElementById("chatList");
+  list.innerHTML = "";
+
+  Object.keys(chats).reverse().forEach(id=>{
+    const div = document.createElement("div");
+    div.className = "chatItem " + (id===currentChat ? "active" : "");
+
+    div.innerHTML = `
+      <span>Chat ${id.slice(-4)}</span>
+      <span class="smallBtn" onclick="event.stopPropagation();deleteChat('${id}')">🗑</span>
+    `;
+
+    div.onclick = ()=>switchChat(id);
     list.appendChild(div);
-  }
+  });
 }
 
 /* RENDER MESSAGES */
 function renderMessages(){
-  const box=document.getElementById("messages");
-  box.innerHTML="";
-  if(!currentChat) return;
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+
+  if(!chats[currentChat]) return;
 
   chats[currentChat].forEach(m=>{
-    addMessageUI(m.text,m.type,false);
+    addMessageUI(m.text, m.type);
   });
+
+  box.scrollTop = box.scrollHeight;
 }
 
 /* ADD MESSAGE */
 function addMessage(text,type){
   chats[currentChat].push({text,type});
-  saveChats();
-  addMessageUI(text,type,true);
+  save();
+  addMessageUI(text,type);
 }
 
-function addMessageUI(text,type,scroll=true){
-  const div=document.createElement("div");
-  div.className="msg "+type;
-
-  // CODE DETECT
-  if(text.includes("```")){
-    div.innerHTML="<pre>"+text+"</pre>";
-  }else{
-    div.innerText=text;
-  }
+/* UI MESSAGE */
+function addMessageUI(text,type){
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+  div.innerText = text;
 
   document.getElementById("messages").appendChild(div);
-  if(scroll) document.getElementById("messages").scrollTop=999999;
-}
-
-/* QUICK PROMPT */
-function quick(t){
-  document.getElementById("input").value=t;
-}
-
-/* KEY */
-function handleKey(e){
-  if(e.key==="Enter"){send();}
+  document.getElementById("messages").scrollTop = 999999;
 }
 
 /* SEND */
 async function send(){
-  if(!currentChat) newChat();
-
-  const input=document.getElementById("input");
-  const text=input.value.trim();
+  const input = document.getElementById("input");
+  const text = input.value.trim();
   if(!text) return;
 
   addMessage(text,"user");
-  input.value="";
+  input.value = "";
 
   try{
-    const res=await fetch("/api/chat",{
+    const res = await fetch("/api/chat",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({message:text})
     });
 
-    const data=await res.json();
-    addMessage(data.reply,"ai");
+    const data = await res.json();
+    addMessage(data.reply || "No response","ai");
 
   }catch{
     addMessage("Error","ai");
   }
 }
 
+/* KEY */
+function handleKey(e){
+  if(e.key==="Enter") send();
+}
+
 /* INIT */
-newChat();
 renderChats();
+renderMessages();
 
 </script>
 
