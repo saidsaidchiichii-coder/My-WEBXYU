@@ -16,11 +16,20 @@ body{
   display:flex;
   flex-direction:column;
   animation:fadeIn .6s ease;
+  overflow:hidden;
 }
 
+/* 3D ENTRY */
 @keyframes fadeIn{
-  from{opacity:0;transform:translateY(15px);}
-  to{opacity:1;}
+  from{opacity:0;transform:translateY(30px) scale(.98);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* PARTICLES */
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:-1;
 }
 
 /* TOP */
@@ -155,22 +164,22 @@ body{
   display:flex;
 }
 
-.bottom input{
+.bottom textarea{
   flex:1;
   padding:12px;
   border-radius:10px;
   border:1px solid #ddd;
+  resize:none;
 }
 
-/* LOGIN OVERLAY */
+/* LOGIN MODAL */
 .overlay{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.9);
-  display:flex;
+  background:rgba(0,0,0,0.7);
+  display:none;
   align-items:center;
   justify-content:center;
-  z-index:999;
 }
 
 .loginBox{
@@ -204,14 +213,14 @@ body{
 
 <body>
 
+<canvas id="particles"></canvas>
+
 <!-- LOGIN -->
 <div class="overlay" id="loginOverlay">
   <div class="loginBox">
     <h2>Login</h2>
-
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Password">
-
     <button onclick="login()">Login</button>
     <button onclick="signup()">Sign up</button>
   </div>
@@ -219,6 +228,11 @@ body{
 
 <div class="top">
   <div class="logo">ILYASS AI</div>
+
+  <div class="auth">
+    <button class="btn login" onclick="openLogin()">Login</button>
+    <button class="btn signup" onclick="openLogin()">Sign up</button>
+  </div>
 </div>
 
 <!-- HOME -->
@@ -237,12 +251,17 @@ body{
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
-    <input id="chatInput" placeholder="Send a message..."
-      onkeydown="if(event.key==='Enter') send()">
+    <textarea id="chatInput" rows="1" placeholder="Send a message..."
+      onkeydown="handleKey(event)"></textarea>
   </div>
 </div>
 
 <script>
+
+/* OPEN LOGIN */
+function openLogin(){
+  document.getElementById("loginOverlay").style.display="flex";
+}
 
 /* SUPABASE */
 const { createClient } = supabase;
@@ -251,50 +270,54 @@ const supabaseClient = createClient(
   "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
 );
 
-let loggedIn = false;
+let loggedIn=false;
 
 /* LOGIN */
 async function login(){
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
+  const email=emailInput.value;
+  const password=passwordInput.value;
 
-  const {error} = await supabaseClient.auth.signInWithPassword({email,password});
+  const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){alert(error.message);return;}
 
-  if(error){ alert(error.message); return; }
-
-  document.getElementById("loginOverlay").style.display="none";
   loggedIn=true;
+  loginOverlay.style.display="none";
 }
 
 /* SIGNUP */
 async function signup(){
-  const email=document.getElementById("email").value;
-  const password=document.getElementById("password").value;
+  const email=emailInput.value;
+  const password=passwordInput.value;
 
-  const {error} = await supabaseClient.auth.signUp({email,password});
+  const {error}=await supabaseClient.auth.signUp({email,password});
+  if(error){alert(error.message);return;}
 
-  if(error){ alert(error.message); return; }
-
-  alert("Check your email 📩");
+  alert("Check email 📩");
 }
 
-/* START */
+/* SHIFT ENTER */
+function handleKey(e){
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+}
+
+/* SAME LOGIC (UNCHANGED) */
 function startChat(){
-  if(!loggedIn){ alert("Login first"); return; }
+  if(!loggedIn){alert("Login first");return;}
 
-  const text=document.getElementById("homeInput").value.trim();
-  if(!text) return;
+  const text=homeInput.value.trim();
+  if(!text)return;
 
-  document.getElementById("home").style.display="none";
-  document.getElementById("chat").style.display="flex";
+  home.style.display="none";
+  chat.style.display="flex";
 
   addMessage(text,"user");
-  document.getElementById("homeInput").value="";
-
+  homeInput.value="";
   askAI(text);
 }
 
-/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -303,8 +326,7 @@ function addMessage(text,type){
   const content=document.createElement("div");
   div.appendChild(content);
 
-  document.getElementById("messages").appendChild(div);
-
+  messages.appendChild(div);
   typeText(content,text);
 
   if(type==="ai"){
@@ -320,18 +342,16 @@ function addMessage(text,type){
   scrollBottom();
 }
 
-/* TYPE */
 function typeText(el,text){
   let i=0;
   el.innerHTML="";
   const int=setInterval(()=>{
     el.innerHTML+=text[i];
     i++;
-    if(i>=text.length) clearInterval(int);
+    if(i>=text.length)clearInterval(int);
   },15);
 }
 
-/* THINKING */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -340,20 +360,16 @@ function showThinking(){
     <div class="dot"></div>
     <div class="dot"></div>
   </div>`;
-  document.getElementById("messages").appendChild(div);
+  messages.appendChild(div);
   scrollBottom();
   return div;
 }
 
-/* SCROLL */
 function scrollBottom(){
-  const box=document.getElementById("messages");
-  box.scrollTop=box.scrollHeight;
+  messages.scrollTop=messages.scrollHeight;
 }
 
-/* AI */
 async function askAI(text){
-
   const t=showThinking();
 
   try{
@@ -364,7 +380,6 @@ async function askAI(text){
     });
 
     const data=await res.json();
-
     t.remove();
     addMessage(data.reply || "No response","ai");
 
@@ -374,38 +389,63 @@ async function askAI(text){
   }
 }
 
-/* SEND */
 function send(){
-  if(!loggedIn){ alert("Login first"); return; }
+  if(!loggedIn){alert("Login first");return;}
 
-  const input=document.getElementById("chatInput");
-  const text=input.value.trim();
-  if(!text) return;
+  const text=chatInput.value.trim();
+  if(!text)return;
 
   addMessage(text,"user");
-  input.value="";
+  chatInput.value="";
   askAI(text);
 }
 
-/* COPY */
 function copyText(el){
-  const msg = el.closest(".msg");
+  const msg=el.closest(".msg");
   navigator.clipboard.writeText(msg.dataset.text);
 }
 
-/* RETRY */
 function retry(el){
-  const msg = el.closest(".msg");
-
-  let prev = msg.previousElementSibling;
+  let prev=el.closest(".msg").previousElementSibling;
   while(prev && !prev.classList.contains("user")){
-    prev = prev.previousElementSibling;
+    prev=prev.previousElementSibling;
   }
-
-  if(prev){
-    askAI(prev.dataset.text);
-  }
+  if(prev){askAI(prev.dataset.text);}
 }
+
+/* PARTICLES */
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let dots=[];
+for(let i=0;i<50;i++){
+  dots.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5),
+    vy:(Math.random()-0.5)
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  dots.forEach(d=>{
+    d.x+=d.vx;
+    d.y+=d.vy;
+
+    if(d.x<0||d.x>canvas.width)d.vx*=-1;
+    if(d.y<0||d.y>canvas.height)d.vy*=-1;
+
+    ctx.beginPath();
+    ctx.arc(d.x,d.y,2,0,Math.PI*2);
+    ctx.fillStyle="#10a37f";
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
 
 </script>
 
