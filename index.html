@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Chat</title>
+<title>ILYASS AI</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
@@ -16,7 +16,7 @@
 }
 
 body{
-  background:#0f0f0f;
+  background: radial-gradient(circle at top, #1a1a1a, #0a0a0a);
   color:white;
   height:100vh;
   display:flex;
@@ -25,11 +25,12 @@ body{
 /* SIDEBAR */
 .sidebar{
   width:260px;
-  background:#111;
+  background:linear-gradient(180deg,#111,#0a0a0a);
   padding:20px;
   display:flex;
   flex-direction:column;
   gap:10px;
+  border-right:1px solid #222;
 }
 
 .logo{
@@ -38,10 +39,15 @@ body{
 }
 
 .newchat{
-  padding:10px;
+  padding:12px;
   background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
+  transition:0.2s;
+}
+.newchat:hover{
+  background:#22c55e;
+  color:black;
 }
 
 /* CHAT */
@@ -49,39 +55,54 @@ body{
   flex:1;
   display:flex;
   flex-direction:column;
-  filter: blur(6px);
-  pointer-events:none;
 }
 
-.chat.active{
-  filter:none;
-  pointer-events:auto;
-}
-
+/* MESSAGES */
 .messages{
   flex:1;
   padding:20px;
   overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
+}
+
+/* MESSAGE ROW */
+.msgRow{
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  animation:fadeIn 0.3s ease;
 }
 
 .msg{
-  max-width:70%;
+  max-width:65%;
   padding:12px 14px;
   border-radius:14px;
+  position:relative;
 }
 
 .user{
-  align-self:flex-end;
+  margin-left:auto;
   background:#22c55e;
   color:black;
 }
 
 .ai{
-  align-self:flex-start;
   background:#1f1f1f;
+}
+
+/* COPY BUTTON */
+.copyBtn{
+  position:absolute;
+  top:5px;
+  right:8px;
+  font-size:12px;
+  opacity:0;
+  cursor:pointer;
+}
+.msg:hover .copyBtn{
+  opacity:1;
 }
 
 /* INPUT */
@@ -89,13 +110,14 @@ body{
   display:flex;
   padding:15px;
   background:#111;
+  border-top:1px solid #222;
 }
 
 input{
   flex:1;
-  padding:12px;
+  padding:14px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   background:#1a1a1a;
   color:white;
 }
@@ -104,79 +126,87 @@ button{
   margin-left:10px;
   padding:12px 18px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   background:#22c55e;
   cursor:pointer;
+  font-weight:bold;
 }
 
-/* SETTINGS */
-#settingsPanel{
-  display:none;
-}
-
-/* TOAST */
-.toast{
+/* SETTINGS PANEL */
+.overlay{
   position:fixed;
-  top:20px;
-  right:20px;
-  padding:12px 14px;
-  border-radius:10px;
-  color:white;
-  opacity:0;
-  transform:translateY(-15px);
-  transition:0.3s;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
 }
 
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
+.loginBox{
+  background:#111;
+  padding:20px;
+  border-radius:14px;
+  width:300px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
-.toast.success{background:#22c55e;}
-.toast.error{background:#ef4444;}
+/* ANIMATIONS */
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* TYPING */
+.typing{
+  font-size:13px;
+  opacity:0.6;
+}
 </style>
 </head>
 
 <body>
-
-<!-- ❌ LOGIN REMOVED COMPLETELY -->
 
 <!-- SETTINGS -->
 <div class="overlay" id="settingsPanel">
   <div class="loginBox">
     <h2>Settings ⚙️</h2>
 
-    <p>Language</p>
-    <select style="width:100%;padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
+    <label>Temperature</label>
+    <input type="range" min="0" max="1" step="0.1">
+
+    <label>Language</label>
+    <select style="padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
       <option>English</option>
       <option>Français</option>
       <option>العربية</option>
     </select>
 
-    <p style="margin-top:10px;">Users</p>
-    <div id="usersList"></div>
-
-    <button onclick="closeSettings()" style="background:#ef4444;margin-top:10px;">Close</button>
+    <button onclick="clearChat()">🗑 Clear Chat</button>
+    <button onclick="closeSettings()" style="background:#ef4444;">Close</button>
   </div>
 </div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
-  <div class="newchat">+ New Chat</div>
+  <div class="newchat" onclick="clearChat()">+ New Chat</div>
   <div class="newchat" onclick="openSettings()">⚙️ Settings</div>
 </div>
 
 <!-- CHAT -->
-<div class="chat active" id="chat">
+<div class="chat">
 
   <div class="messages" id="messages">
-    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
+    <div class="msgRow">
+      <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
+    </div>
   </div>
 
   <div class="input">
     <input id="input" placeholder="Ask anything..."
-    onkeydown="if(event.key==='Enter') send()" />
+    onkeydown="handleKey(event)" />
     <button onclick="send()">Send</button>
   </div>
 
@@ -184,72 +214,80 @@ button{
 
 <script>
 
-/* SUPABASE (UNCHANGED) */
+/* SUPABASE */
 const { createClient } = supabase;
 const supabaseClient = createClient(
   "https://idjgsgtupuymysptxrbl.supabase.co",
   "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
 );
 
-let loggedIn = true; // 🔥 forced true because login removed
-
-/* TOAST */
-function notify(msg,type="success"){
-  const t=document.createElement("div");
-  t.className=`toast ${type}`;
-  t.innerText=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.classList.add("show"),10);
-  setTimeout(()=>t.remove(),3000);
-}
-
-/* LOGIN FUNCTIONS KEPT (UNCHANGED LOGIC, NEVER USED NOW) */
-async function login(){}
-async function signup(){}
-
-/* OWNER */
-function ownerSkip(){
-  document.getElementById("loginOverlay").style.display="none";
-  document.getElementById("chat").classList.add("active");
-  loggedIn=true;
-}
-
-/* SAVE USERS */
-function saveUser(email){
-  let users=JSON.parse(localStorage.getItem("users")||"[]");
-  if(!users.includes(email)){
-    users.push(email);
-    localStorage.setItem("users",JSON.stringify(users));
-  }
-}
-
 /* SETTINGS */
 function openSettings(){
   document.getElementById("settingsPanel").style.display="flex";
-
-  const users=JSON.parse(localStorage.getItem("users")||[]);
-  document.getElementById("usersList").innerText=users.join("\n");
 }
-
 function closeSettings(){
   document.getElementById("settingsPanel").style.display="none";
 }
 
-/* CHAT */
+/* CLEAR CHAT */
+function clearChat(){
+  document.getElementById("messages").innerHTML="";
+}
+
+/* AUTO SCROLL */
+function scrollBottom(){
+  const m=document.getElementById("messages");
+  m.scrollTop=m.scrollHeight;
+}
+
+/* ADD MESSAGE */
 function addMessage(text,type){
+
+  const row=document.createElement("div");
+  row.className="msgRow";
+
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
-  document.getElementById("messages").appendChild(div);
+
+  const copy=document.createElement("span");
+  copy.innerText="📋";
+  copy.className="copyBtn";
+  copy.onclick=()=>navigator.clipboard.writeText(text);
+
+  div.appendChild(copy);
+  row.appendChild(div);
+
+  document.getElementById("messages").appendChild(row);
+  scrollBottom();
 }
 
-/* SEND (UNCHANGED LOGIC) */
-async function send(){
+/* TYPING */
+function showTyping(){
+  const row=document.createElement("div");
+  row.className="msgRow typingRow";
 
-  if(!loggedIn){
-    notify("Login first","error");
-    return;
+  const div=document.createElement("div");
+  div.className="msg ai typing";
+  div.innerText="Typing...";
+
+  row.appendChild(div);
+  document.getElementById("messages").appendChild(row);
+  scrollBottom();
+
+  return row;
+}
+
+/* KEY CONTROL */
+function handleKey(e){
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
   }
+}
+
+/* SEND */
+async function send(){
 
   const input=document.getElementById("input");
   const text=input.value.trim();
@@ -257,6 +295,8 @@ async function send(){
 
   addMessage(text,"user");
   input.value="";
+
+  const typingEl=showTyping();
 
   try{
     const res=await fetch("/api/chat",{
@@ -266,10 +306,13 @@ async function send(){
     });
 
     const data=await res.json();
+
+    typingEl.remove();
     addMessage(data.reply || "No response","ai");
 
   }catch{
-    notify("Chat error","error");
+    typingEl.remove();
+    addMessage("Error ⚠️","ai");
   }
 }
 
