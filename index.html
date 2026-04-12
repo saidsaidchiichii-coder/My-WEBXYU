@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AI Chat</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ✅ FIXED SUPABASE -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 *{
@@ -48,6 +49,7 @@ body{
   flex-direction:column;
   filter: blur(6px);
   pointer-events:none;
+  transition:0.3s;
 }
 
 .chat.active{
@@ -117,12 +119,43 @@ button{
   z-index:999;
 }
 
+/* 🌈 RGB LOGIN BOX */
 .loginBox{
+  position:relative;
   width:320px;
   padding:25px;
-  background:#111;
   text-align:center;
-  border-radius:12px;
+  border-radius:16px;
+  overflow:hidden;
+  z-index:1;
+}
+
+.loginBox::before{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  background:linear-gradient(
+    90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c
+  );
+  background-size:300% 300%;
+  animation:rgbMove 4s linear infinite;
+  filter:blur(12px);
+  z-index:-1;
+}
+
+.loginBox::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  background:#111;
+  border-radius:14px;
+  z-index:-1;
+}
+
+@keyframes rgbMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
 }
 
 /* TOAST */
@@ -163,12 +196,10 @@ button{
 
     <button onclick="login()">Login</button>
 
-    <!-- 🔥 NEW: SIGNUP BUTTON -->
     <button onclick="signup()" style="margin-top:10px;background:#3b82f6;">
       Create Account
     </button>
 
-    <!-- 🔥 OWNER SKIP -->
     <button onclick="ownerSkip()" style="margin-top:10px;background:#9333ea;">
       Skip Login (Owner)
     </button>
@@ -198,10 +229,12 @@ button{
 
 <script>
 
-/* SUPABASE */
+/* ✅ FIXED SUPABASE INIT */
 const supabaseUrl = "https://idjgsgtupuymysptxrbl.supabase.co";
 const supabaseKey = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+const { createClient } = supabase;
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
 let loggedIn = false;
 
@@ -231,7 +264,7 @@ async function login(){
     return;
   }
 
-  const {data,error} = await supabase.auth.signInWithPassword({
+  const { error } = await supabaseClient.auth.signInWithPassword({
     email,
     password
   });
@@ -249,7 +282,7 @@ async function login(){
   loggedIn=true;
 }
 
-/* 🔥 SIGNUP */
+/* SIGNUP */
 async function signup(){
 
   const email=document.getElementById("email").value;
@@ -260,7 +293,7 @@ async function signup(){
     return;
   }
 
-  const {data,error} = await supabase.auth.signUp({
+  const { error } = await supabaseClient.auth.signUp({
     email,
     password
   });
