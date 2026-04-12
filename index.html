@@ -294,9 +294,12 @@ function sendCode(){
 
   generatedCode = Math.floor(100000 + Math.random() * 900000);
 
-  console.log("Verification Code:", generatedCode);
+  alert("Your verification code is: " + generatedCode);
 
-  alert("Code sent 📩 (check console)");
+  // expire after 1 min
+  setTimeout(()=>{
+    generatedCode = null;
+  }, 60000);
 }
 
 /* SIGNUP WITH VERIFY */
@@ -319,7 +322,7 @@ function doSignup(){
   }
 
   if(!generatedCode){
-    document.getElementById("signupError").innerText="Send code first";
+    document.getElementById("signupError").innerText="Code expired or not sent";
     return;
   }
 
