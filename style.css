@@ -1,3 +1,4 @@
+```css
 *{
   margin:0;
   padding:0;
@@ -90,13 +91,23 @@ input{
   color:white;
 }
 
+/* CHATGPT BUTTONS */
 button{
   margin-left:10px;
-  padding:12px 18px;
+  padding:12px 24px;
   border:none;
   border-radius:10px;
-  background:#22c55e;
+  background:linear-gradient(135deg, #10a37f, #0f8e6d);
+  color:white;
+  font-weight:600;
   cursor:pointer;
+  transition:all 0.3s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,0.2);
+}
+
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
 }
 
 /* 🌈 LOGIN DESIGN */
@@ -135,22 +146,47 @@ button{
   100%{background-position:0% 50%;}
 }
 
-/* INPUT LOGIN */
-.loginBox input{
-  width:100%;
-  padding:14px;
-  margin:8px 0;
-  border-radius:12px;
-  border:1px solid #222;
-  background:#0f0f0f;
-  color:white;
-}
-
+/* LOGIN BUTTONS - CHATGPT STYLE */
 .loginBox button{
   width:100%;
-  margin-top:10px;
-  padding:12px;
+  margin:8px 0;
+  padding:14px 20px;
+  border:none;
   border-radius:12px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.3s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,0.2);
+}
+
+.loginBox button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
+}
+
+button[onclick="login()"]{
+  background:linear-gradient(135deg, #10a37f, #0f8e6d);
+}
+
+button[onclick="login()"]:hover{
+  background:linear-gradient(135deg, #0f8e6d, #0d7a5e);
+}
+
+button[onclick="signup()"]{
+  background:linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+button[onclick="signup()"]:hover{
+  background:linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+button[onclick="ownerSkip()"]{
+  background:linear-gradient(135deg, #9333ea, #7c3aed);
+}
+
+button[onclick="ownerSkip()"]:hover{
+  background:linear-gradient(135deg, #7c3aed, #6d28d9);
 }
 
 /* OVERLAY */
@@ -189,3 +225,4 @@ button{
 
 .toast.success{background:#22c55e;}
 .toast.error{background:#ef4444;}
+```
