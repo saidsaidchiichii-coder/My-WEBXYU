@@ -1,4 +1,4 @@
-
+*{
   margin:0;
   padding:0;
   box-sizing:border-box;
@@ -224,4 +224,3 @@ button[onclick="ownerSkip()"]:hover{
 
 .toast.success{background:#22c55e;}
 .toast.error{background:#ef4444;}
-```
