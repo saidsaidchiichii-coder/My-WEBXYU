@@ -6,6 +6,7 @@
 <title>AI Chat</title>
 
 <style>
+/* SAME STYLE (UNCHANGED) */
 *{
   margin:0;
   padding:0;
@@ -20,7 +21,6 @@ body{
   display:flex;
 }
 
-/* SIDEBAR */
 .sidebar{
   width:260px;
   background:#111;
@@ -42,7 +42,6 @@ body{
   cursor:pointer;
 }
 
-/* CHAT */
 .chat{
   flex:1;
   display:flex;
@@ -75,7 +74,6 @@ body{
   background:#1f1f1f;
 }
 
-/* INPUT */
 .input{
   display:flex;
   padding:15px;
@@ -100,31 +98,7 @@ button{
   cursor:pointer;
 }
 
-/* TOAST */
-.toast{
-  position:fixed;
-  top:20px;
-  right:20px;
-  padding:12px 14px;
-  border-radius:10px;
-  color:white;
-  opacity:0;
-  transform:translateY(-15px);
-  transition:0.3s;
-}
-
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-.toast.success{background:#22c55e;}
-.toast.error{background:#ef4444;}
-
-/* ========================= */
-/* 🔥 THINKING ANIMATION */
-/* ========================= */
-
+/* THINKING */
 .thinking{
   display:flex;
   gap:5px;
@@ -136,34 +110,26 @@ button{
   height:6px;
   background:#aaa;
   border-radius:50%;
-  animation:bounce 0.6s infinite ease-in-out;
+  animation:bounce 0.5s infinite ease-in-out;
 }
 
-.dot:nth-child(2){
-  animation-delay:0.1s;
-}
-
-.dot:nth-child(3){
-  animation-delay:0.2s;
-}
+.dot:nth-child(2){animation-delay:0.1s;}
+.dot:nth-child(3){animation-delay:0.2s;}
 
 @keyframes bounce{
   0%,100%{transform:translateY(0); opacity:0.4;}
   50%{transform:translateY(-4px); opacity:1;}
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
   <div class="newchat">+ New Chat</div>
 </div>
 
-<!-- CHAT -->
 <div class="chat">
 
   <div class="messages" id="messages">
@@ -182,29 +148,19 @@ button{
 
 let thinkingEl = null;
 
-/* toast */
-function notify(msg,type="success"){
-  const t=document.createElement("div");
-  t.className=`toast ${type}`;
-  t.innerText=msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.classList.add("show"),10);
-  setTimeout(()=>t.remove(),3000);
-}
-
-/* messages */
+/* add message */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
   document.getElementById("messages").appendChild(div);
+  return div;
 }
 
-/* 🔥 THINKING START */
+/* thinking */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
-  
   div.innerHTML=`
     <div class="thinking">
       <div class="dot"></div>
@@ -212,17 +168,30 @@ function showThinking(){
       <div class="dot"></div>
     </div>
   `;
-
   document.getElementById("messages").appendChild(div);
   thinkingEl = div;
 }
 
-/* ❌ THINKING STOP */
 function hideThinking(){
   if(thinkingEl){
     thinkingEl.remove();
     thinkingEl=null;
   }
+}
+
+/* ⚡ typing effect */
+function typeText(element, text, speed = 15){
+  let i = 0;
+  element.innerText = "";
+
+  const interval = setInterval(() => {
+    element.innerText += text[i];
+    i++;
+
+    if(i >= text.length){
+      clearInterval(interval);
+    }
+  }, speed);
 }
 
 /* send */
@@ -235,7 +204,7 @@ async function send(){
   addMessage(text,"user");
   input.value="";
 
-  showThinking(); // 🔥 start animation
+  showThinking();
 
   try{
     const res=await fetch("/api/chat",{
@@ -246,12 +215,17 @@ async function send(){
 
     const data=await res.json();
 
-    hideThinking(); // stop animation
-    addMessage(data.reply || "No response","ai");
+    hideThinking();
+
+    // ⏱️ small delay before AI starts writing
+    setTimeout(()=>{
+      const msg = addMessage("", "ai");
+      typeText(msg, data.reply || "No response", 12); // ⚡ fast typing
+    }, 300);
 
   }catch{
     hideThinking();
-    notify("Chat error","error");
+    addMessage("Chat error","ai");
   }
 }
 
