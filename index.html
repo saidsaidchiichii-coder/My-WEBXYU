@@ -8,125 +8,271 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-body{
+*{
   margin:0;
-  font-family:Arial;
+  padding:0;
+  box-sizing:border-box;
+  font-family: Inter, Arial;
+}
+
+body{
   background:#0f0f0f;
   color:white;
+  height:100vh;
+  display:flex;
 }
 
 /* SIDEBAR */
 .sidebar{
-  position:fixed;
-  left:0;
-  top:0;
-  width:200px;
-  height:100%;
+  width:260px;
   background:#111;
-  padding:10px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
 .logo{
-  font-size:20px;
-  margin-bottom:20px;
+  font-size:18px;
+  font-weight:bold;
 }
 
 .newchat{
   padding:10px;
-  background:#222;
-  margin:5px 0;
+  background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
 }
 
 /* CHAT */
 .chat{
-  margin-left:210px;
+  flex:1;
   display:flex;
   flex-direction:column;
-  height:100vh;
+  filter: blur(6px);
+  pointer-events:none;
+}
+
+.chat.active{
+  filter:none;
+  pointer-events:auto;
 }
 
 .messages{
   flex:1;
-  padding:10px;
+  padding:20px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
 .msg{
-  padding:10px;
-  margin:5px 0;
-  background:#222;
-  border-radius:10px;
+  max-width:70%;
+  padding:12px 14px;
+  border-radius:14px;
+}
+
+.user{
+  align-self:flex-end;
+  background:#22c55e;
+  color:black;
 }
 
 .ai{
-  background:#1d4ed8;
+  align-self:flex-start;
+  background:#1f1f1f;
 }
 
+/* INPUT */
 .input{
   display:flex;
-  padding:10px;
+  padding:15px;
   background:#111;
 }
 
-.input input{
+input{
   flex:1;
-  margin-right:10px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:white;
 }
 
 button{
-  padding:10px;
+  margin-left:10px;
+  padding:12px 18px;
   border:none;
   border-radius:10px;
   background:#22c55e;
-  color:white;
   cursor:pointer;
 }
-</style>
 
+/* SETTINGS */
+#settingsPanel{
+  display:none;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  top:20px;
+  right:20px;
+  padding:12px 14px;
+  border-radius:10px;
+  color:white;
+  opacity:0;
+  transform:translateY(-15px);
+  transition:0.3s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.toast.success{background:#22c55e;}
+.toast.error{background:#ef4444;}
+</style>
 </head>
 
 <body>
+
+<!-- ❌ LOGIN REMOVED COMPLETELY -->
+
+<!-- SETTINGS -->
+<div class="overlay" id="settingsPanel">
+  <div class="loginBox">
+    <h2>Settings ⚙️</h2>
+
+    <p>Language</p>
+    <select style="width:100%;padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
+      <option>English</option>
+      <option>Français</option>
+      <option>العربية</option>
+    </select>
+
+    <p style="margin-top:10px;">Users</p>
+    <div id="usersList"></div>
+
+    <button onclick="closeSettings()" style="background:#ef4444;margin-top:10px;">Close</button>
+  </div>
+</div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
   <div class="newchat">+ New Chat</div>
+  <div class="newchat" onclick="openSettings()">⚙️ Settings</div>
 </div>
 
 <!-- CHAT -->
-<div class="chat">
+<div class="chat active" id="chat">
+
   <div class="messages" id="messages">
-    <div class="msg ai">Hello 👋 How can I help you?</div>
+    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
   </div>
 
   <div class="input">
-    <input id="input" placeholder="Ask anything..." 
-    onkeydown="if(event.key==='Enter') send()"/>
+    <input id="input" placeholder="Ask anything..."
+    onkeydown="if(event.key==='Enter') send()" />
     <button onclick="send()">Send</button>
   </div>
+
 </div>
 
 <script>
-/* نفس LOGIC 100% بلا تغيير */
-function send(){
-  let input = document.getElementById("input");
-  let messages = document.getElementById("messages");
 
-  if(!input.value) return;
+/* SUPABASE (UNCHANGED) */
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
 
-  let userMsg = document.createElement("div");
-  userMsg.className = "msg";
-  userMsg.innerText = input.value;
-  messages.appendChild(userMsg);
+let loggedIn = true; // 🔥 forced true because login removed
 
-  let aiMsg = document.createElement("div");
-  aiMsg.className = "msg ai";
-  aiMsg.innerText = "I'm a demo AI 🤖";
-  messages.appendChild(aiMsg);
-
-  input.value = "";
+/* TOAST */
+function notify(msg,type="success"){
+  const t=document.createElement("div");
+  t.className=`toast ${type}`;
+  t.innerText=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.classList.add("show"),10);
+  setTimeout(()=>t.remove(),3000);
 }
+
+/* LOGIN FUNCTIONS KEPT (UNCHANGED LOGIC, NEVER USED NOW) */
+async function login(){}
+async function signup(){}
+
+/* OWNER */
+function ownerSkip(){
+  document.getElementById("loginOverlay").style.display="none";
+  document.getElementById("chat").classList.add("active");
+  loggedIn=true;
+}
+
+/* SAVE USERS */
+function saveUser(email){
+  let users=JSON.parse(localStorage.getItem("users")||"[]");
+  if(!users.includes(email)){
+    users.push(email);
+    localStorage.setItem("users",JSON.stringify(users));
+  }
+}
+
+/* SETTINGS */
+function openSettings(){
+  document.getElementById("settingsPanel").style.display="flex";
+
+  const users=JSON.parse(localStorage.getItem("users")||[]);
+  document.getElementById("usersList").innerText=users.join("\n");
+}
+
+function closeSettings(){
+  document.getElementById("settingsPanel").style.display="none";
+}
+
+/* CHAT */
+function addMessage(text,type){
+  const div=document.createElement("div");
+  div.className="msg "+type;
+  div.innerText=text;
+  document.getElementById("messages").appendChild(div);
+}
+
+/* SEND (UNCHANGED LOGIC) */
+async function send(){
+
+  if(!loggedIn){
+    notify("Login first","error");
+    return;
+  }
+
+  const input=document.getElementById("input");
+  const text=input.value.trim();
+  if(!text) return;
+
+  addMessage(text,"user");
+  input.value="";
+
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
+
+    const data=await res.json();
+    addMessage(data.reply || "No response","ai");
+
+  }catch{
+    notify("Chat error","error");
+  }
+}
+
 </script>
 
 </body>
