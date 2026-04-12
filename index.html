@@ -1,3 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Chat</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family: Inter, Arial;}
+body{background:#0f0f0f;color:white;height:100vh;display:flex;}
+
+.topAuth{position:fixed;top:15px;right:20px;display:flex;gap:10px;z-index:999;}
+.topAuth button{padding:8px 16px;border-radius:999px;font-size:13px;cursor:pointer;transition:.25s;border:1px solid transparent;}
+.loginBtn{background:transparent;color:#aaa;border:1px solid #2a2a2a;}
+.loginBtn:hover{background:#1a1a1a;color:white;}
+.signupBtn{background:linear-gradient(135deg,#22c55e,#16a34a);color:black;}
+
+.sidebar{
+  width:260px;background:#111;padding:20px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+
+.logo{font-size:18px;font-weight:bold;}
+.newchat{padding:10px;background:#1a1a1a;border-radius:10px;cursor:pointer;}
+
+.profile{
+  background:#1a1a1a;
+  padding:10px;
+  border-radius:10px;
+  font-size:12px;
+}
+
+.profile button{
+  margin-top:5px;
+  width:100%;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+  background:#ef4444;
+  color:white;
+  cursor:pointer;
+}
+
+.chat{flex:1;display:flex;flex-direction:column;}
+.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+
+.msg{max-width:75%;padding:12px 14px;border-radius:14px;}
+.user{align-self:flex-end;background:#22c55e;color:black;}
+.ai{align-self:flex-start;background:#1f1f1f;}
+
+.input{display:flex;padding:15px;background:#111;}
+input{flex:1;padding:12px;border:none;border-radius:10px;background:#1a1a1a;color:white;}
+
+button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px;background:#22c55e;cursor:pointer;}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;}
+.modalBox{background:#111;padding:25px;border-radius:16px;width:300px;display:flex;flex-direction:column;gap:10px;}
+
+.modalBox input{
+  padding:10px;border-radius:8px;border:none;
+  background:#1a1a1a;color:white;
+}
+.modalBox input:focus{
+  outline:none;
+  box-shadow:0 0 5px #22c55e,0 0 10px #16a34a;
+}
+
+.modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
+.error{font-size:12px;color:red;}
+</style>
+</head>
+
+<body>
+
+<div class="topAuth" id="authButtons">
+  <button class="loginBtn" onclick="openLogin()">Login</button>
+  <button class="signupBtn" onclick="openSignup()">Sign up</button>
+</div>
+
+<div class="sidebar">
+  <div>
+    <div class="logo">◆ ILYASS AI</div>
+    <div class="newchat" onclick="newChat()">+ New Chat</div>
+  </div>
+
+  <div id="profileBox" class="profile" style="display:none;">
+    <div id="profileName"></div>
+    <div id="profileEmail" style="opacity:.7"></div>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="chat">
+  <div class="messages" id="messages">
+    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
+  </div>
+
+  <div class="input">
+    <input id="input" placeholder="Ask anything..."
+      onkeydown="if(event.key==='Enter') send()" />
+    <button class="sendBtn" onclick="send()">Send</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginModal" class="modal">
+  <div class="modalBox">
+    <h2>Login</h2>
+    <input id="loginEmail" placeholder="Email">
+    <button onclick="doLogin()">Login</button>
+    <p id="loginError" class="error"></p>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="signupModal" class="modal">
+  <div class="modalBox">
+    <h2>Create Account</h2>
+
+    <input id="username" placeholder="Username">
+    <input id="signupEmail" placeholder="Email">
+    <input id="age" type="number" placeholder="Age">
+
+    <label>
+      <input type="checkbox" id="agree"> I agree to terms
+    </label>
+
+    <button onclick="doSignup()">Create account</button>
+    <p id="signupError" class="error"></p>
+  </div>
+</div>
+
 <script>
 
 const SUPABASE_URL = "https://idjgsgtupuymysptxrbl.supabase.co";
@@ -11,28 +143,44 @@ window.onload = () => {
   }
 };
 
-/* PROFILE */
 function showProfile(data){
   document.getElementById("authButtons").style.display="none";
   document.getElementById("profileBox").style.display="block";
 
-  document.getElementById("profileName").innerText = data.email;
-  document.getElementById("profileEmail").innerText = "Logged in";
+  document.getElementById("profileName").innerText=data.username;
+  document.getElementById("profileEmail").innerText=data.email;
 }
 
-/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location.reload();
 }
 
+/* MODALS */
+function openLogin(){document.getElementById("loginModal").style.display="flex";}
+function openSignup(){document.getElementById("signupModal").style.display="flex";}
+function closeLogin(){document.getElementById("loginModal").style.display="none";}
+function closeSignup(){document.getElementById("signupModal").style.display="none";}
+
 /* SIGNUP */
 async function doSignup(){
 
+  const username = document.getElementById("username").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
+  const age = document.getElementById("age").value;
+  const agree = document.getElementById("agree").checked;
   const errorEl = document.getElementById("signupError");
 
+  if(!username) return errorEl.innerText="❌ Username required";
+  if(username.length < 3) return errorEl.innerText="❌ Username too short";
+
   if(!email) return errorEl.innerText="❌ Email required";
+  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
+
+  if(!age) return errorEl.innerText="❌ Age required";
+  if(age < 13) return errorEl.innerText="❌ Must be 13+";
+
+  if(!agree) return errorEl.innerText="❌ Accept terms";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/signup",{
@@ -55,21 +203,21 @@ async function doSignup(){
     }
 
     errorEl.style.color="lightgreen";
-    errorEl.innerText="✔ Check your email 📩 THEN confirm";
+    errorEl.innerText="✔ Check your email 📩 and confirm before login";
 
-  }catch(err){
-    console.error(err);
-    errorEl.innerText="❌ Network error (check internet OR Supabase URL)";
+  }catch{
+    errorEl.innerText="❌ Network error";
   }
 }
 
-/* LOGIN (REAL CHECK 🔥) */
+/* LOGIN (FINAL FIX) */
 async function doLogin(){
 
   const email = document.getElementById("loginEmail").value.trim();
   const errorEl = document.getElementById("loginError");
 
-  if(!email) return errorEl.innerText="❌ Enter email";
+  if(!email) return errorEl.innerText="❌ Email required";
+  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
@@ -86,35 +234,106 @@ async function doLogin(){
 
     const data = await res.json();
 
-    console.log(data);
-
     if(data.error){
 
       if(data.error.message.includes("Email not confirmed")){
-        errorEl.innerText="❌ خاصك دير Verify للإيميل ديالك 📩";
-      }
-      else if(data.error.message.includes("Invalid login credentials")){
-        errorEl.innerText="❌ هاد الإيميل ما مسجلش";
-      }
-      else{
-        errorEl.innerText="❌ " + data.error.message;
+        return errorEl.innerText="❌ خاصك تفعل الإيميل ديالك 📩";
       }
 
-      return;
+      if(data.error.message.includes("Invalid login")){
+        return errorEl.innerText="❌ Email ما مسجلش";
+      }
+
+      return errorEl.innerText="❌ " + data.error.message;
     }
 
-    /* SUCCESS LOGIN */
+    // 🔥 BLOCK غير verified
+    if(!data.user.email_confirmed_at){
+      return errorEl.innerText="❌ خاصك تفعل الإيميل قبل الدخول";
+    }
+
     localStorage.setItem("user", JSON.stringify({
-      email: email
+      email: data.user.email,
+      username: "User"
     }));
 
-    showProfile({email});
+    showProfile({email: data.user.email, username:"User"});
     closeLogin();
 
-  }catch(err){
-    console.error(err);
-    errorEl.innerText="❌ Network error (CORS / URL / KEY)";
+  }catch{
+    errorEl.innerText="❌ Network error";
+  }
+}
+
+/* CHAT */
+function scrollToBottom(){
+  const box=document.getElementById("messages");
+  box.scrollTop=box.scrollHeight;
+}
+
+function addMessage(text,type){
+  const div=document.createElement("div");
+  div.className="msg "+type;
+  div.innerText=text;
+  document.getElementById("messages").appendChild(div);
+  scrollToBottom();
+  return div;
+}
+
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  document.getElementById("messages").appendChild(div);
+}
+
+function hideThinking(){
+  const thinking=document.querySelector(".thinking");
+  if(thinking) thinking.parentElement.remove();
+}
+
+function typeText(element,text,speed=10){
+  let i=0;element.innerHTML="";
+  const interval=setInterval(()=>{
+    element.innerHTML+=text[i];i++;
+    if(i>=text.length) clearInterval(interval);
+  },speed);
+}
+
+function newChat(){
+  document.getElementById("messages").innerHTML =
+  `<div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>`;
+}
+
+async function send(){
+  const input=document.getElementById("input");
+  const text=input.value.trim();
+  if(!text) return;
+
+  addMessage(text,"user");
+  input.value="";
+  showThinking();
+
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
+
+    const data=await res.json();
+    hideThinking();
+
+    const msg=addMessage("", "ai");
+    typeText(msg, data.reply || "No response", 10);
+
+  }catch{
+    hideThinking();
+    addMessage("⚠️ Chat error","ai");
   }
 }
 
 </script>
+
+</body>
+</html>
