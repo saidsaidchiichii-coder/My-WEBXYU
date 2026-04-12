@@ -143,14 +143,16 @@ window.onload = () => {
   }
 };
 
+/* PROFILE */
 function showProfile(data){
   document.getElementById("authButtons").style.display="none";
   document.getElementById("profileBox").style.display="block";
 
-  document.getElementById("profileName").innerText=data.username;
-  document.getElementById("profileEmail").innerText=data.email;
+  document.getElementById("profileName").innerText = data.username || "User";
+  document.getElementById("profileEmail").innerText = data.email;
 }
 
+/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location.reload();
@@ -172,14 +174,8 @@ async function doSignup(){
   const errorEl = document.getElementById("signupError");
 
   if(!username) return errorEl.innerText="❌ Username required";
-  if(username.length < 3) return errorEl.innerText="❌ Username too short";
-
   if(!email) return errorEl.innerText="❌ Email required";
-  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
-
   if(!age) return errorEl.innerText="❌ Age required";
-  if(age < 13) return errorEl.innerText="❌ Must be 13+";
-
   if(!agree) return errorEl.innerText="❌ Accept terms";
 
   try{
@@ -210,14 +206,13 @@ async function doSignup(){
   }
 }
 
-/* LOGIN (FINAL FIX) */
+/* LOGIN (STRICT 🔥) */
 async function doLogin(){
 
   const email = document.getElementById("loginEmail").value.trim();
   const errorEl = document.getElementById("loginError");
 
   if(!email) return errorEl.innerText="❌ Email required";
-  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
@@ -237,7 +232,7 @@ async function doLogin(){
     if(data.error){
 
       if(data.error.message.includes("Email not confirmed")){
-        return errorEl.innerText="❌ خاصك تفعل الإيميل ديالك 📩";
+        return errorEl.innerText="❌ خاصك تفعل الإيميل 📩";
       }
 
       if(data.error.message.includes("Invalid login")){
@@ -247,9 +242,9 @@ async function doLogin(){
       return errorEl.innerText="❌ " + data.error.message;
     }
 
-    // 🔥 BLOCK غير verified
+    /* 🔥 FINAL BLOCK */
     if(!data.user.email_confirmed_at){
-      return errorEl.innerText="❌ خاصك تفعل الإيميل قبل الدخول";
+      return errorEl.innerText="❌ خاصك تفعّل الإيميل قبل الدخول";
     }
 
     localStorage.setItem("user", JSON.stringify({
@@ -257,7 +252,7 @@ async function doLogin(){
       username: "User"
     }));
 
-    showProfile({email: data.user.email, username:"User"});
+    showProfile({email:data.user.email, username:"User"});
     closeLogin();
 
   }catch{
@@ -265,7 +260,7 @@ async function doLogin(){
   }
 }
 
-/* CHAT */
+/* CHAT (same) */
 function scrollToBottom(){
   const box=document.getElementById("messages");
   box.scrollTop=box.scrollHeight;
