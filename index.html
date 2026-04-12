@@ -3,37 +3,83 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>AI Chat</title>
+<title>ILYASS AI</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family: Inter, Arial;}
-body{background:#0f0f0f;color:white;height:100vh;display:flex;}
+*{margin:0;padding:0;box-sizing:border-box;font-family: Inter;}
 
-.topAuth{position:fixed;top:15px;right:20px;display:flex;gap:10px;z-index:999;}
-.topAuth button{padding:8px 16px;border-radius:999px;font-size:13px;cursor:pointer;transition:.25s;border:1px solid transparent;}
-.loginBtn{background:transparent;color:#aaa;border:1px solid #2a2a2a;}
-.loginBtn:hover{background:#1a1a1a;color:white;}
-.signupBtn{background:linear-gradient(135deg,#22c55e,#16a34a);color:black;}
-
-.sidebar{
-  width:260px;background:#111;padding:20px;
-  display:flex;flex-direction:column;justify-content:space-between;
+body{
+  background:#0b0b0b;
+  color:white;
+  height:100vh;
+  display:flex;
 }
 
-.logo{font-size:18px;font-weight:bold;}
-.newchat{padding:10px;background:#1a1a1a;border-radius:10px;cursor:pointer;}
+/* SIDEBAR */
+.sidebar{
+  width:270px;
+  background:#0f0f0f;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  border-right:1px solid #1f1f1f;
+}
+
+.logo{font-weight:bold;font-size:18px;}
+
+.newchat{
+  margin-top:15px;
+  padding:10px;
+  background:#1a1a1a;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.chatList{
+  margin-top:15px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.chatItem{
+  padding:8px;
+  background:#151515;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:13px;
+}
+
+.chatItem:hover{background:#222;}
 
 .profile{
   background:#1a1a1a;
   padding:10px;
   border-radius:10px;
-  font-size:12px;
+  display:flex;
+  gap:10px;
+  align-items:center;
 }
+
+.avatar{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:black;
+  font-weight:bold;
+}
+
+.profileInfo{font-size:12px;}
 
 .profile button{
   margin-top:5px;
   width:100%;
-  padding:6px;
+  padding:5px;
   border:none;
   border-radius:6px;
   background:#ef4444;
@@ -41,92 +87,95 @@ body{background:#0f0f0f;color:white;height:100vh;display:flex;}
   cursor:pointer;
 }
 
-.chat{flex:1;display:flex;flex-direction:column;}
-.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
-
-.msg{max-width:75%;padding:12px 14px;border-radius:14px;}
-.user{align-self:flex-end;background:#22c55e;color:black;}
-.ai{align-self:flex-start;background:#1f1f1f;}
-
-.input{display:flex;padding:15px;background:#111;}
-input{flex:1;padding:12px;border:none;border-radius:10px;background:#1a1a1a;color:white;}
-
-button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px;background:#22c55e;cursor:pointer;}
-
-.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;}
-.modalBox{background:#111;padding:25px;border-radius:16px;width:300px;display:flex;flex-direction:column;gap:10px;}
-
-.modalBox input{
-  padding:10px;border-radius:8px;border:none;
-  background:#1a1a1a;color:white;
-}
-.modalBox input:focus{
-  outline:none;
-  box-shadow:0 0 5px #22c55e,0 0 10px #16a34a;
+/* CHAT */
+.chat{
+  flex:1;
+  display:flex;
+  flex-direction:column;
 }
 
-.modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
-.error{font-size:12px;color:red;}
+.messages{
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.msg{
+  max-width:70%;
+  padding:12px;
+  border-radius:12px;
+}
+
+.user{
+  align-self:flex-end;
+  background:#22c55e;
+  color:black;
+}
+
+.ai{
+  align-self:flex-start;
+  background:#1a1a1a;
+}
+
+/* INPUT */
+.input{
+  display:flex;
+  padding:15px;
+  background:#0f0f0f;
+}
+
+input{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:white;
+}
+
+button{
+  margin-left:10px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<div class="topAuth" id="authButtons">
-  <button class="loginBtn" onclick="openLogin()">Login</button>
-  <button class="signupBtn" onclick="openSignup()">Sign up</button>
-</div>
-
 <div class="sidebar">
+
   <div>
     <div class="logo">◆ ILYASS AI</div>
     <div class="newchat" onclick="newChat()">+ New Chat</div>
+
+    <div class="chatList" id="chatList"></div>
   </div>
 
-  <div id="profileBox" class="profile" style="display:none;">
-    <div id="profileName"></div>
-    <div id="profileEmail" style="opacity:.7"></div>
-    <button onclick="logout()">Logout</button>
+  <div id="profileBox" class="profile">
+    <div class="avatar" id="avatar">U</div>
+    <div class="profileInfo">
+      <div id="profileName">User</div>
+      <div id="profileEmail" style="opacity:.6"></div>
+      <button onclick="logout()">Logout</button>
+    </div>
   </div>
+
 </div>
 
 <div class="chat">
-  <div class="messages" id="messages">
-    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
-  </div>
+  <div class="messages" id="messages"></div>
 
   <div class="input">
     <input id="input" placeholder="Ask anything..."
       onkeydown="if(event.key==='Enter') send()" />
-    <button class="sendBtn" onclick="send()">Send</button>
-  </div>
-</div>
-
-<!-- LOGIN -->
-<div id="loginModal" class="modal">
-  <div class="modalBox">
-    <h2>Login</h2>
-    <input id="loginEmail" placeholder="Email">
-    <button onclick="doLogin()">Login</button>
-    <p id="loginError" class="error"></p>
-  </div>
-</div>
-
-<!-- SIGNUP -->
-<div id="signupModal" class="modal">
-  <div class="modalBox">
-    <h2>Create Account</h2>
-
-    <input id="username" placeholder="Username">
-    <input id="signupEmail" placeholder="Email">
-    <input id="age" type="number" placeholder="Age">
-
-    <label>
-      <input type="checkbox" id="agree"> I agree to terms
-    </label>
-
-    <button onclick="doSignup()">Create account</button>
-    <p id="signupError" class="error"></p>
+    <button onclick="send()">Send</button>
   </div>
 </div>
 
@@ -135,210 +184,133 @@ button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px
 const SUPABASE_URL = "https://idjgsgtupuymysptxrbl.supabase.co";
 const SUPABASE_KEY = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
 
-/* AUTO LOGIN */
+let currentChatId = null;
+
+/* USER LOAD */
 window.onload = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   if(user){
-    showProfile(user);
-    loadMessages();
+    document.getElementById("profileEmail").innerText = user.email;
+    document.getElementById("avatar").innerText = user.email[0].toUpperCase();
+    loadChats();
   }
 };
 
-function showProfile(data){
-  document.getElementById("authButtons").style.display="none";
-  document.getElementById("profileBox").style.display="block";
-
-  document.getElementById("profileName").innerText = "User";
-  document.getElementById("profileEmail").innerText = data.email;
-}
-
+/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location.reload();
 }
 
-/* MODALS */
-function openLogin(){document.getElementById("loginModal").style.display="flex";}
-function openSignup(){document.getElementById("signupModal").style.display="flex";}
-function closeLogin(){document.getElementById("loginModal").style.display="none";}
-function closeSignup(){document.getElementById("signupModal").style.display="none";}
-
-/* SIGNUP */
-async function doSignup(){
-  const email = document.getElementById("signupEmail").value.trim();
-  const errorEl = document.getElementById("signupError");
-
-  try{
-    const res = await fetch(SUPABASE_URL + "/auth/v1/signup",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "apikey":SUPABASE_KEY
-      },
-      body:JSON.stringify({
-        email:email,
-        password:"12345678"
-      })
-    });
-
-    const data = await res.json();
-
-    if(data.error){
-      errorEl.innerText="❌ " + data.error.message;
-      return;
-    }
-
-    errorEl.style.color="lightgreen";
-    errorEl.innerText="✔ Check your email 📩";
-
-  }catch{
-    errorEl.innerText="❌ Network error";
-  }
-}
-
-/* LOGIN */
-async function doLogin(){
-
-  const email = document.getElementById("loginEmail").value.trim();
-  const errorEl = document.getElementById("loginError");
-
-  try{
-    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "apikey":SUPABASE_KEY
-      },
-      body:JSON.stringify({
-        email:email,
-        password:"12345678"
-      })
-    });
-
-    const data = await res.json();
-
-    if(data.error){
-      return errorEl.innerText="❌ " + data.error.message;
-    }
-
-    if(!data.user.email_confirmed_at){
-      return errorEl.innerText="❌ Confirm email first";
-    }
-
-    localStorage.setItem("user", JSON.stringify({
-      email: data.user.email,
-      id: data.user.id,
-      token: data.access_token
-    }));
-
-    showProfile(data.user);
-    loadMessages();
-    closeLogin();
-
-  }catch{
-    errorEl.innerText="❌ Network error";
-  }
-}
-
-/* LOAD USER MESSAGES */
-async function loadMessages(){
-
+/* CHAT STORAGE */
+function getUserKey(){
   const user = JSON.parse(localStorage.getItem("user"));
-  if(!user) return;
+  return "chats_" + user.email;
+}
 
-  const res = await fetch(
-    SUPABASE_URL + "/rest/v1/messages?user_id=eq." + user.id + "&order=created_at.asc",
-    {
-      headers:{
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + user.token
-      }
-    }
-  );
+function loadChats(){
+  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
+  const list = document.getElementById("chatList");
+  list.innerHTML = "";
 
-  const data = await res.json();
-
-  const box = document.getElementById("messages");
-  box.innerHTML = "";
-
-  data.forEach(msg=>{
-    addMessage(msg.text, msg.role);
+  chats.forEach(c=>{
+    const div = document.createElement("div");
+    div.className="chatItem";
+    div.innerText=c.title;
+    div.onclick=()=>openChat(c.id);
+    list.appendChild(div);
   });
 }
 
-/* CHAT */
-function scrollToBottom(){
-  const box=document.getElementById("messages");
-  box.scrollTop=box.scrollHeight;
+/* NEW CHAT */
+function newChat(){
+  currentChatId = Date.now();
+
+  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
+
+  chats.push({
+    id: currentChatId,
+    title:"New chat",
+    messages:[]
+  });
+
+  localStorage.setItem(getUserKey(), JSON.stringify(chats));
+  loadChats();
+
+  document.getElementById("messages").innerHTML="";
 }
 
+/* OPEN CHAT */
+function openChat(id){
+  currentChatId = id;
+
+  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
+  const chat = chats.find(c=>c.id===id);
+
+  const box = document.getElementById("messages");
+  box.innerHTML="";
+
+  chat.messages.forEach(m=>{
+    addMessage(m.text, m.type);
+  });
+}
+
+/* SAVE MESSAGE */
+function saveMessage(text,type){
+
+  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
+  const chat = chats.find(c=>c.id===currentChatId);
+
+  chat.messages.push({text,type});
+
+  /* TITLE = FIRST MESSAGE */
+  if(chat.messages.length === 1){
+    chat.title = text.slice(0,20);
+  }
+
+  localStorage.setItem(getUserKey(), JSON.stringify(chats));
+  loadChats();
+}
+
+/* UI */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
   document.getElementById("messages").appendChild(div);
-  scrollToBottom();
-  return div;
 }
 
+/* SEND */
 async function send(){
+
+  if(!currentChatId){
+    newChat();
+  }
 
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  if(!user) return alert("Login first");
-
   addMessage(text,"user");
+  saveMessage(text,"user");
+
   input.value="";
 
-  /* SAVE USER MSG */
-  await fetch(SUPABASE_URL + "/rest/v1/messages",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "apikey":SUPABASE_KEY,
-      "Authorization":"Bearer "+user.token
-    },
-    body:JSON.stringify({
-      user_id:user.id,
-      text:text,
-      role:"user"
-    })
-  });
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
 
-  /* AI RESPONSE */
-  const res=await fetch("/api/chat",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({message:text})
-  });
+    const data=await res.json();
 
-  const data=await res.json();
+    addMessage(data.reply || "AI response","ai");
+    saveMessage(data.reply || "AI response","ai");
 
-  addMessage(data.reply,"ai");
-
-  /* SAVE AI MSG */
-  await fetch(SUPABASE_URL + "/rest/v1/messages",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "apikey":SUPABASE_KEY,
-      "Authorization":"Bearer "+user.token
-    },
-    body:JSON.stringify({
-      user_id:user.id,
-      text:data.reply,
-      role:"ai"
-    })
-  });
-
-}
-
-function newChat(){
-  document.getElementById("messages").innerHTML =
-  `<div class="msg ai">New chat 👋</div>`;
+  }catch{
+    addMessage("⚠️ Error","ai");
+  }
 }
 
 </script>
