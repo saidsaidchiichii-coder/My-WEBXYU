@@ -61,6 +61,7 @@ body{
   max-width:70%;
   padding:12px 14px;
   border-radius:14px;
+  white-space: pre-wrap; /* 🔥 IMPORTANT FIX */
 }
 
 .user{
@@ -179,13 +180,22 @@ function hideThinking(){
   }
 }
 
-/* ⚡ typing effect */
+/* ⚡ FIXED typing effect (spaces preserved 100%) */
 function typeText(element, text, speed = 15){
   let i = 0;
-  element.innerText = "";
+  element.textContent = "";
+  element.style.whiteSpace = "pre-wrap"; // 🔥 IMPORTANT
 
   const interval = setInterval(() => {
-    element.innerText += text[i];
+    let char = text[i];
+
+    if(char === " "){
+      element.textContent += "\u00A0"; // keep spaces
+    } 
+    else {
+      element.textContent += char;
+    }
+
     i++;
 
     if(i >= text.length){
@@ -217,10 +227,9 @@ async function send(){
 
     hideThinking();
 
-    // ⏱️ small delay before AI starts writing
     setTimeout(()=>{
       const msg = addMessage("", "ai");
-      typeText(msg, data.reply || "No response", 12); // ⚡ fast typing
+      typeText(msg, data.reply || "No response", 12);
     }, 300);
 
   }catch{
