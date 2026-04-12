@@ -8,205 +8,74 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Inter, Arial;
-}
-
-body{
-  background: radial-gradient(circle at top, #1a1a1a, #0a0a0a);
-  color:white;
-  height:100vh;
-  display:flex;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial;}
+body{background:#0a0a0a;color:white;height:100vh;display:flex;}
 
 /* SIDEBAR */
 .sidebar{
-  width:260px;
-  background:linear-gradient(180deg,#111,#0a0a0a);
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  width:260px;background:#111;padding:15px;
+  display:flex;flex-direction:column;gap:10px;
   border-right:1px solid #222;
 }
 
-.logo{
-  font-size:18px;
-  font-weight:bold;
+.chatItem{
+  padding:10px;
+  border-radius:10px;
+  background:#1a1a1a;
+  cursor:pointer;
+}
+.chatItem.active{background:#22c55e;color:black}
+
+/* CHAT */
+.chat{flex:1;display:flex;flex-direction:column;}
+
+.messages{
+  flex:1;padding:20px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:10px;
 }
 
-.newchat{
-  padding:12px;
+.msg{max-width:65%;padding:12px;border-radius:14px;}
+.user{margin-left:auto;background:#22c55e;color:black;}
+.ai{background:#1f1f1f;}
+
+.input{display:flex;padding:10px;background:#111;}
+input{flex:1;padding:12px;border-radius:10px;border:none;background:#1a1a1a;color:white;}
+button{margin-left:10px;padding:10px;border:none;border-radius:10px;background:#22c55e;}
+
+/* SUGGESTIONS */
+.suggestions{
+  display:flex;
+  gap:10px;
+  padding:10px;
+}
+.suggestions div{
+  padding:8px 12px;
   background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
-  transition:0.2s;
-}
-.newchat:hover{
-  background:#22c55e;
-  color:black;
-}
-
-/* CHAT */
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-/* MESSAGES */
-.messages{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-/* MESSAGE ROW */
-.msgRow{
-  display:flex;
-  align-items:flex-end;
-  gap:8px;
-  animation:fadeIn 0.3s ease;
-}
-
-.msg{
-  max-width:65%;
-  padding:12px 14px;
-  border-radius:14px;
-  position:relative;
-}
-
-.user{
-  margin-left:auto;
-  background:#22c55e;
-  color:black;
-}
-
-.ai{
-  background:#1f1f1f;
-}
-
-/* COPY BUTTON */
-.copyBtn{
-  position:absolute;
-  top:5px;
-  right:8px;
-  font-size:12px;
-  opacity:0;
-  cursor:pointer;
-}
-.msg:hover .copyBtn{
-  opacity:1;
-}
-
-/* INPUT */
-.input{
-  display:flex;
-  padding:15px;
-  background:#111;
-  border-top:1px solid #222;
-}
-
-input{
-  flex:1;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:#1a1a1a;
-  color:white;
-}
-
-button{
-  margin-left:10px;
-  padding:12px 18px;
-  border:none;
-  border-radius:12px;
-  background:#22c55e;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-/* SETTINGS PANEL */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.6);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-.loginBox{
-  background:#111;
-  padding:20px;
-  border-radius:14px;
-  width:300px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* ANIMATIONS */
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
-}
-
-/* TYPING */
-.typing{
-  font-size:13px;
-  opacity:0.6;
 }
 </style>
 </head>
 
 <body>
 
-<!-- SETTINGS -->
-<div class="overlay" id="settingsPanel">
-  <div class="loginBox">
-    <h2>Settings ⚙️</h2>
-
-    <label>Temperature</label>
-    <input type="range" min="0" max="1" step="0.1">
-
-    <label>Language</label>
-    <select style="padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
-      <option>English</option>
-      <option>Français</option>
-      <option>العربية</option>
-    </select>
-
-    <button onclick="clearChat()">🗑 Clear Chat</button>
-    <button onclick="closeSettings()" style="background:#ef4444;">Close</button>
-  </div>
-</div>
-
-<!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="logo">◆ ILYASS AI</div>
-  <div class="newchat" onclick="clearChat()">+ New Chat</div>
-  <div class="newchat" onclick="openSettings()">⚙️ Settings</div>
+  <div onclick="newChat()">+ New Chat</div>
+  <div id="chatList"></div>
 </div>
 
-<!-- CHAT -->
 <div class="chat">
 
-  <div class="messages" id="messages">
-    <div class="msgRow">
-      <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
-    </div>
+  <div class="suggestions">
+    <div onclick="quick('Write a C++ code')">💻 Code</div>
+    <div onclick="quick('Translate to French')">🌍 Translate</div>
+    <div onclick="quick('Explain simply')">🧠 Explain</div>
   </div>
 
+  <div class="messages" id="messages"></div>
+
   <div class="input">
-    <input id="input" placeholder="Ask anything..."
-    onkeydown="handleKey(event)" />
+    <input id="input" onkeydown="handleKey(event)" placeholder="Ask..." />
     <button onclick="send()">Send</button>
   </div>
 
@@ -214,80 +83,88 @@ button{
 
 <script>
 
-/* SUPABASE */
-const { createClient } = supabase;
-const supabaseClient = createClient(
-  "https://idjgsgtupuymysptxrbl.supabase.co",
-  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
-);
+/* CHAT STORAGE */
+let chats = JSON.parse(localStorage.getItem("chats")||"{}");
+let currentChat = null;
 
-/* SETTINGS */
-function openSettings(){
-  document.getElementById("settingsPanel").style.display="flex";
-}
-function closeSettings(){
-  document.getElementById("settingsPanel").style.display="none";
-}
-
-/* CLEAR CHAT */
-function clearChat(){
-  document.getElementById("messages").innerHTML="";
+/* NEW CHAT */
+function newChat(){
+  const id = Date.now();
+  chats[id] = [];
+  currentChat = id;
+  saveChats();
+  renderChats();
+  renderMessages();
 }
 
-/* AUTO SCROLL */
-function scrollBottom(){
-  const m=document.getElementById("messages");
-  m.scrollTop=m.scrollHeight;
+/* SAVE */
+function saveChats(){
+  localStorage.setItem("chats", JSON.stringify(chats));
+}
+
+/* RENDER SIDEBAR */
+function renderChats(){
+  const list=document.getElementById("chatList");
+  list.innerHTML="";
+  for(let id in chats){
+    const div=document.createElement("div");
+    div.className="chatItem "+(id==currentChat?"active":"");
+    div.innerText="Chat "+id;
+    div.onclick=()=>{
+      currentChat=id;
+      renderChats();
+      renderMessages();
+    };
+    list.appendChild(div);
+  }
+}
+
+/* RENDER MESSAGES */
+function renderMessages(){
+  const box=document.getElementById("messages");
+  box.innerHTML="";
+  if(!currentChat) return;
+
+  chats[currentChat].forEach(m=>{
+    addMessageUI(m.text,m.type,false);
+  });
 }
 
 /* ADD MESSAGE */
 function addMessage(text,type){
+  chats[currentChat].push({text,type});
+  saveChats();
+  addMessageUI(text,type,true);
+}
 
-  const row=document.createElement("div");
-  row.className="msgRow";
-
+function addMessageUI(text,type,scroll=true){
   const div=document.createElement("div");
   div.className="msg "+type;
-  div.innerText=text;
 
-  const copy=document.createElement("span");
-  copy.innerText="📋";
-  copy.className="copyBtn";
-  copy.onclick=()=>navigator.clipboard.writeText(text);
-
-  div.appendChild(copy);
-  row.appendChild(div);
-
-  document.getElementById("messages").appendChild(row);
-  scrollBottom();
-}
-
-/* TYPING */
-function showTyping(){
-  const row=document.createElement("div");
-  row.className="msgRow typingRow";
-
-  const div=document.createElement("div");
-  div.className="msg ai typing";
-  div.innerText="Typing...";
-
-  row.appendChild(div);
-  document.getElementById("messages").appendChild(row);
-  scrollBottom();
-
-  return row;
-}
-
-/* KEY CONTROL */
-function handleKey(e){
-  if(e.key==="Enter" && !e.shiftKey){
-    e.preventDefault();
-    send();
+  // CODE DETECT
+  if(text.includes("```")){
+    div.innerHTML="<pre>"+text+"</pre>";
+  }else{
+    div.innerText=text;
   }
+
+  document.getElementById("messages").appendChild(div);
+  if(scroll) document.getElementById("messages").scrollTop=999999;
+}
+
+/* QUICK PROMPT */
+function quick(t){
+  document.getElementById("input").value=t;
+}
+
+/* KEY */
+function handleKey(e){
+  if(e.key==="Enter"){send();}
 }
 
 /* SEND */
 async function send(){
+  if(!currentChat) newChat();
 
   const input=document.getElementById("input");
   const text=input.value.trim();
@@ -295,8 +172,6 @@ async function send(){
 
   addMessage(text,"user");
   input.value="";
-
-  const typingEl=showTyping();
 
   try{
     const res=await fetch("/api/chat",{
@@ -306,15 +181,16 @@ async function send(){
     });
 
     const data=await res.json();
-
-    typingEl.remove();
-    addMessage(data.reply || "No response","ai");
+    addMessage(data.reply,"ai");
 
   }catch{
-    typingEl.remove();
-    addMessage("Error ⚠️","ai");
+    addMessage("Error","ai");
   }
 }
+
+/* INIT */
+newChat();
+renderChats();
 
 </script>
 
