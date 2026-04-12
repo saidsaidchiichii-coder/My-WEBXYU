@@ -10,16 +10,36 @@
 body{background:#0f0f0f;color:white;height:100vh;display:flex;}
 
 .topAuth{position:fixed;top:15px;right:20px;display:flex;gap:10px;z-index:999;}
-.topAuth button{padding:8px 16px;border-radius:999px;font-size:13px;cursor:pointer;border:1px solid transparent;}
+.topAuth button{padding:8px 16px;border-radius:999px;font-size:13px;cursor:pointer;transition:.25s;border:1px solid transparent;}
 .loginBtn{background:transparent;color:#aaa;border:1px solid #2a2a2a;}
+.loginBtn:hover{background:#1a1a1a;color:white;}
 .signupBtn{background:linear-gradient(135deg,#22c55e,#16a34a);color:black;}
 
-.sidebar{width:260px;background:#111;padding:20px;display:flex;flex-direction:column;justify-content:space-between;}
+.sidebar{
+  width:260px;background:#111;padding:20px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+
 .logo{font-size:18px;font-weight:bold;}
 .newchat{padding:10px;background:#1a1a1a;border-radius:10px;cursor:pointer;}
 
-.profile{background:#1a1a1a;padding:10px;border-radius:10px;font-size:12px;}
-.profile button{margin-top:5px;width:100%;padding:6px;border:none;border-radius:6px;background:#ef4444;color:white;cursor:pointer;}
+.profile{
+  background:#1a1a1a;
+  padding:10px;
+  border-radius:10px;
+  font-size:12px;
+}
+
+.profile button{
+  margin-top:5px;
+  width:100%;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+  background:#ef4444;
+  color:white;
+  cursor:pointer;
+}
 
 .chat{flex:1;display:flex;flex-direction:column;}
 .messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
@@ -30,16 +50,23 @@ body{background:#0f0f0f;color:white;height:100vh;display:flex;}
 
 .input{display:flex;padding:15px;background:#111;}
 input{flex:1;padding:12px;border:none;border-radius:10px;background:#1a1a1a;color:white;}
+
 button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px;background:#22c55e;cursor:pointer;}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;}
 .modalBox{background:#111;padding:25px;border-radius:16px;width:300px;display:flex;flex-direction:column;gap:10px;}
 
-.modalBox input{padding:10px;border-radius:8px;border:none;background:#1a1a1a;color:white;}
-.modalBox input:focus{outline:none;box-shadow:0 0 5px #22c55e,0 0 10px #16a34a;}
-.modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
+.modalBox input{
+  padding:10px;border-radius:8px;border:none;
+  background:#1a1a1a;color:white;
+}
+.modalBox input:focus{
+  outline:none;
+  box-shadow:0 0 5px #22c55e,0 0 10px #16a34a;
+}
 
-.error{font-size:12px;color:red;white-space:pre-line;}
+.modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
+.error{font-size:12px;color:red;}
 </style>
 </head>
 
@@ -111,10 +138,11 @@ const SUPABASE_KEY = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
 /* AUTO LOGIN */
 window.onload = () => {
   const user = JSON.parse(localStorage.getItem("user"));
-  if(user) showProfile(user);
+  if(user){
+    showProfile(user);
+  }
 };
 
-/* PROFILE */
 function showProfile(data){
   document.getElementById("authButtons").style.display="none";
   document.getElementById("profileBox").style.display="block";
@@ -144,8 +172,14 @@ async function doSignup(){
   const errorEl = document.getElementById("signupError");
 
   if(!username) return errorEl.innerText="❌ Username required";
-  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
+  if(username.length < 3) return errorEl.innerText="❌ Username too short";
+
+  if(!email) return errorEl.innerText="❌ Email required";
+  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email format";
+
+  if(!age) return errorEl.innerText="❌ Age required";
   if(age < 13) return errorEl.innerText="❌ Must be 13+";
+
   if(!agree) return errorEl.innerText="❌ Accept terms";
 
   try{
@@ -153,13 +187,11 @@ async function doSignup(){
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer "+SUPABASE_KEY
+        "apikey":SUPABASE_KEY
       },
       body:JSON.stringify({
         email:email,
-        password:"12345678",
-        data:{ username: username }
+        password:"12345678"
       })
     });
 
@@ -171,33 +203,28 @@ async function doSignup(){
     }
 
     errorEl.style.color="lightgreen";
-    errorEl.innerText=
-`✔ Account created!
-
-📩 Check your email
-👉 Click "Confirm your signup"
-👉 Then come back and LOGIN`;
+    errorEl.innerText="✔ Check your email 📩 and verify before login";
 
   }catch{
     errorEl.innerText="❌ Network error";
   }
 }
 
-/* LOGIN */
+/* LOGIN (🔥 FIXED FULL CHECK) */
 async function doLogin(){
 
   const email = document.getElementById("loginEmail").value.trim();
   const errorEl = document.getElementById("loginError");
 
-  if(!email) return errorEl.innerText="❌ Enter email";
+  if(!email) return errorEl.innerText="❌ Email required";
+  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email format";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer "+SUPABASE_KEY
+        "apikey":SUPABASE_KEY
       },
       body:JSON.stringify({
         email:email,
@@ -212,29 +239,31 @@ async function doLogin(){
       if(data.error.message.includes("Email not confirmed")){
         errorEl.innerText="❌ خاصك تفعل الإيميل ديالك 📩";
       }
+      else if(data.error.message.includes("Invalid login")){
+        errorEl.innerText="❌ هاد الإيميل ما مسجلش ❌";
+      }
       else{
-        errorEl.innerText="❌ Email not found";
+        errorEl.innerText="❌ " + data.error.message;
       }
 
       return;
     }
 
-    const username = data.user?.user_metadata?.username || "User";
-
+    /* ✅ ONLY VERIFIED USERS GET HERE */
     localStorage.setItem("user", JSON.stringify({
       email: email,
-      username: username
+      username: "User"
     }));
 
-    showProfile({email, username});
+    showProfile({email, username:"User"});
     closeLogin();
 
   }catch{
-    errorEl.innerText="❌ Login failed";
+    errorEl.innerText="❌ Network error";
   }
 }
 
-/* CHAT */
+/* CHAT SAME */
 function scrollToBottom(){
   const box=document.getElementById("messages");
   box.scrollTop=box.scrollHeight;
@@ -246,6 +275,27 @@ function addMessage(text,type){
   div.innerText=text;
   document.getElementById("messages").appendChild(div);
   scrollToBottom();
+  return div;
+}
+
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  document.getElementById("messages").appendChild(div);
+  thinkingEl=div;scrollToBottom();
+}
+
+function hideThinking(){
+  if(thinkingEl){thinkingEl.remove();thinkingEl=null;}
+}
+
+function typeText(element,text,speed=10){
+  let i=0;element.innerHTML="";
+  const interval=setInterval(()=>{
+    element.innerHTML+=text[i];i++;
+    if(i>=text.length) clearInterval(interval);
+  },speed);
 }
 
 function newChat(){
@@ -260,8 +310,25 @@ async function send(){
 
   addMessage(text,"user");
   input.value="";
+  showThinking();
 
-  addMessage("Typing...","ai");
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
+    });
+
+    const data=await res.json();
+    hideThinking();
+
+    const msg=addMessage("", "ai");
+    typeText(msg, data.reply || "No response", 10);
+
+  }catch{
+    hideThinking();
+    addMessage("⚠️ Chat error","ai");
+  }
 }
 
 </script>
