@@ -1,228 +1,84 @@
 ```css
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Inter, Arial;
-}
+/* استبدل قسم الـbuttons بهادا الجديد: */
 
-body{
-  background:#0f0f0f;
-  color:white;
-  height:100vh;
-  display:flex;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:260px;
-  background:#111;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.logo{
-  font-size:18px;
-  font-weight:bold;
-}
-
-.newchat{
-  padding:10px;
-  background:#1a1a1a;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-/* CHAT */
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  filter: blur(6px);
-  pointer-events:none;
-}
-
-.chat.active{
-  filter:none;
-  pointer-events:auto;
-}
-
-.messages{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.msg{
-  max-width:70%;
-  padding:12px 14px;
-  border-radius:14px;
-}
-
-.user{
-  align-self:flex-end;
-  background:#22c55e;
-  color:black;
-}
-
-.ai{
-  align-self:flex-start;
-  background:#1f1f1f;
-}
-
-/* INPUT */
-.input{
-  display:flex;
-  padding:15px;
-  background:#111;
-}
-
-input{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#1a1a1a;
-  color:white;
-}
-
-/* CHATGPT BUTTONS */
-button{
-  margin-left:10px;
-  padding:12px 24px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(135deg, #10a37f, #0f8e6d);
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.3s ease;
-  box-shadow:0 4px 14px rgba(0,0,0,0.2);
-}
-
-button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 25px rgba(0,0,0,0.3);
-}
-
-/* 🌈 LOGIN DESIGN */
-.loginBox{
-  position:relative;
-  width:340px;
-  padding:30px 25px;
-  border-radius:18px;
-  text-align:center;
-  overflow:hidden;
-}
-
-.loginBox::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  background:linear-gradient(90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c);
-  background-size:300% 300%;
-  animation:rgbMove 5s linear infinite;
-  filter:blur(8px);
-  z-index:-1;
-}
-
-.loginBox::after{
-  content:"";
-  position:absolute;
-  inset:2px;
-  background:#111;
-  border-radius:16px;
-  z-index:-1;
-}
-
-@keyframes rgbMove{
-  0%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-  100%{background-position:0% 50%;}
-}
-
-/* LOGIN BUTTONS - CHATGPT STYLE */
 .loginBox button{
   width:100%;
   margin:8px 0;
-  padding:14px 20px;
-  border:none;
+  padding:16px 24px;
+  border:2px solid transparent;
   border-radius:12px;
   font-size:16px;
-  font-weight:600;
+  font-weight:700;
   cursor:pointer;
-  transition:all 0.3s ease;
-  box-shadow:0 4px 14px rgba(0,0,0,0.2);
+  transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background:transparent;
+  position:relative;
+  overflow:hidden;
+  color:#fff;
 }
 
-.loginBox button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 8px 25px rgba(0,0,0,0.3);
+.loginBox button::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition:0.5s;
+}
+
+.loginBox button:hover::before{
+  left:100%;
 }
 
 button[onclick="login()"]{
-  background:linear-gradient(135deg, #10a37f, #0f8e6d);
+  background:#10a37f;
+  border-color:#10a37f;
 }
 
 button[onclick="login()"]:hover{
-  background:linear-gradient(135deg, #0f8e6d, #0d7a5e);
+  background:#059669;
+  border-color:#059669;
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(16,163,127,0.4);
 }
 
 button[onclick="signup()"]{
-  background:linear-gradient(135deg, #3b82f6, #2563eb);
+  background:#3b82f6;
+  border-color:#3b82f6;
 }
 
 button[onclick="signup()"]:hover{
-  background:linear-gradient(135deg, #2563eb, #1d4ed8);
+  background:#2563eb;
+  border-color:#2563eb;
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(59,130,246,0.4);
 }
 
 button[onclick="ownerSkip()"]{
-  background:linear-gradient(135deg, #9333ea, #7c3aed);
+  background:#8b5cf6;
+  border-color:#8b5cf6;
 }
 
 button[onclick="ownerSkip()"]:hover{
-  background:linear-gradient(135deg, #7c3aed, #6d28d9);
+  background:#7c3aed;
+  border-color:#7c3aed;
+  transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(139,92,246,0.4);
 }
 
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.9);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
+button[onclick="send()"]{
+  background:#10a37f;
+  border:2px solid #10a37f;
+  padding:14px 28px;
+  font-weight:700;
 }
 
-/* SETTINGS */
-#settingsPanel{
-  display:none;
+button[onclick="send()"]:hover{
+  background:#059669;
+  border-color:#059669;
+  transform:translateY(-1px);
+  box-shadow:0 8px 25px rgba(16,163,127,0.4);
 }
-
-/* TOAST */
-.toast{
-  position:fixed;
-  top:20px;
-  right:20px;
-  padding:12px 14px;
-  border-radius:10px;
-  color:white;
-  opacity:0;
-  transform:translateY(-15px);
-  transition:0.3s;
-}
-
-.toast.show{
-  opacity:1;
-  transform:translateY(0);
-}
-
-.toast.success{background:#22c55e;}
-.toast.error{background:#ef4444;}
 ```
