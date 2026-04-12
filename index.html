@@ -15,9 +15,31 @@ body{background:#0f0f0f;color:white;height:100vh;display:flex;}
 .loginBtn:hover{background:#1a1a1a;color:white;}
 .signupBtn{background:linear-gradient(135deg,#22c55e,#16a34a);color:black;}
 
-.sidebar{width:260px;background:#111;padding:20px;display:flex;flex-direction:column;gap:10px;}
+.sidebar{
+  width:260px;background:#111;padding:20px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+
 .logo{font-size:18px;font-weight:bold;}
 .newchat{padding:10px;background:#1a1a1a;border-radius:10px;cursor:pointer;}
+
+.profile{
+  background:#1a1a1a;
+  padding:10px;
+  border-radius:10px;
+  font-size:12px;
+}
+
+.profile button{
+  margin-top:5px;
+  width:100%;
+  padding:6px;
+  border:none;
+  border-radius:6px;
+  background:#ef4444;
+  color:white;
+  cursor:pointer;
+}
 
 .chat{flex:1;display:flex;flex-direction:column;}
 .messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
@@ -31,49 +53,44 @@ input{flex:1;padding:12px;border:none;border-radius:10px;background:#1a1a1a;colo
 
 button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px;background:#22c55e;cursor:pointer;}
 
-.modal{
-  position:fixed;inset:0;background:rgba(0,0,0,0.6);
-  display:none;align-items:center;justify-content:center;z-index:9999;
-}
-
-.modalBox{
-  background:#111;padding:25px;border-radius:16px;width:300px;
-  display:flex;flex-direction:column;gap:10px;
-}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;}
+.modalBox{background:#111;padding:25px;border-radius:16px;width:300px;display:flex;flex-direction:column;gap:10px;}
 
 .modalBox input{
   padding:10px;border-radius:8px;border:none;
   background:#1a1a1a;color:white;
-  transition:0.3s;
 }
-
 .modalBox input:focus{
   outline:none;
-  box-shadow:0 0 5px #22c55e,0 0 10px #16a34a,0 0 20px #22c55e;
+  box-shadow:0 0 5px #22c55e,0 0 10px #16a34a;
 }
 
 .modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
-.modalBox label{font-size:12px;}
 .error{font-size:12px;color:red;}
-
-.thinking{display:flex;gap:5px;}
-.dot{width:6px;height:6px;background:#aaa;border-radius:50%;animation:bounce .5s infinite;}
-.dot:nth-child(2){animation-delay:.1s;}
-.dot:nth-child(3){animation-delay:.2s;}
-@keyframes bounce{0%,100%{transform:translateY(0);opacity:.4;}50%{transform:translateY(-4px);opacity:1;}}
 </style>
 </head>
 
 <body>
 
-<div class="topAuth">
+<div class="topAuth" id="authButtons">
   <button class="loginBtn" onclick="openLogin()">Login</button>
   <button class="signupBtn" onclick="openSignup()">Sign up</button>
 </div>
 
 <div class="sidebar">
-  <div class="logo">◆ ILYASS AI</div>
-  <div class="newchat" onclick="newChat()">+ New Chat</div>
+
+  <div>
+    <div class="logo">◆ ILYASS AI</div>
+    <div class="newchat" onclick="newChat()">+ New Chat</div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profileBox" class="profile" style="display:none;">
+    <div id="profileName"></div>
+    <div id="profileEmail" style="opacity:.7"></div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
 </div>
 
 <div class="chat">
@@ -119,10 +136,37 @@ button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px
 <script>
 
 const SUPABASE_URL = "https://idjgsgtupuymysptxrbl.supabase.co";
-const SUPABASE_KEY = "sb_publishable_XXXX";
+const SUPABASE_KEY = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
 
 let thinkingEl = null;
 
+/* AUTO LOGIN */
+window.onload = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(user){
+    showProfile(user);
+  }
+};
+
+/* PROFILE UI */
+function showProfile(data){
+  document.getElementById("authButtons").style.display="none";
+  document.getElementById("profileBox").style.display="block";
+
+  document.getElementById("profileName").innerText =
+    data.username || "User";
+
+  document.getElementById("profileEmail").innerText =
+    data.email || data.user?.email;
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("user");
+  location.reload();
+}
+
+/* MODALS */
 function openLogin(){document.getElementById("loginModal").style.display="flex";}
 function openSignup(){document.getElementById("signupModal").style.display="flex";}
 function closeLogin(){document.getElementById("loginModal").style.display="none";}
@@ -137,17 +181,10 @@ async function doSignup(){
   const agree = document.getElementById("agree").checked;
 
   const errorEl = document.getElementById("signupError");
-  errorEl.style.color = "red";
 
   if(!username) return errorEl.innerText="❌ Username required";
-  if(username.length < 3) return errorEl.innerText="❌ Username too short";
-
   if(!email) return errorEl.innerText="❌ Email required";
-  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
-
   if(!age) return errorEl.innerText="❌ Age required";
-  if(age < 13) return errorEl.innerText="❌ Must be 13+";
-
   if(!agree) return errorEl.innerText="❌ Accept terms";
 
   try{
@@ -156,7 +193,7 @@ async function doSignup(){
       headers:{
         "Content-Type":"application/json",
         "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer " + SUPABASE_KEY
+        "Authorization":"Bearer "+SUPABASE_KEY
       },
       body:JSON.stringify({
         email:email,
@@ -171,12 +208,16 @@ async function doSignup(){
       return;
     }
 
-    errorEl.style.color="lightgreen";
-    errorEl.innerText="✔ Check your email to verify account";
+    localStorage.setItem("user", JSON.stringify({
+      email: email,
+      username: username
+    }));
 
-  }catch(err){
-    console.error(err);
-    errorEl.innerText="❌ Request failed (check URL / KEY)";
+    showProfile({email, username});
+    closeSignup();
+
+  }catch{
+    errorEl.innerText="❌ Network error";
   }
 }
 
@@ -194,7 +235,7 @@ async function doLogin(){
       headers:{
         "Content-Type":"application/json",
         "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer " + SUPABASE_KEY
+        "Authorization":"Bearer "+SUPABASE_KEY
       },
       body:JSON.stringify({
         email:email,
@@ -209,12 +250,16 @@ async function doLogin(){
       return;
     }
 
-    localStorage.setItem("user", JSON.stringify(data));
-    closeLogin();
-    alert("Logged in ✅");
+    localStorage.setItem("user", JSON.stringify({
+      email: email,
+      username: "User"
+    }));
 
-  }catch(err){
-    errorEl.innerText="❌ Login request failed";
+    showProfile({email, username:"User"});
+    closeLogin();
+
+  }catch{
+    errorEl.innerText="❌ Login failed";
   }
 }
 
@@ -280,7 +325,7 @@ async function send(){
     const msg=addMessage("", "ai");
     typeText(msg, data.reply || "No response", 10);
 
-  }catch(err){
+  }catch{
     hideThinking();
     addMessage("⚠️ Chat error","ai");
   }
