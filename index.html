@@ -9,7 +9,7 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
 body{
-  background:#0b0b0b;
+  background:linear-gradient(135deg,#0b0b0b,#0f172a);
   color:white;
   height:100vh;
   display:flex;
@@ -18,22 +18,37 @@ body{
 /* SIDEBAR */
 .sidebar{
   width:270px;
-  background:#0f0f0f;
+  background:rgba(20,20,20,0.7);
+  backdrop-filter:blur(12px);
   padding:20px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  border-right:1px solid #1f1f1f;
+  border-right:1px solid rgba(255,255,255,0.05);
 }
 
-.logo{font-weight:bold;font-size:18px;}
+.logo{
+  font-weight:bold;
+  font-size:18px;
+  background:linear-gradient(135deg,#22c55e,#4ade80);
+  -webkit-background-clip:text;
+  color:transparent;
+}
 
+/* NEW CHAT */
 .newchat{
   margin-top:15px;
   padding:10px;
-  background:#1a1a1a;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
   border-radius:10px;
   cursor:pointer;
+  text-align:center;
+  font-weight:600;
+  transition:0.2s;
+}
+.newchat:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 10px #22c55e;
 }
 
 .recents{
@@ -56,22 +71,24 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:10px;
-  background:#151515;
+  background:rgba(255,255,255,0.05);
   border-radius:10px;
   cursor:pointer;
   font-size:13px;
+  transition:0.2s;
 }
-
-.chatItem:hover{background:#222;}
+.chatItem:hover{
+  background:rgba(255,255,255,0.1);
+}
 
 .chatTitle{
   flex:1;
-  white-space:nowrap;
   overflow:hidden;
+  white-space:nowrap;
   text-overflow:ellipsis;
 }
 
-/* THREE DOT MENU */
+/* MENU */
 .menuBtn{
   width:25px;
   height:25px;
@@ -81,37 +98,32 @@ body{
   justify-content:center;
   cursor:pointer;
 }
-
 .menuBtn:hover{
-  background:#2a2a2a;
+  background:rgba(255,255,255,0.1);
 }
 
 .dropdown{
   position:absolute;
-  background:#1a1a1a;
+  background:#111;
   border:1px solid #333;
-  border-radius:8px;
-  padding:5px;
+  border-radius:10px;
   display:none;
   flex-direction:column;
-  z-index:999;
+  overflow:hidden;
 }
-
 .dropdown div{
-  padding:8px 12px;
+  padding:10px;
   cursor:pointer;
-  font-size:13px;
 }
-
 .dropdown div:hover{
-  background:#2a2a2a;
+  background:#222;
 }
 
 /* PROFILE */
 .profile{
-  background:#1a1a1a;
+  background:rgba(255,255,255,0.05);
   padding:10px;
-  border-radius:10px;
+  border-radius:12px;
   display:flex;
   gap:10px;
   align-items:center;
@@ -132,9 +144,9 @@ body{
 .profileInfo{font-size:12px;}
 
 .profile button{
-  margin-top:6px;
+  margin-top:5px;
   width:100%;
-  padding:7px;
+  padding:6px;
   border:none;
   border-radius:8px;
   background:linear-gradient(135deg,#ef4444,#dc2626);
@@ -155,31 +167,35 @@ body{
   overflow-y:auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
 }
 
 .msg{
   max-width:70%;
   padding:14px;
   border-radius:14px;
+  font-size:14px;
+  line-height:1.5;
 }
 
 .user{
   align-self:flex-end;
-  background:#22c55e;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
   color:black;
 }
 
 .ai{
   align-self:flex-start;
-  background:#1a1a1a;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(8px);
 }
 
 /* INPUT */
 .input{
   display:flex;
   padding:15px;
-  background:#0f0f0f;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(10px);
 }
 
 input{
@@ -187,7 +203,7 @@ input{
   padding:12px;
   border:none;
   border-radius:10px;
-  background:#1a1a1a;
+  background:rgba(255,255,255,0.05);
   color:white;
 }
 
@@ -196,8 +212,12 @@ button{
   padding:12px;
   border:none;
   border-radius:10px;
-  background:#22c55e;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
   cursor:pointer;
+  font-weight:bold;
+}
+button:hover{
+  box-shadow:0 0 10px #22c55e;
 }
 </style>
 </head>
@@ -205,10 +225,8 @@ button{
 <body>
 
 <div class="sidebar">
-
   <div>
     <div class="logo">◆ ILYASS AI</div>
-
     <div class="newchat" onclick="newChat()">+ New Chat</div>
 
     <div class="recents">Recents</div>
@@ -229,7 +247,6 @@ button{
   </div>
 
   <input type="file" id="fileInput" hidden onchange="handlePhoto(event)">
-
 </div>
 
 <div class="chat">
@@ -242,7 +259,6 @@ button{
   </div>
 </div>
 
-<!-- DROPDOWN -->
 <div id="dropdown" class="dropdown"></div>
 
 <script>
@@ -266,7 +282,7 @@ function getUserKey(){
   return "chats_"+user.email;
 }
 
-/* LOAD CHATS */
+/* LOAD */
 function loadChats(){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const list=document.getElementById("chatList");
@@ -288,9 +304,9 @@ function loadChats(){
 /* MENU */
 function toggleMenu(e,id){
   e.stopPropagation();
-  const menu=document.getElementById("dropdown");
   activeMenuId=id;
 
+  const menu=document.getElementById("dropdown");
   menu.style.display="flex";
   menu.style.top=e.pageY+"px";
   menu.style.left=e.pageX+"px";
@@ -338,7 +354,7 @@ function newChat(){
   document.getElementById("messages").innerHTML="";
 }
 
-/* OPEN CHAT */
+/* OPEN */
 function openChat(id){
   currentChatId=id;
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
@@ -377,7 +393,6 @@ function addMessage(text,type){
 
 /* SEND */
 async function send(){
-
   if(!currentChatId){
     newChat();
   }
