@@ -78,19 +78,16 @@ button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px
 </div>
 
 <div class="sidebar">
-
   <div>
     <div class="logo">◆ ILYASS AI</div>
     <div class="newchat" onclick="newChat()">+ New Chat</div>
   </div>
 
-  <!-- PROFILE -->
   <div id="profileBox" class="profile" style="display:none;">
     <div id="profileName"></div>
     <div id="profileEmail" style="opacity:.7"></div>
     <button onclick="logout()">Logout</button>
   </div>
-
 </div>
 
 <div class="chat">
@@ -140,27 +137,15 @@ const SUPABASE_KEY = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
 
 let thinkingEl = null;
 
-/* AUTO LOGIN */
-window.onload = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if(user){
-    showProfile(user);
-  }
-};
-
-/* PROFILE UI */
+/* PROFILE */
 function showProfile(data){
   document.getElementById("authButtons").style.display="none";
   document.getElementById("profileBox").style.display="block";
 
-  document.getElementById("profileName").innerText =
-    data.username || "User";
-
-  document.getElementById("profileEmail").innerText =
-    data.email || data.user?.email;
+  document.getElementById("profileName").innerText=data.username;
+  document.getElementById("profileEmail").innerText=data.email;
 }
 
-/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location.reload();
@@ -179,7 +164,6 @@ async function doSignup(){
   const email = document.getElementById("signupEmail").value.trim();
   const age = document.getElementById("age").value;
   const agree = document.getElementById("agree").checked;
-
   const errorEl = document.getElementById("signupError");
 
   if(!username) return errorEl.innerText="❌ Username required";
@@ -208,13 +192,8 @@ async function doSignup(){
       return;
     }
 
-    localStorage.setItem("user", JSON.stringify({
-      email: email,
-      username: username
-    }));
-
-    showProfile({email, username});
-    closeSignup();
+    errorEl.style.color="lightgreen";
+    errorEl.innerText="✔ Check your email 📩 and confirm before login";
 
   }catch{
     errorEl.innerText="❌ Network error";
@@ -246,7 +225,17 @@ async function doLogin(){
     const data = await res.json();
 
     if(data.error){
-      errorEl.innerText="❌ " + data.error.message;
+
+      if(data.error.message.includes("Email not confirmed")){
+        errorEl.innerText="❌ خاصك تفعل الإيميل ديالك 📩";
+      }
+      else if(data.error.message.includes("Invalid login")){
+        errorEl.innerText="❌ Email ما مسجلش";
+      }
+      else{
+        errorEl.innerText="❌ " + data.error.message;
+      }
+
       return;
     }
 
