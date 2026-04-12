@@ -68,8 +68,14 @@ body{
   background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
+  transition:0.2s;
 }
 
+.newchat:hover{
+  background:#2a2a2a;
+}
+
+/* CHAT */
 .chat{
   flex:1;
   display:flex;
@@ -91,7 +97,6 @@ body{
   border-radius:14px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  position:relative;
 }
 
 .user{
@@ -119,9 +124,10 @@ input{
   border-radius:10px;
   background:#1a1a1a;
   color:white;
+  outline:none;
 }
 
-button{
+button.sendBtn{
   margin-left:10px;
   padding:12px 18px;
   border:none;
@@ -134,7 +140,6 @@ button{
 .thinking{
   display:flex;
   gap:5px;
-  align-items:center;
 }
 
 .dot{
@@ -157,17 +162,19 @@ button{
 
 <body>
 
-<!-- 🔥 TOP LEFT BUTTONS -->
+<!-- AUTH BUTTONS -->
 <div class="topAuth">
   <button class="loginBtn" onclick="alert('Login clicked')">Login</button>
   <button class="signupBtn" onclick="alert('Sign up clicked')">Sign up</button>
 </div>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
-  <div class="newchat">+ New Chat</div>
+  <div class="newchat" onclick="newChat()">+ New Chat</div>
 </div>
 
+<!-- CHAT -->
 <div class="chat">
 
   <div class="messages" id="messages">
@@ -176,8 +183,8 @@ button{
 
   <div class="input">
     <input id="input" placeholder="Ask anything..."
-    onkeydown="if(event.key==='Enter') send()" />
-    <button onclick="send()">Send</button>
+      onkeydown="if(event.key==='Enter') send()" />
+    <button class="sendBtn" onclick="send()">Send</button>
   </div>
 
 </div>
@@ -202,7 +209,7 @@ function addMessage(text,type){
   return div;
 }
 
-/* thinking */
+/* thinking animation */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -225,8 +232,8 @@ function hideThinking(){
   }
 }
 
-/* typing */
-function typeText(element, text, speed = 8){
+/* typing effect */
+function typeText(element, text, speed = 10){
   let i = 0;
   element.innerHTML = "";
 
@@ -242,7 +249,13 @@ function typeText(element, text, speed = 8){
   }, speed);
 }
 
-/* send */
+/* NEW CHAT */
+function newChat(){
+  const box = document.getElementById("messages");
+  box.innerHTML = `<div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>`;
+}
+
+/* SEND MESSAGE */
 async function send(){
 
   const input=document.getElementById("input");
@@ -265,14 +278,13 @@ async function send(){
 
     hideThinking();
 
-    setTimeout(()=>{
-      const msg = addMessage("", "ai");
-      typeText(msg, data.reply || "No response", 10);
-    }, 300);
+    const msg = addMessage("", "ai");
+    typeText(msg, data.reply || "No response", 10);
 
-  }catch{
+  }catch(err){
     hideThinking();
-    addMessage("Chat error","ai");
+    addMessage("⚠️ Chat error","ai");
+    console.error(err);
   }
 }
 
