@@ -209,19 +209,16 @@ button.sendBtn{
 
 <body>
 
-<!-- AUTH BUTTONS -->
 <div class="topAuth">
   <button class="loginBtn" onclick="openLogin()">Login</button>
   <button class="signupBtn" onclick="openSignup()">Sign up</button>
 </div>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">◆ ILYASS AI</div>
   <div class="newchat" onclick="newChat()">+ New Chat</div>
 </div>
 
-<!-- CHAT -->
 <div class="chat">
 
   <div class="messages" id="messages">
@@ -253,6 +250,9 @@ button.sendBtn{
 
     <input id="username" placeholder="Username">
     <input id="signupEmail" placeholder="Email">
+    <button onclick="sendCode()">Send Code</button>
+
+    <input id="verificationCode" placeholder="Verification code">
     <input id="age" type="number" placeholder="Age">
 
     <label>
@@ -267,6 +267,7 @@ button.sendBtn{
 <script>
 
 let thinkingEl = null;
+let generatedCode = null;
 
 /* MODALS */
 function openLogin(){
@@ -282,21 +283,48 @@ function closeSignup(){
   document.getElementById("signupModal").style.display="none";
 }
 
-/* SIGNUP */
+/* SEND CODE */
+function sendCode(){
+  const email = document.getElementById("signupEmail").value;
+
+  if(!email){
+    document.getElementById("signupError").innerText="Enter email first";
+    return;
+  }
+
+  generatedCode = Math.floor(100000 + Math.random() * 900000);
+
+  console.log("Verification Code:", generatedCode);
+
+  alert("Code sent 📩 (check console)");
+}
+
+/* SIGNUP WITH VERIFY */
 function doSignup(){
 
   const username = document.getElementById("username").value;
   const email = document.getElementById("signupEmail").value;
   const age = document.getElementById("age").value;
   const agree = document.getElementById("agree").checked;
+  const code = document.getElementById("verificationCode").value;
 
-  if(!username || !email || !age){
+  if(!username || !email || !age || !code){
     document.getElementById("signupError").innerText="Fill all fields";
     return;
   }
 
   if(!agree){
     document.getElementById("signupError").innerText="You must agree";
+    return;
+  }
+
+  if(!generatedCode){
+    document.getElementById("signupError").innerText="Send code first";
+    return;
+  }
+
+  if(parseInt(code) !== generatedCode){
+    document.getElementById("signupError").innerText="Wrong verification code";
     return;
   }
 
@@ -328,7 +356,7 @@ function doLogin(){
   }
 }
 
-/* CHAT (same) */
+/* CHAT SAME */
 function scrollToBottom(){
   const box = document.getElementById("messages");
   box.scrollTop = box.scrollHeight;
