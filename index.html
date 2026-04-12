@@ -40,7 +40,6 @@ body{
   border:1px solid transparent;
 }
 
-/* LOGIN */
 .loginBtn{
   background:transparent;
   color:#aaa;
@@ -53,16 +52,9 @@ body{
   border-color:#444;
 }
 
-/* SIGN UP (primary button) */
 .signupBtn{
   background:linear-gradient(135deg,#22c55e,#16a34a);
   color:black;
-  box-shadow:0 0 10px rgba(34,197,94,0.3);
-}
-
-.signupBtn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 0 15px rgba(34,197,94,0.6);
 }
 
 /* SIDEBAR */
@@ -85,11 +77,6 @@ body{
   background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
-  transition:0.2s;
-}
-
-.newchat:hover{
-  background:#2a2a2a;
 }
 
 /* CHAT */
@@ -112,8 +99,6 @@ body{
   max-width:75%;
   padding:12px 14px;
   border-radius:14px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
 }
 
 .user{
@@ -141,7 +126,6 @@ input{
   border-radius:10px;
   background:#1a1a1a;
   color:white;
-  outline:none;
 }
 
 button.sendBtn{
@@ -151,6 +135,52 @@ button.sendBtn{
   border-radius:10px;
   background:#22c55e;
   cursor:pointer;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.modalBox{
+  background:#111;
+  padding:25px;
+  border-radius:16px;
+  width:300px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.modalBox input{
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#1a1a1a;
+  color:white;
+}
+
+.modalBox button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#22c55e;
+  cursor:pointer;
+}
+
+.modalBox label{
+  font-size:12px;
+}
+
+.error{
+  color:red;
+  font-size:12px;
 }
 
 /* THINKING */
@@ -181,8 +211,8 @@ button.sendBtn{
 
 <!-- AUTH BUTTONS -->
 <div class="topAuth">
-  <button class="loginBtn" onclick="alert('Login clicked')">Login</button>
-  <button class="signupBtn" onclick="alert('Sign up clicked')">Sign up</button>
+  <button class="loginBtn" onclick="openLogin()">Login</button>
+  <button class="signupBtn" onclick="openSignup()">Sign up</button>
 </div>
 
 <!-- SIDEBAR -->
@@ -206,17 +236,104 @@ button.sendBtn{
 
 </div>
 
+<!-- LOGIN -->
+<div id="loginModal" class="modal">
+  <div class="modalBox">
+    <h2>Login</h2>
+    <input id="loginEmail" placeholder="Email">
+    <button onclick="doLogin()">Login</button>
+    <p id="loginError" class="error"></p>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="signupModal" class="modal">
+  <div class="modalBox">
+    <h2>Create Account</h2>
+
+    <input id="username" placeholder="Username">
+    <input id="signupEmail" placeholder="Email">
+    <input id="age" type="number" placeholder="Age">
+
+    <label>
+      <input type="checkbox" id="agree"> I agree to terms
+    </label>
+
+    <button onclick="doSignup()">Create account</button>
+    <p id="signupError" class="error"></p>
+  </div>
+</div>
+
 <script>
 
 let thinkingEl = null;
 
-/* scroll */
+/* MODALS */
+function openLogin(){
+  document.getElementById("loginModal").style.display="flex";
+}
+function openSignup(){
+  document.getElementById("signupModal").style.display="flex";
+}
+function closeLogin(){
+  document.getElementById("loginModal").style.display="none";
+}
+function closeSignup(){
+  document.getElementById("signupModal").style.display="none";
+}
+
+/* SIGNUP */
+function doSignup(){
+
+  const username = document.getElementById("username").value;
+  const email = document.getElementById("signupEmail").value;
+  const age = document.getElementById("age").value;
+  const agree = document.getElementById("agree").checked;
+
+  if(!username || !email || !age){
+    document.getElementById("signupError").innerText="Fill all fields";
+    return;
+  }
+
+  if(!agree){
+    document.getElementById("signupError").innerText="You must agree";
+    return;
+  }
+
+  const user = {username,email,age};
+
+  localStorage.setItem("userData", JSON.stringify(user));
+
+  alert("Account created ✅");
+  closeSignup();
+}
+
+/* LOGIN */
+function doLogin(){
+
+  const email = document.getElementById("loginEmail").value;
+  const savedUser = JSON.parse(localStorage.getItem("userData"));
+
+  if(!savedUser){
+    document.getElementById("loginError").innerText="No account found";
+    return;
+  }
+
+  if(savedUser.email === email){
+    localStorage.setItem("user", JSON.stringify(savedUser));
+    closeLogin();
+    alert("Logged in ✅");
+  }else{
+    document.getElementById("loginError").innerText="Wrong email";
+  }
+}
+
+/* CHAT (same) */
 function scrollToBottom(){
   const box = document.getElementById("messages");
   box.scrollTop = box.scrollHeight;
 }
 
-/* add message */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -226,7 +343,6 @@ function addMessage(text,type){
   return div;
 }
 
-/* thinking animation */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -249,30 +365,23 @@ function hideThinking(){
   }
 }
 
-/* typing effect */
 function typeText(element, text, speed = 10){
   let i = 0;
   element.innerHTML = "";
-
   const interval = setInterval(() => {
     element.innerHTML += text[i];
     i++;
-
-    scrollToBottom();
-
     if(i >= text.length){
       clearInterval(interval);
     }
   }, speed);
 }
 
-/* NEW CHAT */
 function newChat(){
-  const box = document.getElementById("messages");
-  box.innerHTML = `<div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>`;
+  document.getElementById("messages").innerHTML =
+  `<div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>`;
 }
 
-/* SEND MESSAGE */
 async function send(){
 
   const input=document.getElementById("input");
@@ -301,7 +410,6 @@ async function send(){
   }catch(err){
     hideThinking();
     addMessage("⚠️ Chat error","ai");
-    console.error(err);
   }
 }
 
