@@ -47,13 +47,9 @@ button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px
   transition:0.3s;
 }
 
-/* RGB EFFECT 🔥 */
 .modalBox input:focus{
   outline:none;
-  box-shadow:
-    0 0 5px #22c55e,
-    0 0 10px #16a34a,
-    0 0 20px #22c55e;
+  box-shadow:0 0 5px #22c55e,0 0 10px #16a34a,0 0 20px #22c55e;
 }
 
 .modalBox button{padding:10px;border:none;border-radius:8px;background:#22c55e;cursor:pointer;}
@@ -122,12 +118,11 @@ button.sendBtn{margin-left:10px;padding:12px 18px;border:none;border-radius:10px
 
 <script>
 
-const SUPABASE_URL = "YOUR_PROJECT_URL";
-const SUPABASE_KEY = "YOUR_ANON_KEY";
+const SUPABASE_URL = "https://idjgsgtupuymysptxrbl.supabase.co";
+const SUPABASE_KEY = "sb_publishable_XXXX";
 
 let thinkingEl = null;
 
-/* MODALS */
 function openLogin(){document.getElementById("loginModal").style.display="flex";}
 function openSignup(){document.getElementById("signupModal").style.display="flex";}
 function closeLogin(){document.getElementById("loginModal").style.display="none";}
@@ -144,23 +139,24 @@ async function doSignup(){
   const errorEl = document.getElementById("signupError");
   errorEl.style.color = "red";
 
-  if(!username) return errorEl.innerText="❌ Username is required";
-  if(username.length < 3) return errorEl.innerText="❌ Username must be at least 3 characters";
+  if(!username) return errorEl.innerText="❌ Username required";
+  if(username.length < 3) return errorEl.innerText="❌ Username too short";
 
-  if(!email) return errorEl.innerText="❌ Email is required";
-  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email format";
+  if(!email) return errorEl.innerText="❌ Email required";
+  if(!email.includes("@")) return errorEl.innerText="❌ Invalid email";
 
-  if(!age) return errorEl.innerText="❌ Age is required";
-  if(age < 13) return errorEl.innerText="❌ You must be at least 13 years old";
+  if(!age) return errorEl.innerText="❌ Age required";
+  if(age < 13) return errorEl.innerText="❌ Must be 13+";
 
-  if(!agree) return errorEl.innerText="❌ You must agree to terms";
+  if(!agree) return errorEl.innerText="❌ Accept terms";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/signup",{
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "apikey":SUPABASE_KEY
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer " + SUPABASE_KEY
       },
       body:JSON.stringify({
         email:email,
@@ -171,25 +167,16 @@ async function doSignup(){
     const data = await res.json();
 
     if(data.error){
-
-      if(data.error.message.includes("already")){
-        errorEl.innerText="❌ This email is already registered";
-      }
-      else if(data.error.message.includes("invalid")){
-        errorEl.innerText="❌ Invalid email address";
-      }
-      else{
-        errorEl.innerText="❌ " + data.error.message;
-      }
-
+      errorEl.innerText="❌ " + data.error.message;
       return;
     }
 
     errorEl.style.color="lightgreen";
-    errorEl.innerText="✔ Check your email to verify your account";
+    errorEl.innerText="✔ Check your email to verify account";
 
   }catch(err){
-    errorEl.innerText="❌ Network error. Check your internet";
+    console.error(err);
+    errorEl.innerText="❌ Request failed (check URL / KEY)";
   }
 }
 
@@ -199,14 +186,15 @@ async function doLogin(){
   const email = document.getElementById("loginEmail").value.trim();
   const errorEl = document.getElementById("loginError");
 
-  if(!email) return errorEl.innerText="❌ Enter your email";
+  if(!email) return errorEl.innerText="❌ Enter email";
 
   try{
     const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password",{
       method:"POST",
       headers:{
         "Content-Type":"application/json",
-        "apikey":SUPABASE_KEY
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer " + SUPABASE_KEY
       },
       body:JSON.stringify({
         email:email,
@@ -217,17 +205,7 @@ async function doLogin(){
     const data = await res.json();
 
     if(data.error){
-
-      if(data.error.message.includes("Invalid login")){
-        errorEl.innerText="❌ You're not signed up";
-      }
-      else if(data.error.message.includes("Email not confirmed")){
-        errorEl.innerText="❌ Please verify your email first";
-      }
-      else{
-        errorEl.innerText="❌ " + data.error.message;
-      }
-
+      errorEl.innerText="❌ " + data.error.message;
       return;
     }
 
@@ -236,11 +214,11 @@ async function doLogin(){
     alert("Logged in ✅");
 
   }catch(err){
-    errorEl.innerText="❌ Network error";
+    errorEl.innerText="❌ Login request failed";
   }
 }
 
-/* CHAT (same) */
+/* CHAT SAME */
 function scrollToBottom(){
   const box=document.getElementById("messages");
   box.scrollTop=box.scrollHeight;
@@ -258,8 +236,7 @@ function addMessage(text,type){
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
-  div.innerHTML=`<div class="thinking">
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  div.innerHTML=`<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
   document.getElementById("messages").appendChild(div);
   thinkingEl=div;scrollToBottom();
 }
