@@ -120,6 +120,38 @@ button{
 
 .toast.success{background:#22c55e;}
 .toast.error{background:#ef4444;}
+
+/* ========================= */
+/* 🔥 THINKING ANIMATION */
+/* ========================= */
+
+.thinking{
+  display:flex;
+  gap:5px;
+  align-items:center;
+}
+
+.dot{
+  width:6px;
+  height:6px;
+  background:#aaa;
+  border-radius:50%;
+  animation:bounce 0.6s infinite ease-in-out;
+}
+
+.dot:nth-child(2){
+  animation-delay:0.1s;
+}
+
+.dot:nth-child(3){
+  animation-delay:0.2s;
+}
+
+@keyframes bounce{
+  0%,100%{transform:translateY(0); opacity:0.4;}
+  50%{transform:translateY(-4px); opacity:1;}
+}
+
 </style>
 </head>
 
@@ -148,8 +180,7 @@ button{
 
 <script>
 
-/* always logged in */
-let loggedIn = true;
+let thinkingEl = null;
 
 /* toast */
 function notify(msg,type="success"){
@@ -161,7 +192,7 @@ function notify(msg,type="success"){
   setTimeout(()=>t.remove(),3000);
 }
 
-/* chat UI */
+/* messages */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -169,7 +200,32 @@ function addMessage(text,type){
   document.getElementById("messages").appendChild(div);
 }
 
-/* send message */
+/* 🔥 THINKING START */
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  
+  div.innerHTML=`
+    <div class="thinking">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  `;
+
+  document.getElementById("messages").appendChild(div);
+  thinkingEl = div;
+}
+
+/* ❌ THINKING STOP */
+function hideThinking(){
+  if(thinkingEl){
+    thinkingEl.remove();
+    thinkingEl=null;
+  }
+}
+
+/* send */
 async function send(){
 
   const input=document.getElementById("input");
@@ -179,6 +235,8 @@ async function send(){
   addMessage(text,"user");
   input.value="";
 
+  showThinking(); // 🔥 start animation
+
   try{
     const res=await fetch("/api/chat",{
       method:"POST",
@@ -187,9 +245,12 @@ async function send(){
     });
 
     const data=await res.json();
+
+    hideThinking(); // stop animation
     addMessage(data.reply || "No response","ai");
 
   }catch{
+    hideThinking();
     notify("Chat error","error");
   }
 }
