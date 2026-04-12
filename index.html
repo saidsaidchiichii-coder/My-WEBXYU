@@ -61,7 +61,8 @@ body{
   max-width:70%;
   padding:12px 14px;
   border-radius:14px;
-  white-space: pre-wrap; /* 🔥 IMPORTANT FIX */
+  white-space: pre-wrap;
+  position:relative;
 }
 
 .user{
@@ -75,6 +76,27 @@ body{
   background:#1f1f1f;
 }
 
+/* COPY BUTTON */
+.copyBtn{
+  position:absolute;
+  top:5px;
+  right:5px;
+  font-size:10px;
+  padding:3px 6px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  background:#333;
+  color:white;
+  opacity:0;
+  transition:0.2s;
+}
+
+.msg.ai:hover .copyBtn{
+  opacity:1;
+}
+
+/* INPUT */
 .input{
   display:flex;
   padding:15px;
@@ -149,12 +171,46 @@ button{
 
 let thinkingEl = null;
 
+/* AUTO SCROLL 🔥 */
+function scrollToBottom(){
+  const box = document.getElementById("messages");
+  box.scrollTop = box.scrollHeight;
+}
+
 /* add message */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
+
   document.getElementById("messages").appendChild(div);
+
+  scrollToBottom(); // 🔥 AUTO SCROLL
+
+  return div;
+}
+
+/* COPY FUNCTION 🔥 */
+function copyText(text){
+  navigator.clipboard.writeText(text);
+}
+
+/* add AI message WITH COPY BUTTON */
+function addAIMessage(text){
+  const div=document.createElement("div");
+  div.className="msg ai";
+
+  const btn=document.createElement("button");
+  btn.className="copyBtn";
+  btn.innerText="Copy";
+  btn.onclick=()=>copyText(div.innerText);
+
+  div.appendChild(btn);
+
+  document.getElementById("messages").appendChild(div);
+
+  scrollToBottom();
+
   return div;
 }
 
@@ -171,6 +227,8 @@ function showThinking(){
   `;
   document.getElementById("messages").appendChild(div);
   thinkingEl = div;
+
+  scrollToBottom();
 }
 
 function hideThinking(){
@@ -180,23 +238,20 @@ function hideThinking(){
   }
 }
 
-/* ⚡ FIXED typing effect (spaces preserved 100%) */
+/* typing effect */
 function typeText(element, text, speed = 15){
   let i = 0;
   element.textContent = "";
-  element.style.whiteSpace = "pre-wrap"; // 🔥 IMPORTANT
+  element.style.whiteSpace = "pre-wrap";
 
   const interval = setInterval(() => {
     let char = text[i];
 
-    if(char === " "){
-      element.textContent += "\u00A0"; // keep spaces
-    } 
-    else {
-      element.textContent += char;
-    }
+    element.textContent += char === " " ? "\u00A0" : char;
 
     i++;
+
+    scrollToBottom(); // 🔥 AUTO SCROLL أثناء الكتابة
 
     if(i >= text.length){
       clearInterval(interval);
@@ -228,7 +283,7 @@ async function send(){
     hideThinking();
 
     setTimeout(()=>{
-      const msg = addMessage("", "ai");
+      const msg = addAIMessage(""); // AI message with copy button
       typeText(msg, data.reply || "No response", 12);
     }, 300);
 
