@@ -18,13 +18,9 @@ body{
   overflow:hidden;
 }
 
-/* 3D TRANSITION */
-.fadeOut{
-  animation:zoomOut .5s forwards;
-}
-.fadeIn{
-  animation:zoomIn .5s forwards;
-}
+/* 3D */
+.fadeOut{animation:zoomOut .5s forwards;}
+.fadeIn{animation:zoomIn .5s forwards;}
 
 @keyframes zoomOut{
   from{opacity:1;transform:scale(1);}
@@ -255,12 +251,13 @@ canvas{
 
 <script>
 
-/* LOGIN CONTROL */
+/* NO AUTO LOGIN ❌ */
+let loggedIn=false;
+
+/* OPEN LOGIN ONLY ON CLICK ✔ */
 function openLogin(){
   loginOverlay.style.display="flex";
 }
-
-let loggedIn=false;
 
 /* SUPABASE */
 const { createClient } = supabase;
@@ -269,6 +266,7 @@ const supabaseClient = createClient(
   "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
 );
 
+/* LOGIN */
 async function login(){
   const {error}=await supabaseClient.auth.signInWithPassword({
     email:email.value,
@@ -281,6 +279,7 @@ async function login(){
   loginOverlay.style.display="none";
 }
 
+/* SIGNUP */
 async function signup(){
   const {error}=await supabaseClient.auth.signUp({
     email:email.value,
@@ -292,7 +291,7 @@ async function signup(){
   alert("Check email 📩");
 }
 
-/* SHIFT ENTER */
+/* SHIFT ENTER ✔ */
 function handleKey(e){
   if(e.key==="Enter" && !e.shiftKey){
     e.preventDefault();
@@ -300,7 +299,7 @@ function handleKey(e){
   }
 }
 
-/* START CHAT WITH 3D */
+/* START CHAT WITH 3D ✔ */
 function startChat(){
   const text=homeInput.value.trim();
   if(!text)return;
@@ -323,7 +322,7 @@ function startChat(){
   },500);
 }
 
-/* ADD MESSAGE */
+/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -350,7 +349,7 @@ function scrollBottom(){
   messages.scrollTop=messages.scrollHeight;
 }
 
-/* AI */
+/* API LOGIC (FROM YOUR CODE ✔) */
 async function askAI(text){
   const t=showThinking();
 
@@ -384,7 +383,7 @@ function send(){
   askAI(text);
 }
 
-/* PARTICLES */
+/* PARTICLES ✔ */
 const canvas=document.getElementById("particles");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
