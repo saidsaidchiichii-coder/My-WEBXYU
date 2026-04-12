@@ -3,78 +3,97 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ILYASS AI</title>
+<title>AI Chat</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
-body{background:#0a0a0a;color:white;display:flex;height:100vh;}
-
-.sidebar{
-  width:260px;
-  background:#0f0f0f;
-  padding:15px;
-  display:flex;
-  flex-direction:column;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: Inter, Arial;
 }
 
-.logo{font-weight:bold;margin-bottom:10px;}
+body{
+  background:#0f0f0f;
+  color:white;
+  height:100vh;
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  background:#111;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.logo{
+  font-size:18px;
+  font-weight:bold;
+}
 
 .newchat{
   padding:10px;
   background:#1a1a1a;
   border-radius:10px;
   cursor:pointer;
-  margin-bottom:10px;
 }
 
-.chatList{
+/* CHAT */
+.chat{
   flex:1;
-  overflow:auto;
   display:flex;
   flex-direction:column;
-  gap:6px;
+  filter: blur(6px);
+  pointer-events:none;
 }
 
-.chatItem{
-  padding:10px;
-  background:#1a1a1a;
-  border-radius:10px;
-  display:flex;
-  justify-content:space-between;
-  cursor:pointer;
+.chat.active{
+  filter:none;
+  pointer-events:auto;
 }
-
-.chatItem:hover{background:#22c55e;color:black;}
-
-.chat{flex:1;display:flex;flex-direction:column;}
 
 .messages{
   flex:1;
   padding:20px;
-  overflow:auto;
+  overflow-y:auto;
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
 .msg{
-  padding:10px;
-  border-radius:10px;
   max-width:70%;
+  padding:12px 14px;
+  border-radius:14px;
 }
 
-.user{margin-left:auto;background:#22c55e;color:black;}
-.ai{background:#1f1f1f;}
+.user{
+  align-self:flex-end;
+  background:#22c55e;
+  color:black;
+}
 
+.ai{
+  align-self:flex-start;
+  background:#1f1f1f;
+}
+
+/* INPUT */
 .input{
   display:flex;
-  padding:10px;
+  padding:15px;
   background:#111;
 }
 
 input{
   flex:1;
-  padding:10px;
+  padding:12px;
   border:none;
   border-radius:10px;
   background:#1a1a1a;
@@ -83,149 +102,260 @@ input{
 
 button{
   margin-left:10px;
-  padding:10px;
+  padding:12px 18px;
   border:none;
   border-radius:10px;
   background:#22c55e;
+  cursor:pointer;
 }
+
+/* 🌈 LOGIN DESIGN */
+.loginBox{
+  position:relative;
+  width:340px;
+  padding:30px 25px;
+  border-radius:18px;
+  text-align:center;
+  overflow:hidden;
+}
+
+.loginBox::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:linear-gradient(90deg,#ff004c,#00f5ff,#7cff00,#ff00e5,#ff004c);
+  background-size:300% 300%;
+  animation:rgbMove 5s linear infinite;
+  filter:blur(8px);
+  z-index:-1;
+}
+
+.loginBox::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  background:#111;
+  border-radius:16px;
+  z-index:-1;
+}
+
+@keyframes rgbMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+/* INPUT LOGIN */
+.loginBox input{
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border-radius:12px;
+  border:1px solid #222;
+  background:#0f0f0f;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+}
+
+/* OVERLAY */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+/* SETTINGS */
+#settingsPanel{
+  display:none;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  top:20px;
+  right:20px;
+  padding:12px 14px;
+  border-radius:10px;
+  color:white;
+  opacity:0;
+  transform:translateY(-15px);
+  transition:0.3s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.toast.success{background:#22c55e;}
+.toast.error{background:#ef4444;}
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-  <div class="logo">◆ ILYASS AI</div>
-  <div class="newchat" onclick="newChat()">+ New Chat</div>
-  <div class="chatList" id="chatList"></div>
+<!-- LOGIN -->
+<div class="overlay" id="loginOverlay">
+  <div class="loginBox">
+    <h2>Welcome</h2>
+    <p>Login to continue</p>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+    <button onclick="signup()" style="background:#3b82f6;">Create Account</button>
+    <button onclick="ownerSkip()" style="background:#9333ea;">Skip (Owner)</button>
+  </div>
 </div>
 
-<div class="chat">
-  <div class="messages" id="messages"></div>
+<!-- SETTINGS -->
+<div class="overlay" id="settingsPanel">
+  <div class="loginBox">
+    <h2>Settings ⚙️</h2>
+
+    <p>Language</p>
+    <select style="width:100%;padding:10px;border-radius:10px;background:#1a1a1a;color:white;">
+      <option>English</option>
+      <option>Français</option>
+      <option>العربية</option>
+    </select>
+
+    <p style="margin-top:10px;">Users</p>
+    <div id="usersList"></div>
+
+    <button onclick="closeSettings()" style="background:#ef4444;margin-top:10px;">Close</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">◆ ILYASS AI</div>
+  <div class="newchat">+ New Chat</div>
+  <div class="newchat" onclick="openSettings()">⚙️ Settings</div>
+</div>
+
+<!-- CHAT -->
+<div class="chat" id="chat">
+
+  <div class="messages" id="messages">
+    <div class="msg ai">Hello 👋 كيفاش نعاونك؟</div>
+  </div>
 
   <div class="input">
-    <input id="input" placeholder="Ask..." onkeydown="handleKey(event)">
+    <input id="input" placeholder="Ask anything..."
+    onkeydown="if(event.key==='Enter') send()" />
     <button onclick="send()">Send</button>
   </div>
+
 </div>
 
 <script>
 
-/* STORAGE */
-let chats = JSON.parse(localStorage.getItem("chats") || "{}");
-let currentChat = localStorage.getItem("currentChat");
+/* SUPABASE */
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
 
-/* INIT */
-if(!currentChat){
-  newChat();
-}else{
-  loadChat();
-}
-renderChats();
+let loggedIn = false;
 
-/* NEW CHAT */
-function newChat(){
-  const id = "chat_"+Date.now();
-
-  chats[id] = {
-    title: "New Chat",
-    messages: []
-  };
-
-  currentChat = id;
-  save();
-  renderChats();
-  loadChat();
+/* TOAST */
+function notify(msg,type="success"){
+  const t=document.createElement("div");
+  t.className=`toast ${type}`;
+  t.innerText=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.classList.add("show"),10);
+  setTimeout(()=>t.remove(),3000);
 }
 
-/* SAVE */
-function save(){
-  localStorage.setItem("chats", JSON.stringify(chats));
-  localStorage.setItem("currentChat", currentChat);
+/* LOGIN */
+async function login(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error} = await supabaseClient.auth.signInWithPassword({email,password});
+
+  if(error){ notify(error.message,"error"); return; }
+
+  saveUser(email);
+  notify("Login success");
+
+  document.getElementById("loginOverlay").style.display="none";
+  document.getElementById("chat").classList.add("active");
+  loggedIn=true;
 }
 
-/* LOAD */
-function loadChat(){
-  const box = document.getElementById("messages");
-  box.innerHTML="";
+/* SIGNUP */
+async function signup(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
 
-  chats[currentChat].messages.forEach(m=>{
-    addMessageUI(m.text,m.type);
-  });
+  const {error} = await supabaseClient.auth.signUp({email,password});
+
+  if(error){ notify(error.message,"error"); return; }
+
+  notify("Account created");
 }
 
-/* SIDEBAR */
-function renderChats(){
-  const list = document.getElementById("chatList");
-  list.innerHTML="";
-
-  Object.keys(chats).forEach(id=>{
-    const chat = chats[id];
-
-    const div=document.createElement("div");
-    div.className="chatItem";
-
-    div.innerHTML=`
-      <span onclick="switchChat('${id}')">${chat.title}</span>
-      <span onclick="deleteChat('${id}')">❌</span>
-    `;
-
-    list.appendChild(div);
-  });
-}
-
-/* SWITCH */
-function switchChat(id){
-  currentChat=id;
-  save();
-  loadChat();
-}
-
-/* DELETE */
-function deleteChat(id){
-  delete chats[id];
-
-  if(currentChat===id){
-    newChat();
-  }else{
-    save();
-    renderChats();
+/* OWNER */
+function ownerSkip(){
+  const key=prompt("Owner key");
+  if(key==="ADMIN123"){
+    document.getElementById("loginOverlay").style.display="none";
+    document.getElementById("chat").classList.add("active");
+    loggedIn=true;
   }
 }
 
-/* UI */
-function addMessageUI(text,type){
+/* SAVE USERS */
+function saveUser(email){
+  let users=JSON.parse(localStorage.getItem("users")||"[]");
+  if(!users.includes(email)){
+    users.push(email);
+    localStorage.setItem("users",JSON.stringify(users));
+  }
+}
+
+/* SETTINGS */
+function openSettings(){
+  document.getElementById("settingsPanel").style.display="flex";
+
+  const users=JSON.parse(localStorage.getItem("users")||[]);
+  document.getElementById("usersList").innerText=users.join("\n");
+}
+
+function closeSettings(){
+  document.getElementById("settingsPanel").style.display="none";
+}
+
+/* CHAT */
+function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
   document.getElementById("messages").appendChild(div);
 }
 
-/* ADD MESSAGE */
-function addMessage(text,type){
-
-  const chat = chats[currentChat];
-
-  chat.messages.push({text,type});
-
-  /* 🔥 FIX الوحيد */
-  if(chat.title === "New Chat" && type==="user"){
-    chat.title = text.substring(0, 25);
-  }
-
-  save();
-  addMessageUI(text,type);
-  renderChats();
-}
-
-/* ENTER */
-function handleKey(e){
-  if(e.key==="Enter"){
-    send();
-  }
-}
-
 /* SEND */
 async function send(){
+
+  if(!loggedIn){
+    notify("Login first","error");
+    return;
+  }
 
   const input=document.getElementById("input");
   const text=input.value.trim();
@@ -245,7 +375,7 @@ async function send(){
     addMessage(data.reply || "No response","ai");
 
   }catch{
-    addMessage("Error ⚠️","ai");
+    notify("Chat error","error");
   }
 }
 
