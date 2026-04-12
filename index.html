@@ -48,7 +48,7 @@ body{
   margin-top:10px;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:6px;
 }
 
 .chatItem{
@@ -59,6 +59,11 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  transition:0.2s;
+}
+
+.chatItem:hover{
+  background:#1f1f1f;
 }
 
 .chatItem.active{
@@ -74,12 +79,22 @@ body{
   white-space:nowrap;
 }
 
+/* ACTIONS (hidden until hover) */
+.chatActions{
+  display:none;
+}
+
+.chatItem:hover .chatActions{
+  display:flex;
+}
+
 .chatActions button{
   background:none;
   border:none;
-  color:#aaa;
+  color:#888;
+  font-size:11px;
   cursor:pointer;
-  margin-left:5px;
+  margin-left:6px;
 }
 
 .chatActions button:hover{
@@ -116,7 +131,7 @@ body{
   padding:7px;
   border:none;
   border-radius:8px;
-  background:linear-gradient(135deg,#ef4444,#dc2626);
+  background:#ef4444;
   color:white;
   cursor:pointer;
 }
@@ -137,6 +152,7 @@ body{
   max-width:70%;
   padding:14px;
   border-radius:14px;
+  line-height:1.5;
 }
 
 .user{
@@ -182,7 +198,7 @@ button{
 <div class="sidebar">
 
   <div>
-    <div class="logo">◆ ILYASS AI</div>
+    <div class="logo">ILYASS AI</div>
 
     <div class="newchat" onclick="newChat()">+ New Chat</div>
 
@@ -220,22 +236,19 @@ button{
 
 let currentChatId=null;
 
-/* USER */
 function getUser(){
   return JSON.parse(localStorage.getItem("user"));
 }
 
-/* KEY */
 function getUserKey(){
   return "chats_"+getUser().email;
 }
 
-/* LOAD */
 window.onload=()=>{
   const user=getUser();
   if(user){
-    document.getElementById("profileEmail").innerText=user.email;
-    document.getElementById("avatarText").innerText=user.email[0].toUpperCase();
+    profileEmail.innerText=user.email;
+    avatarText.innerText=user.email[0].toUpperCase();
 
     const saved=localStorage.getItem("avatar_"+user.email);
     if(saved){
@@ -271,8 +284,7 @@ function handlePhoto(e){
 /* CHATS */
 function loadChats(){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
-  const box=document.getElementById("chatList");
-  box.innerHTML="";
+  chatList.innerHTML="";
 
   chats.forEach(c=>{
     const div=document.createElement("div");
@@ -281,16 +293,15 @@ function loadChats(){
     div.innerHTML=`
       <span onclick="openChat(${c.id})">${c.title}</span>
       <div class="chatActions">
-        <button onclick="renameChat(${c.id})">✏️</button>
-        <button onclick="deleteChat(${c.id})">🗑</button>
+        <button onclick="renameChat(${c.id})">Rename</button>
+        <button onclick="deleteChat(${c.id})">Delete</button>
       </div>
     `;
 
-    box.appendChild(div);
+    chatList.appendChild(div);
   });
 }
 
-/* NEW */
 function newChat(){
   currentChatId=Date.now();
 
@@ -300,11 +311,9 @@ function newChat(){
 
   localStorage.setItem(getUserKey(),JSON.stringify(chats));
   loadChats();
-
   messages.innerHTML="";
 }
 
-/* OPEN */
 function openChat(id){
   currentChatId=id;
 
@@ -317,7 +326,6 @@ function openChat(id){
   loadChats();
 }
 
-/* SAVE */
 function saveMessage(text,type){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const chat=chats.find(c=>c.id===currentChatId);
@@ -337,7 +345,7 @@ function renameChat(id){
   const chats=JSON.parse(localStorage.getItem(getUserKey()))||[];
   const chat=chats.find(c=>c.id===id);
 
-  const name=prompt("New name:",chat.title);
+  const name=prompt("Rename chat:",chat.title);
   if(name){
     chat.title=name;
     localStorage.setItem(getUserKey(),JSON.stringify(chats));
