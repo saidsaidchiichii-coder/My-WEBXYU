@@ -163,8 +163,13 @@ button{
 
     <button onclick="login()">Login</button>
 
-    <!-- 🔥 OWNER SKIP BUTTON -->
-    <button onclick="ownerSkip()" style="margin-top:10px;background:#3b82f6;">
+    <!-- 🔥 NEW: SIGNUP BUTTON -->
+    <button onclick="signup()" style="margin-top:10px;background:#3b82f6;">
+      Create Account
+    </button>
+
+    <!-- 🔥 OWNER SKIP -->
+    <button onclick="ownerSkip()" style="margin-top:10px;background:#9333ea;">
       Skip Login (Owner)
     </button>
   </div>
@@ -244,7 +249,31 @@ async function login(){
   loggedIn=true;
 }
 
-/* 🔥 OWNER SKIP LOGIN */
+/* 🔥 SIGNUP */
+async function signup(){
+
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  if(!email || !password){
+    notify("Fill all fields","error");
+    return;
+  }
+
+  const {data,error} = await supabase.auth.signUp({
+    email,
+    password
+  });
+
+  if(error){
+    notify(error.message,"error");
+    return;
+  }
+
+  notify("Account created! Now login","success");
+}
+
+/* OWNER SKIP */
 function ownerSkip(){
 
   const key = prompt("Enter OWNER KEY:");
