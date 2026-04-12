@@ -216,13 +216,13 @@ function addMessage(text,type){
   addMessageUI(text,type);
   renderChats();
 }
-
-/* ENTER */
 function handleKey(e){
-  if(e.key==="Enter"){
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
     send();
   }
 }
+
 
 /* SEND (NO CHANGE API) */
 async function send(){
