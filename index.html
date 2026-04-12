@@ -5,36 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ILYASS AI</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Inter, Arial;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
+body{background:#0a0a0a;color:white;display:flex;height:100vh;}
 
-body{
-  background: radial-gradient(circle at top, #1a1a1a, #0a0a0a);
-  color:white;
-  height:100vh;
-  display:flex;
-}
-
-/* SIDEBAR */
 .sidebar{
   width:260px;
-  background:#0a0a0a;
-  padding:20px;
+  background:#0f0f0f;
+  padding:15px;
   display:flex;
   flex-direction:column;
 }
 
-.logo{
-  font-weight:bold;
-  margin-bottom:15px;
-}
+.logo{font-weight:bold;margin-bottom:10px;}
 
 .newchat{
   padding:10px;
@@ -54,24 +37,16 @@ body{
 
 .chatItem{
   padding:10px;
+  background:#1a1a1a;
   border-radius:10px;
-  background:#111;
-  cursor:pointer;
   display:flex;
   justify-content:space-between;
+  cursor:pointer;
 }
 
-.chatItem:hover{
-  background:#22c55e;
-  color:black;
-}
+.chatItem:hover{background:#22c55e;color:black;}
 
-/* CHAT */
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
+.chat{flex:1;display:flex;flex-direction:column;}
 
 .messages{
   flex:1;
@@ -84,29 +59,22 @@ body{
 
 .msg{
   padding:10px;
-  border-radius:12px;
+  border-radius:10px;
   max-width:70%;
 }
 
-.user{
-  margin-left:auto;
-  background:#22c55e;
-  color:black;
-}
-
-.ai{
-  background:#1f1f1f;
-}
+.user{margin-left:auto;background:#22c55e;color:black;}
+.ai{background:#1f1f1f;}
 
 .input{
   display:flex;
-  padding:15px;
+  padding:10px;
   background:#111;
 }
 
 input{
   flex:1;
-  padding:12px;
+  padding:10px;
   border:none;
   border-radius:10px;
   background:#1a1a1a;
@@ -115,13 +83,11 @@ input{
 
 button{
   margin-left:10px;
-  padding:12px;
+  padding:10px;
   border:none;
   border-radius:10px;
   background:#22c55e;
-  cursor:pointer;
 }
-
 </style>
 </head>
 
@@ -134,14 +100,12 @@ button{
 </div>
 
 <div class="chat">
-
   <div class="messages" id="messages"></div>
 
   <div class="input">
     <input id="input" placeholder="Ask..." onkeydown="handleKey(event)">
     <button onclick="send()">Send</button>
   </div>
-
 </div>
 
 <script>
@@ -156,13 +120,17 @@ if(!currentChat){
 }else{
   loadChat();
 }
-
 renderChats();
 
 /* NEW CHAT */
 function newChat(){
   const id = "chat_"+Date.now();
-  chats[id] = [];
+
+  chats[id] = {
+    title: "New Chat",
+    messages: []
+  };
+
   currentChat = id;
   save();
   renderChats();
@@ -175,27 +143,29 @@ function save(){
   localStorage.setItem("currentChat", currentChat);
 }
 
-/* LOAD CHAT */
+/* LOAD */
 function loadChat(){
   const box = document.getElementById("messages");
-  box.innerHTML = "";
+  box.innerHTML="";
 
-  (chats[currentChat] || []).forEach(m=>{
-    addMessageUI(m.text, m.type);
+  chats[currentChat].messages.forEach(m=>{
+    addMessageUI(m.text,m.type);
   });
 }
 
-/* RENDER SIDEBAR */
+/* SIDEBAR */
 function renderChats(){
   const list = document.getElementById("chatList");
   list.innerHTML="";
 
   Object.keys(chats).forEach(id=>{
-    const div = document.createElement("div");
+    const chat = chats[id];
+
+    const div=document.createElement("div");
     div.className="chatItem";
 
-    div.innerHTML = `
-      <span onclick="switchChat('${id}')">${id}</span>
+    div.innerHTML=`
+      <span onclick="switchChat('${id}')">${chat.title}</span>
       <span onclick="deleteChat('${id}')">❌</span>
     `;
 
@@ -205,7 +175,7 @@ function renderChats(){
 
 /* SWITCH */
 function switchChat(id){
-  currentChat = id;
+  currentChat=id;
   save();
   loadChat();
 }
@@ -213,6 +183,7 @@ function switchChat(id){
 /* DELETE */
 function deleteChat(id){
   delete chats[id];
+
   if(currentChat===id){
     newChat();
   }else{
@@ -221,30 +192,39 @@ function deleteChat(id){
   }
 }
 
-/* ADD UI */
+/* UI */
 function addMessageUI(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   div.innerText=text;
-
   document.getElementById("messages").appendChild(div);
 }
 
-/* ADD */
+/* ADD MESSAGE */
 function addMessage(text,type){
-  chats[currentChat].push({text,type});
+
+  const chat = chats[currentChat];
+
+  chat.messages.push({text,type});
+
+  /* 🔥 IMPORTANT: SET TITLE FROM FIRST MESSAGE */
+  if(chat.messages.length === 1 && type==="user"){
+    chat.title = text.slice(0,25); // shorten
+  }
+
   save();
   addMessageUI(text,type);
+  renderChats();
 }
 
-/* KEY */
+/* ENTER */
 function handleKey(e){
   if(e.key==="Enter"){
     send();
   }
 }
 
-/* SEND */
+/* SEND (NO CHANGE API) */
 async function send(){
 
   const input=document.getElementById("input");
