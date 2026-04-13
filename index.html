@@ -1,377 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
 body{
-  background:#0b0b0b;
-  color:white;
+  background:linear-gradient(135deg,#ffffff,#f3f4f6);
   height:100vh;
   display:flex;
+  flex-direction:column;
+  animation:fadeIn .6s ease;
 }
 
-/* SIDEBAR */
-.sidebar{
-  width:270px;
-  background:#0f0f0f;
-  padding:20px;
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(15px);}
+  to{opacity:1;}
+}
+
+/* TOP BAR */
+.top{
   display:flex;
-  flex-direction:column;
   justify-content:space-between;
-  border-right:1px solid #1f1f1f;
+  padding:20px;
 }
 
-.logo{font-weight:bold;font-size:18px;}
-
-.newchat{
-  margin-top:15px;
-  padding:10px;
-  background:#1a1a1a;
-  border-radius:10px;
-  cursor:pointer;
+.logo{
+  font-weight:bold;
+  font-size:18px;
 }
 
-.recents{
-  margin-top:15px;
-  font-size:12px;
-  opacity:.6;
-}
-
-.chatList{
-  max-height:400px;
-  overflow-y:auto;
-  margin-top:10px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.chatList::-webkit-scrollbar{
-  width:5px;
-}
-.chatList::-webkit-scrollbar-thumb{
-  background:#333;
-  border-radius:10px;
-}
-
-.chatItem{
-  padding:10px;
-  background:#151515;
-  border-radius:10px;
-  cursor:pointer;
-  font-size:13px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.chatItem:hover{background:#222;}
-
-/* PROFILE */
-.profile{
-  background:#1a1a1a;
-  padding:10px;
-  border-radius:10px;
+.auth{
   display:flex;
   gap:10px;
-  align-items:center;
 }
 
-.avatar{
+.btn{
+  padding:8px 16px;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+}
+
+.login{
+  background:#eee;
+}
+
+.signup{
+  background:#111;
+  color:white;
+}
+
+/* CENTER */
+.center{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:25px;
+  transition:.4s;
+}
+
+.title{
+  font-size:40px;
+  font-weight:bold;
+}
+
+/* INPUT */
+.inputBox{
+  width:600px;
+  max-width:90%;
+  background:white;
+  border-radius:999px;
+  padding:12px 15px;
+  display:flex;
+  align-items:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.05);
+}
+
+.inputBox input{
+  flex:1;
+  border:none;
+  outline:none;
+  font-size:15px;
+}
+
+.send{
   width:40px;
   height:40px;
   border-radius:50%;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
+  background:#10a37f;
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:pointer;
-  overflow:hidden;
-}
-
-.profileInfo{font-size:12px;}
-
-.profile button{
-  margin-top:6px;
-  width:100%;
-  padding:7px;
-  border:none;
-  border-radius:8px;
-  background:linear-gradient(135deg,#ef4444,#dc2626);
-  font-weight:bold;
   color:white;
   cursor:pointer;
 }
 
-/* CHAT */
+/* CHAT MODE */
 .chat{
+  display:none;
   flex:1;
-  display:flex;
   flex-direction:column;
 }
 
 .messages{
   flex:1;
   padding:20px;
-  overflow-y:auto;
+  overflow:auto;
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
 .msg{
-  max-width:70%;
-  padding:14px;
-  border-radius:14px;
-  line-height:1.5;
-  font-size:14px;
+  max-width:65%;
+  padding:12px;
+  border-radius:12px;
 }
 
 .user{
   align-self:flex-end;
-  background:#22c55e;
-  color:black;
+  background:#10a37f;
+  color:white;
 }
 
 .ai{
   align-self:flex-start;
-  background:#1a1a1a;
+  background:white;
+  border:1px solid #eee;
 }
 
-/* INPUT */
-.input{
-  display:flex;
+/* THINKING */
+.thinking{display:flex;gap:5px;}
+.dot{
+  width:6px;height:6px;background:#999;border-radius:50%;
+  animation:blink 1s infinite;
+}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+
+@keyframes blink{
+  0%,100%{opacity:.2;}
+  50%{opacity:1;}
+}
+
+/* INPUT CHAT */
+.bottom{
   padding:15px;
-  background:#0f0f0f;
+  border-top:1px solid #eee;
+  display:flex;
 }
 
-input{
+.bottom input{
   flex:1;
   padding:12px;
-  border:none;
   border-radius:10px;
-  background:#1a1a1a;
-  color:white;
+  border:1px solid #ddd;
 }
 
-button{
-  margin-left:10px;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  cursor:pointer;
-}
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
+<div class="top">
+  <div class="logo">ILYASS AI</div>
 
-  <div>
-    <div class="logo">◆ ILYASS AI</div>
-
-    <div class="newchat" onclick="newChat()">+ New Chat</div>
-
-    <div class="recents">Recents</div>
-    <div class="chatList" id="chatList"></div>
+  <div class="auth">
+    <button class="btn login">Login</button>
+    <button class="btn signup">Sign up</button>
   </div>
-
-  <div class="profile">
-    <div class="avatar" onclick="uploadPhoto()">
-      <img id="avatarImg" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:none;">
-      <span id="avatarText">U</span>
-    </div>
-
-    <div class="profileInfo">
-      <div id="profileName">User</div>
-      <div id="profileEmail" style="opacity:.6"></div>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
-
-  <input type="file" id="fileInput" hidden accept="image/*" onchange="handlePhoto(event)">
-
 </div>
 
-<div class="chat">
-  <div class="messages" id="messages"></div>
+<!-- HOME -->
+<div id="home" class="center">
+  <div class="title">Ask anything</div>
 
-  <div class="input">
-    <input id="input" placeholder="Ask anything..."
-      onkeydown="if(event.key==='Enter') send()" />
-    <button onclick="send()">Send</button>
+  <div class="inputBox">
+    <input id="homeInput" placeholder="What do you want to know?"
+      onkeydown="if(event.key==='Enter') startChat()">
+    <div class="send" onclick="startChat()">➤</div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chat" class="chat">
+  <div id="messages" class="messages"></div>
+
+  <div class="bottom">
+    <input id="chatInput" placeholder="Send a message..."
+      onkeydown="if(event.key==='Enter') send()">
   </div>
 </div>
 
 <script>
 
-const SUPABASE_URL = "https://idjgsgtupuymysptxrbl.supabase.co";
-const SUPABASE_KEY = "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH";
+/* START CHAT */
+function startChat(){
+  const text=document.getElementById("homeInput").value.trim();
+  if(!text) return;
 
-let currentChatId = null;
+  document.getElementById("home").style.display="none";
+  document.getElementById("chat").style.display="flex";
 
-/* LOAD USER */
-window.onload = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if(user){
-    document.getElementById("profileEmail").innerText = user.email;
-    document.getElementById("avatarText").innerText = user.email[0].toUpperCase();
+  addMessage(text,"user");
+  document.getElementById("homeInput").value="";
 
-    const saved = localStorage.getItem("avatar_"+user.email);
-    if(saved){
-      document.getElementById("avatarImg").src = saved;
-      document.getElementById("avatarImg").style.display="block";
-      document.getElementById("avatarText").style.display="none";
-    }
-
-    loadChats();
-  }
-};
-
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("user");
-  location.reload();
+  fakeAI();
 }
 
-/* PHOTO */
-function uploadPhoto(){
-  document.getElementById("fileInput").click();
-}
-
-function handlePhoto(e){
-  const file = e.target.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(){
-    const img = document.getElementById("avatarImg");
-    const text = document.getElementById("avatarText");
-
-    img.src = reader.result;
-    img.style.display = "block";
-    text.style.display = "none";
-
-    const user = JSON.parse(localStorage.getItem("user"));
-    localStorage.setItem("avatar_"+user.email, reader.result);
-  };
-  reader.readAsDataURL(file);
-}
-
-/* CHAT STORAGE */
-function getUserKey(){
-  const user = JSON.parse(localStorage.getItem("user"));
-  return "chats_" + user.email;
-}
-
-function loadChats(){
-  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
-  const list = document.getElementById("chatList");
-  list.innerHTML = "";
-
-  chats.forEach(c=>{
-    const div = document.createElement("div");
-    div.className="chatItem";
-    div.innerText=c.title;
-    div.onclick=()=>openChat(c.id);
-    list.appendChild(div);
-  });
-}
-
-/* NEW CHAT */
-function newChat(){
-  currentChatId = Date.now();
-
-  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
-
-  chats.push({
-    id: currentChatId,
-    title:"New chat",
-    messages:[]
-  });
-
-  localStorage.setItem(getUserKey(), JSON.stringify(chats));
-  loadChats();
-
-  document.getElementById("messages").innerHTML="";
-}
-
-/* OPEN CHAT */
-function openChat(id){
-  currentChatId = id;
-
-  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
-  const chat = chats.find(c=>c.id===id);
-
-  const box = document.getElementById("messages");
-  box.innerHTML="";
-
-  chat.messages.forEach(m=>{
-    addMessage(m.text, m.type);
-  });
-}
-
-/* SAVE */
-function saveMessage(text,type){
-  const chats = JSON.parse(localStorage.getItem(getUserKey())) || [];
-  const chat = chats.find(c=>c.id===currentChatId);
-
-  chat.messages.push({text,type});
-
-  if(chat.messages.length === 1){
-    chat.title = text.slice(0,25);
-  }
-
-  localStorage.setItem(getUserKey(), JSON.stringify(chats));
-  loadChats();
-}
-
-/* UI */
+/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
-  div.innerText=text;
   document.getElementById("messages").appendChild(div);
+  typeText(div,text);
+}
+
+/* TYPE */
+function typeText(el,text){
+  let i=0;
+  el.innerHTML="";
+  const int=setInterval(()=>{
+    el.innerHTML+=text[i];
+    i++;
+    if(i>=text.length) clearInterval(int);
+  },15);
+}
+
+/* THINKING */
+function thinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`<div class="thinking">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>`;
+  document.getElementById("messages").appendChild(div);
+  return div;
+}
+
+/* AI */
+function fakeAI(){
+  const t=thinking();
+
+  setTimeout(()=>{
+    t.remove();
+    addMessage("Hello 👋 كيفاش نعاونك؟","ai");
+  },1000);
 }
 
 /* SEND */
-async function send(){
-
-  if(!currentChatId){
-    newChat();
-  }
-
-  const input=document.getElementById("input");
+function send(){
+  const input=document.getElementById("chatInput");
   const text=input.value.trim();
   if(!text) return;
 
   addMessage(text,"user");
-  saveMessage(text,"user");
-
   input.value="";
-
-  try{
-    const res=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text})
-    });
-
-    const data=await res.json();
-
-    addMessage(data.reply || "AI response","ai");
-    saveMessage(data.reply || "AI response","ai");
-
-  }catch{
-    addMessage("⚠️ Error","ai");
-  }
+  fakeAI();
 }
 
 </script>
