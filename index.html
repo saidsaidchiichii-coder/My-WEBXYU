@@ -236,171 +236,45 @@ body::after{
 </head>
 <body>
 <canvas id="particles"></canvas>
-<div class="top">
-  <div class="logo">ILYASS AI</div>
-  <div class="auth">
-    <button class="btn login" onclick="openLogin()">Login</button>
-    <button class="btn signup" onclick="openLogin()">Sign up</button>
-  </div>
-</div>
-<div id="home" class="center">
-  <div class="title">Ask Anything</div>
-  <div class="inputBox">
-    <input id="homeInput" onkeydown="if(event.key==='Enter') startChat()" placeholder="Type your question...">
-    <div class="send" onclick="startChat()">➤</div>
-  </div>
-</div>
-<div id="chat" class="chat">
-  <div id="messages" class="messages"></div>
-  <div class="bottom">
-    <textarea id="chatInput" rows="1" onkeydown="handleKey(event)" placeholder="Send a message..."></textarea>
-    <button class="sendBtn" onclick="send()">➤</button>
-  </div>
-</div>
+
+<!-- SAME HTML ... -->
 
 <script>
 const messages = document.getElementById("messages");
 const chatInput = document.getElementById("chatInput");
 
-/* LOGIN */
-function openLogin(){
-  alert("Login system already UI only (Supabase not connected)");
-}
-
-/* CHAT START */
-function startChat(){
-  const text = homeInput.value.trim();
-  if(!text) return;
-  home.style.display="none";
-  chat.style.display="flex";
-  addMessage(text,"user");
-  askAI(text);
-}
-
-/* IMPROVED TYPING EFFECT */
+/* 🔥 UPDATED TYPE TEXT ONLY */
 function typeText(el, text) {
   let i = 0;
+
+  function format(t) {
+    const emojis = ["🔥","💡","😎","🚀","👍"];
+    let e = emojis[Math.floor(Math.random() * emojis.length)];
+
+    return t
+      .replace(/\n/g, "<br>")
+      .replace(/\. /g, ".<br><br>")
+      + " " + e;
+  }
+
+  let formatted = format(text);
   el.innerHTML = "";
-  const typingSpeed = 20; // سرعة الكتابة (يمكن تغييرها)
 
   function type() {
-    if (i < text.length) {
-      el.innerHTML += text.charAt(i);
+    if (i < formatted.length) {
+      el.innerHTML += formatted.charAt(i);
+
+      let speed = 8;
+      if (formatted[i] === ".") speed = 120;
+      if (formatted[i] === "\n") speed = 50;
+
       i++;
-      setTimeout(type, typingSpeed);
+      setTimeout(type, speed);
     }
   }
+
   type();
 }
-
-/* ADD MESSAGE */
-function addMessage(text, type) {
-  const div = document.createElement("div");
-  div.className = `msg ${type}`;
-  
-  const content = document.createElement("div");
-  div.appendChild(content);
-  messages.appendChild(div);
-
-  if (type === "ai") {
-    typeText(content, text);
-  } else {
-    content.innerText = text;
-  }
-
-  messages.scrollTop = messages.scrollHeight;
-}
-
-/* THINKING */
-function showThinking() {
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  div.innerHTML = `<div class="thinking">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>`;
-  messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
-  return div;
-}
-
-/* 🔥 REAL API */
-async function askAI(text) {
-  const t = showThinking();
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
-    });
-    const data = await res.json();
-    t.remove();
-    addMessage(data.reply || "No response", "ai");
-  } catch (err) {
-    t.remove();
-    addMessage("Server not connected ❌", "ai");
-  }
-}
-
-/* SEND - IMPROVED KEY HANDLING */
-function handleKey(e) {
-  if (e.key === "Enter") {
-    if (e.shiftKey) {
-      // Shift + Enter = new line (multiline)
-      return; // نترك الـ textarea تتصرف طبيعي
-    } else {
-      // Enter فقط = send message
-      e.preventDefault();
-      send();
-    }
-  }
-}
-
-function send() {
-  const text = chatInput.value.trim();
-  if (!text) return;
-
-  addMessage(text, "user");
-  chatInput.value = "";
-  askAI(text);
-}
-
-/* PARTICLES */
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-let dots = [];
-for (let i = 0; i < 50; i++) {
-  dots.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - 0.5) * 0.8,
-    vy: (Math.random() - 0.5) * 0.8
-  });
-}
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  dots.forEach(d => {
-    d.x += d.vx;
-    d.y += d.vy;
-    if (d.x < 0 || d.x > canvas.width) d.vx *= -1;
-    if (d.y < 0 || d.y > canvas.height) d.vy *= -1;
-    ctx.beginPath();
-    ctx.arc(d.x, d.y, 2.2, 0, Math.PI * 2);
-    ctx.fillStyle = "#10a37f";
-    ctx.fill();
-  });
-  requestAnimationFrame(draw);
-}
-draw();
-
-/* Auto resize textarea */
-chatInput.addEventListener('input', function () {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
 </script>
 </body>
 </html>
