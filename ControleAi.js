@@ -55,6 +55,9 @@ const AI = {
     }
   },
 
+  /* =========================
+      🔥 FINAL CODE BLOCK UI
+  ========================= */
   render(text){
 
     const container = document.createElement("div");
@@ -64,19 +67,21 @@ const AI = {
 
     parts.forEach((part, i)=>{
 
-      // CODE BLOCK
+      // 💻 CODE BLOCK
       if(i % 2 === 1){
 
         const code = part.trim();
 
-        const box = document.createElement("div");
-        box.className = "code-container";
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-box";
 
+        /* HEADER */
         const header = document.createElement("div");
         header.className = "code-header";
 
         const lang = document.createElement("div");
-        lang.textContent = "CODE";
+        lang.className = "code-lang";
+        lang.textContent = "C++";
 
         const copyBtn = document.createElement("button");
         copyBtn.className = "copy-btn";
@@ -91,24 +96,27 @@ const AI = {
         header.appendChild(lang);
         header.appendChild(copyBtn);
 
+        /* CODE BODY */
         const pre = document.createElement("pre");
         const codeEl = document.createElement("code");
+
         codeEl.textContent = code;
 
         pre.appendChild(codeEl);
 
+        /* ARROW */
         const arrow = document.createElement("div");
-        arrow.className = "scroll-arrow";
+        arrow.className = "code-arrow";
         arrow.textContent = "⬇";
 
-        box.appendChild(header);
-        box.appendChild(pre);
-        box.appendChild(arrow);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+        wrapper.appendChild(arrow);
 
-        container.appendChild(box);
+        container.appendChild(wrapper);
       }
 
-      // TEXT
+      // 🧠 TEXT
       else{
         const p = document.createElement("div");
         p.className = "ai-text";
