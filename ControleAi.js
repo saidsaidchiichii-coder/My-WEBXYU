@@ -36,7 +36,7 @@ const AI = {
 
   async ask(message){
 
-    const loading = this.thinking();
+    const load = this.thinking();
 
     try{
       const res = await fetch(this.API_URL,{
@@ -47,17 +47,17 @@ const AI = {
 
       const data = await res.json();
 
-      loading.remove();
+      load.remove();
 
       this.render(data.reply || "No response");
 
     }catch(e){
-      loading.remove();
+      load.remove();
       this.error();
     }
   },
 
-  /* 🚀 CLEAN RENDER SYSTEM */
+  /* 💣 MAIN FIX HERE (NO EMOJIS INSIDE CODE) */
   render(text){
 
     const div = document.createElement("div");
@@ -69,27 +69,26 @@ const AI = {
 
     parts.forEach((part, i)=>{
 
-      // 💻 CODE BLOCK
+      // 💻 CODE BLOCK (CLEAN ONLY)
       if(i % 2 === 1){
-        html += `
-          <pre><code>${this.cleanCode(part)}</code></pre>
-        `;
+
+        const cleanCode = part
+          .replace(/🤖|💻|👤|✔|❌|💰|🔎|📌/g,"")
+          .trim();
+
+        html += `<pre><code>${cleanCode}</code></pre>`;
       }
 
-      // 🧠 TEXT BLOCK
+      // 🧠 TEXT BLOCK (EMOJIS ALLOWED)
       else{
 
         const lines = part.split("\n");
 
         lines.forEach(line=>{
-          const clean = line.trim();
-          if(!clean) return;
+          const t = line.trim();
+          if(!t) return;
 
-          if(clean.includes(":")){
-            html += `<p>🔎 ${this.cleanText(clean)}</p>`;
-          }else{
-            html += `<p>${this.cleanText(clean)}</p>`;
-          }
+          html += `<p>${this.cleanText(t)}</p>`;
         });
 
       }
@@ -104,15 +103,7 @@ const AI = {
   cleanText(t){
     return t
       .replace(/```/g,"")
-      .replace(/🤖|💻|👤|✔|❌/g,"")
       .replace(/\*\*/g,"")
-      .trim();
-  },
-
-  cleanCode(t){
-    return t
-      .replace(/```/g,"")
-      .replace(/🤖|💻|👤|✔|❌/g,"")
       .trim();
   },
 
@@ -125,7 +116,7 @@ const AI = {
   error(){
     const div = document.createElement("div");
     div.className = "msg ai";
-    div.textContent = "❌ AI Error";
+    div.textContent = "❌ AI error";
     this.messagesBox.appendChild(div);
   }
 };
