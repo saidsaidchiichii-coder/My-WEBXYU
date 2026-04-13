@@ -14,393 +14,166 @@ body{
   background:
     radial-gradient(circle at 85% 50%, rgba(255,255,255,0.15), transparent 40%),
     linear-gradient(135deg, #000000 0%, #05070a 40%, #0b0f14 100%);
-  background-blend-mode: screen;
   height:100vh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
 }
 
-/* FIXED: removed JS from CSS */
-
-.msg, .title, .inputBox{
-  opacity:0;
-  transform:translateY(40px) scale(0.95);
-  transition:0.6s ease;
-}
-
-.show{
-  opacity:1;
-  transform:translateY(0) scale(1);
-}
-
-.title{
-  animation:float 4s ease-in-out infinite;
-}
-
-@keyframes float{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(-10px);}
-}
-
+/* glow fix */
 body::after{
   content:"";
   position:fixed;
   inset:0;
+  pointer-events:none;
   background:radial-gradient(circle, rgba(16,163,127,0.15), transparent 70%);
-  opacity:0;
-  animation:glow 5s ease forwards;
-  pointer-events:none; /* ✅ THIS FIX */
+  animation:glow 5s forwards;
 }
+@keyframes glow{to{opacity:1;}}
 
-@keyframes glow{
-  to{opacity:1;}
-}
+/* animations */
+.fadeIn{animation:fadeIn .6s;}
+.fadeOut{animation:fadeOut .6s forwards;}
+@keyframes fadeIn{from{opacity:0;transform:scale(.95);}to{opacity:1;}}
+@keyframes fadeOut{to{opacity:0;transform:scale(1.05);}}
 
-/* GLOBAL HOVER 3D */
-button, .send, .inputBox{
-  transition:.25s;
-}
-button:hover, .send:hover{
-  transform:scale(1.08);
-}
-
-/* 3D ANIM */
-.fadeOut{animation:zoomOut .6s forwards;}
-.fadeIn{animation:zoomIn .6s forwards;}
-.slideUp{animation:slideUp .4s ease;}
-
-@keyframes zoomOut{
-  from{opacity:1;transform:scale(1) rotateX(0deg);}
-  to{opacity:0;transform:scale(1.1) rotateX(10deg);}
-}
-@keyframes zoomIn{
-  from{opacity:0;transform:scale(0.9) rotateX(-10deg);}
-  to{opacity:1;transform:scale(1) rotateX(0deg);}
-}
-@keyframes slideUp{
-  from{opacity:0;transform:translateY(20px);}
-  to{opacity:1;}
-}
-
-/* PARTICLES */
-canvas{
-  position:fixed;
-  inset:0;
-  z-index:-1;
-}
-
-/* TOP */
-.top{
-  display:flex;
-  justify-content:space-between;
-  padding:20px;
-}
-
-.logo{font-weight:bold;color:white;}
-
-.auth{display:flex;gap:10px;}
-
-.btn{
-  padding:8px 16px;
-  border-radius:999px;
-  border:none;
-  cursor:pointer;
-}
-
+/* layout */
+.top{display:flex;justify-content:space-between;padding:20px;color:white;}
+.btn{padding:8px 16px;border-radius:999px;border:none;cursor:pointer;}
 .login{background:#1a1a1a;color:white;}
 .signup{background:white;color:black;}
 
-/* HOME */
 .center{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:25px;
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;
 }
 
 .title{
-  font-size:40px;
-  font-weight:bold;
-  color:white;
+  font-size:42px;color:white;
+  animation:float 4s infinite ease-in-out;
+}
+@keyframes float{
+  50%{transform:translateY(-10px);}
 }
 
+/* input */
 .inputBox{
-  width:600px;
-  max-width:90%;
-  background:rgba(255,255,255,0.08);
-  border-radius:999px;
-  padding:12px 15px;
   display:flex;
-  box-shadow:0 5px 30px rgba(0,0,0,0.3);
+  width:600px;max-width:90%;
+  background:rgba(255,255,255,0.08);
+  padding:12px;border-radius:999px;
   backdrop-filter:blur(10px);
-}
-.inputBox:hover{
-  transform:scale(1.02);
 }
 
 .inputBox input{
-  flex:1;
-  border:none;
-  outline:none;
-  background:transparent;
-  color:white;
+  flex:1;background:none;border:none;color:white;outline:none;
 }
 
 .send{
-  width:40px;
-  height:40px;
+  width:40px;height:40px;
   border-radius:50%;
-  background:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:black;
+  background:white;color:black;
+  display:flex;align-items:center;justify-content:center;
   cursor:pointer;
+  transition:.2s;
 }
+.send:hover{transform:scale(1.1);}
 
-/* CHAT */
-.chat{
-  display:none;
-  flex:1;
-  flex-direction:column;
-}
+/* chat */
+.chat{display:none;flex:1;flex-direction:column;}
 
 .messages{
-  flex:1;
-  padding:20px;
-  overflow:auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+  flex:1;overflow:auto;padding:20px;
+  display:flex;flex-direction:column;gap:10px;
+  perspective:1000px;
 }
 
 .msg{
   max-width:65%;
-  padding:12px;
-  border-radius:12px;
+  padding:12px;border-radius:12px;
   animation:slideUp .3s ease;
 }
-
-.user{
-  align-self:flex-end;
-  background:white;
-  color:black;
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(20px);}
 }
 
-.ai{
-  align-self:flex-start;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.1);
-  color:white;
-}
+.user{align-self:flex-end;background:white;color:black;}
+.ai{align-self:flex-start;background:rgba(255,255,255,0.08);color:white;}
 
-/* THINKING */
+/* thinking */
 .thinking{display:flex;gap:5px;}
 .dot{
   width:6px;height:6px;background:#aaa;border-radius:50%;
   animation:blink 1s infinite;
 }
-.dot:nth-child(2){animation-delay:.2s;}
-.dot:nth-child(3){animation-delay:.4s;}
+@keyframes blink{50%{opacity:1;}}
 
-@keyframes blink{
-  0%,100%{opacity:.2;}
-  50%{opacity:1;}
-}
-
-/* INPUT */
+/* bottom */
 .bottom{
-  padding:15px;
+  display:flex;gap:10px;padding:15px;
   border-top:1px solid rgba(255,255,255,0.1);
-  display:flex;
 }
-
-.bottom textarea{
-  flex:1;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:rgba(255,255,255,0.08);
-  color:white;
-  resize:none;
+textarea{
+  flex:1;background:rgba(255,255,255,0.08);
+  border:none;border-radius:10px;color:white;padding:10px;
 }
-
-/* LOGIN MODAL */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.4);
-  backdrop-filter:blur(10px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-.loginBox{
-  background:#111;
-  padding:30px;
-  border-radius:20px;
-  width:300px;
-  text-align:center;
-  animation:zoomIn .4s ease;
-  color:white;
-}
-
-.loginBox input{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:none;
-  background:#1a1a1a;
-  color:white;
-}
-
-.loginBox button{
-  width:100%;
-  margin-top:8px;
-  padding:10px;
-  border:none;
-  border-radius:10px;
+.send2{
+  width:50px;border-radius:10px;background:white;color:black;
   cursor:pointer;
+}
+
+/* modal */
+.overlay{
+  position:fixed;inset:0;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.4);
+}
+.loginBox{
+  background:#111;padding:30px;border-radius:20px;color:white;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="particles"></canvas>
-
 <div class="overlay" id="loginOverlay">
   <div class="loginBox">
-    <h2>Login</h2>
     <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
+    <input id="password" placeholder="Password">
     <button onclick="login()">Login</button>
-    <button onclick="signup()">Sign up</button>
   </div>
 </div>
 
 <div class="top">
-  <div class="logo">ILYASS AI</div>
-  <div class="auth">
+  <div>ILYASS AI</div>
+  <div>
     <button class="btn login" onclick="openLogin()">Login</button>
-    <button class="btn signup" onclick="openLogin()">Sign up</button>
   </div>
 </div>
 
 <div id="home" class="center">
-  <div class="title">Ask Anything</div>
-  <div class="inputBox"> 
-    <input id="homeInput" onkeydown="if(event.key==='Enter') startChat()">
+  <div class="title">What’s in your mind?</div>
+  <div class="inputBox">
+    <input id="homeInput">
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
 
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
+
   <div class="bottom">
-    <textarea id="chatInput" onkeydown="handleKey(event)"></textarea>
+    <textarea id="chatInput"></textarea>
+    <button class="send2" onclick="send()">Send</button>
   </div>
 </div>
 
 <script>
+const messages=document.getElementById("messages");
 
-/* ✅ FIX: moved JS here */
-
-const messages = document.getElementById("messages");
-
-const observer = new IntersectionObserver((entries)=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      entry.target.classList.add("show");
-    }
-  });
-});
-
-document.querySelectorAll(".msg, .title, .inputBox").forEach(el=>{
-  observer.observe(el);
-});
-
-document.querySelectorAll("button, .send").forEach(btn=>{
-  btn.addEventListener("click",function(e){
-    const wave=document.createElement("span");
-    wave.style.position="absolute";
-    wave.style.width="10px";
-    wave.style.height="10px";
-    wave.style.background="rgba(255,255,255,0.5)";
-    wave.style.borderRadius="50%";
-    wave.style.left=e.offsetX+"px";
-    wave.style.top=e.offsetY+"px";
-    wave.style.transform="scale(0)";
-    wave.style.pointerEvents="none";
-
-    this.appendChild(wave);
-
-    wave.animate([
-      {transform:"scale(0)",opacity:1},
-      {transform:"scale(8)",opacity:0}
-    ],{duration:500});
-
-    setTimeout(()=>wave.remove(),500);
-  });
-});
-
-messages.addEventListener("scroll",()=>{
-  const depth = messages.scrollTop;
-  messages.style.transform = `perspective(1000px) translateZ(${depth * -0.2}px)`;
-});
-
-/* ===== YOUR ORIGINAL LOGIC (UNCHANGED) ===== */
-
-let loggedIn=false;
-
-function openLogin(){
-  loginOverlay.style.display="flex";
-}
-
-const { createClient } = supabase;
-const supabaseClient = createClient(
-  "https://idjgsgtupuymysptxrbl.supabase.co",
-  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
-);
-
-async function login(){
-  const {error}=await supabaseClient.auth.signInWithPassword({
-    email:email.value,
-    password:password.value
-  });
-
-  if(error){alert(error.message);return;}
-
-  loggedIn=true;
-  loginOverlay.style.display="none";
-}
-
-async function signup(){
-  const {error}=await supabaseClient.auth.signUp({
-    email:email.value,
-    password:password.value
-  });
-
-  if(error){alert(error.message);return;}
-
-  alert("Check email 📩");
-}
-
-function handleKey(e){
-  if(e.key==="Enter" && !e.shiftKey){
-    e.preventDefault();
-    send();
-  }
-}
-
+/* start */
 function startChat(){
-  const text=homeInput.value.trim();
-  if(!text)return;
+  if(!homeInput.value.trim())return;
 
   home.classList.add("fadeOut");
 
@@ -409,124 +182,68 @@ function startChat(){
     chat.style.display="flex";
     chat.classList.add("fadeIn");
 
-    addMessage(text,"user");
-    askAI(text);
+    addMessage(homeInput.value,"user");
+    fakeAI();
   },600);
 }
 
-function typeText(el,text){
-  let i=0;
-  el.innerHTML="";
-  const int=setInterval(()=>{
-    el.innerHTML+=text[i];
-    i++;
-    if(i>=text.length) clearInterval(int);
-  },15);
-}
-
+/* messages */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
 
-  const content=document.createElement("div");
-  div.appendChild(content);
+  const el=document.createElement("div");
+  div.appendChild(el);
 
   messages.appendChild(div);
 
   if(type==="ai"){
-    typeText(content,text);
-  }else{
-    content.innerText=text;
-  }
+    typeEffect(el,text);
+  }else el.innerText=text;
 
-  scrollBottom();
-}
-
-function showThinking(){
-  const div=document.createElement("div");
-  div.className="msg ai";
-  div.innerHTML=`<div class="thinking">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>`;
-  messages.appendChild(div);
-  scrollBottom();
-  return div;
-}
-
-function scrollBottom(){
   messages.scrollTop=messages.scrollHeight;
 }
 
-async function askAI(text){
-  const t=showThinking();
+/* typing */
+function typeEffect(el,text){
+  let i=0;
+  const int=setInterval(()=>{
+    el.innerHTML+=text[i];
+    i++;
+    if(i>=text.length)clearInterval(int);
+  },20);
+}
 
-  try{
-    const res=await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text})
-    });
+/* thinking */
+function fakeAI(){
+  const t=document.createElement("div");
+  t.className="msg ai";
+  t.innerHTML=`<div class="thinking">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  messages.appendChild(t);
 
-    const data=await res.json();
-
-    setTimeout(()=>{
-      t.remove();
-      addMessage(data.reply || "No response","ai");
-    },1200);
-
-  }catch{
+  setTimeout(()=>{
     t.remove();
-    addMessage("Error","ai");
-  }
+    addMessage("This is AI response with typing effect 🚀","ai");
+  },1200);
 }
 
-function send(){ 
-  const text=chatInput.value.trim();
-  if(!text)return;
-
-  addMessage(text,"user");
+/* send */
+function send(){
+  if(!chatInput.value.trim())return;
+  addMessage(chatInput.value,"user");
   chatInput.value="";
-  askAI(text);
+  fakeAI();
 }
 
-/* PARTICLES */
-const canvas=document.getElementById("particles");
-const ctx=canvas.getContext("2d");
-canvas.width=innerWidth;
-canvas.height=innerHeight;
+/* 3D scroll */
+messages.addEventListener("scroll",()=>{
+  messages.style.transform=`rotateX(${messages.scrollTop/50}deg)`;
+});
 
-let dots=[];
-for(let i=0;i<50;i++){
-  dots.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    vx:(Math.random()-0.5),
-    vy:(Math.random()-0.5)
-  });
-}
-
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  dots.forEach(d=>{
-    d.x+=d.vx;
-    d.y+=d.vy;
-
-    if(d.x<0||d.x>canvas.width)d.vx*=-1;
-    if(d.y<0||d.y>canvas.height)d.vy*=-1;
-
-    ctx.beginPath();
-    ctx.arc(d.x,d.y,2,0,Math.PI*2);
-    ctx.fillStyle="#10a37f";
-    ctx.fill();
-  });
-
-  requestAnimationFrame(draw);
-}
-draw();
-
+/* login */
+function openLogin(){loginOverlay.style.display="flex";}
+function login(){loginOverlay.style.display="none";}
 </script>
 
 </body>
