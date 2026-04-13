@@ -50,6 +50,7 @@ body::after{
   background:radial-gradient(circle, rgba(16,163,127,0.15), transparent 70%);
   opacity:0;
   animation:glow 5s ease forwards;
+  pointer-events:none; /* ✅ THIS FIX */
 }
 
 @keyframes glow{
