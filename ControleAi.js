@@ -56,98 +56,97 @@ const AI = {
   },
 
   /* =========================
-      🔥 FIXED RENDER
+      🔥 PERFECT RENDER
   ========================= */
   render(text){
 
-    const parts = text.split("```");
+    const regex = /```(\w+)?\n?([\s\S]*?)```/g;
 
-    parts.forEach((part, i)=>{
+    let lastIndex = 0;
+    let match;
 
-      // 💻 CODE BLOCK فقط داخل box
-      if(i % 2 === 1){
+    while((match = regex.exec(text)) !== null){
 
-        let code = part.trim();
-        let langName = "Code";
-
-        const firstLine = code.split("\n")[0];
-
-        if(firstLine.length < 15 && !firstLine.includes(" ")){
-          langName = firstLine.toUpperCase();
-          code = code.substring(firstLine.length).trim();
-        }
-
-        const msg = document.createElement("div");
-        msg.className = "msg ai";
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "code-box";
-
-        /* HEADER */
-        const header = document.createElement("div");
-        header.className = "code-header";
-
-        const lang = document.createElement("div");
-        lang.className = "code-lang";
-        lang.textContent = langName;
-
-        const copyBtn = document.createElement("button");
-        copyBtn.className = "copy-btn";
-        copyBtn.textContent = "📋";
-
-        copyBtn.onclick = async () => {
-          try{
-            await navigator.clipboard.writeText(code);
-            copyBtn.textContent = "✔";
-          }catch{
-            copyBtn.textContent = "❌";
-          }
-          setTimeout(()=>copyBtn.textContent="📋",1000);
-        };
-
-        header.appendChild(lang);
-        header.appendChild(copyBtn);
-
-        /* CODE */
-        const pre = document.createElement("pre");
-        const codeEl = document.createElement("code");
-        codeEl.textContent = code;
-
-        pre.appendChild(codeEl);
-
-        /* ARROW */
-        const arrow = document.createElement("div");
-        arrow.className = "code-arrow";
-        arrow.textContent = "⬇";
-
-        setTimeout(()=>{
-          if(pre.scrollHeight <= pre.clientHeight){
-            arrow.style.display = "none";
-          }
-        },50);
-
-        wrapper.appendChild(header);
-        wrapper.appendChild(pre);
-        wrapper.appendChild(arrow);
-
-        msg.appendChild(wrapper);
-        this.messagesBox.appendChild(msg);
-      }
-
-      // 🧠 TEXT خارج code box
-      else{
-        const clean = part.trim();
-        if(!clean) return;
-
+      // 🧠 TEXT BEFORE CODE
+      const before = text.substring(lastIndex, match.index).trim();
+      if(before){
         const msg = document.createElement("div");
         msg.className = "msg ai-text";
-
-        msg.innerHTML = clean.replace(/\n/g,"<br>");
-
+        msg.innerHTML = before.replace(/\n/g,"<br>");
         this.messagesBox.appendChild(msg);
       }
 
-    });
+      // 💻 CODE BLOCK
+      const langName = match[1] ? match[1].toUpperCase() : "CODE";
+      const code = match[2].trim();
+
+      const msg = document.createElement("div");
+      msg.className = "msg ai";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "code-box";
+
+      /* HEADER */
+      const header = document.createElement("div");
+      header.className = "code-header";
+
+      const lang = document.createElement("div");
+      lang.className = "code-lang";
+      lang.textContent = langName;
+
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "copy-btn";
+      copyBtn.textContent = "📋";
+
+      copyBtn.onclick = async () => {
+        try{
+          await navigator.clipboard.writeText(code);
+          copyBtn.textContent = "✔";
+        }catch{
+          copyBtn.textContent = "❌";
+        }
+        setTimeout(()=>copyBtn.textContent="📋",1000);
+      };
+
+      header.appendChild(lang);
+      header.appendChild(copyBtn);
+
+      /* CODE */
+      const pre = document.createElement("pre");
+      const codeEl = document.createElement("code");
+      codeEl.textContent = code;
+
+      pre.appendChild(codeEl);
+
+      /* ARROW */
+      const arrow = document.createElement("div");
+      arrow.className = "code-arrow";
+      arrow.textContent = "⬇";
+
+      setTimeout(()=>{
+        if(pre.scrollHeight <= pre.clientHeight){
+          arrow.style.display = "none";
+        }
+      },50);
+
+      wrapper.appendChild(header);
+      wrapper.appendChild(pre);
+      wrapper.appendChild(arrow);
+
+      msg.appendChild(wrapper);
+      this.messagesBox.appendChild(msg);
+
+      lastIndex = regex.lastIndex;
+    }
+
+    // 🧠 TEXT AFTER LAST CODE
+    const after = text.substring(lastIndex).trim();
+    if(after){
+      const msg = document.createElement("div");
+      msg.className = "msg ai-text";
+      msg.innerHTML = after.replace(/\n/g,"<br>");
+      this.messagesBox.appendChild(msg);
+    }
 
     this.scroll();
   },
