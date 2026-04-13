@@ -1,7 +1,7 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
-  speed: 3,
+  speed: 3, // ⚡ fast typing
 
   /* INIT */
   init(boxId, api){
@@ -11,11 +11,10 @@ const AI = {
     this.enableKeyboard();
   },
 
-  /* 👤 USER MESSAGE (NO EMOJIS INSIDE INPUT TEXT) */
+  /* 👤 USER MESSAGE */
   user(text){
     const div = document.createElement("div");
     div.className = "msg user";
-
     div.innerHTML = "👤 " + this.escape(text);
 
     this.messagesBox.appendChild(div);
@@ -41,24 +40,12 @@ const AI = {
     return div;
   },
 
-  /* 🧠 DETECT TYPE (IMPORTANT FIX) */
+  /* 🧠 DETECT TYPE */
   detect(text){
 
     const t = text.toLowerCase();
 
     if(text.includes("```")) return "code";
-    if(t.includes("@") && t.includes(".")) return "email";
-
-    if(
-      t.startsWith("write") ||
-      t.startsWith("make") ||
-      t.startsWith("create") ||
-      t.includes("code") ||
-      t.includes("program") ||
-      t.includes("python")
-    ){
-      return "code_request";
-    }
 
     if(
       t.includes("?") ||
@@ -99,18 +86,18 @@ const AI = {
     }
   },
 
-  /* 🎨 RENDER ENGINE (FULL FIX) */
+  /* 🎨 RENDER ENGINE */
   render(text, type){
 
     const div = document.createElement("div");
     div.className = "msg ai";
 
-    let parts = text.split("```");
+    const parts = text.split("```");
     let html = "";
 
     parts.forEach((part, i) => {
 
-      // 💻 CODE BLOCK (NO EMOJIS EVER)
+      // 💻 CODE BLOCK (CLEAN ONLY)
       if(i % 2 === 1){
         html += `<pre><code>${this.cleanCode(part)}</code></pre>`;
       }
@@ -122,17 +109,7 @@ const AI = {
 
         if(type === "request"){
           html += `<p>🔎 ${cleanText}</p>`;
-        }
-
-        else if(type === "code_request"){
-          html += `<p>💻 ${cleanText}</p>`;
-        }
-
-        else if(type === "email"){
-          html += `<p>📧 ${cleanText}</p>`;
-        }
-
-        else{
+        } else {
           html += `<p>🤖 ${cleanText}</p>`;
         }
 
@@ -146,7 +123,7 @@ const AI = {
     this.scroll();
   },
 
-  /* 🧹 CLEAN TEXT (ALLOW EMOJIS HERE ONLY) */
+  /* ✨ TEXT CLEAN + EMOJIS */
   cleanText(text){
     return text
       .replace(/code/gi,"💻 code")
@@ -163,7 +140,7 @@ const AI = {
       .trim();
   },
 
-  /* ⚡ ESCAPE */
+  /* ⚡ ESCAPE HTML */
   escape(str){
     return str
       .replaceAll("&","&amp;")
@@ -187,7 +164,7 @@ const AI = {
     this.messagesBox.appendChild(div);
   },
 
-  /* ⌨ KEYBOARD FIX (SHIFT + ENTER CORRECT) */
+  /* ⌨ KEYBOARD FIX (100% CORRECT) */
   enableKeyboard(){
 
     document.addEventListener("keydown",(e)=>{
@@ -200,7 +177,7 @@ const AI = {
         return;
       }
 
-      // ❌ ENTER WITHOUT SHIFT = SEND ONLY
+      // ❌ ENTER = SEND ONLY
       if(e.key === "Enter" && !e.shiftKey){
 
         if(document.activeElement === chatInput){
