@@ -333,6 +333,16 @@ function startChat(){
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
+
+  // 💥 FIRST MESSAGE SPECIAL EFFECT
+  if(document.querySelectorAll(".msg").length === 0){
+    div.style.transform="rotateY(90deg) scale(0.5)";
+    div.style.transition="0.6s ease";
+    setTimeout(()=>{
+      div.style.transform="rotateY(0deg) scale(1)";
+    },50);
+  }
+
   document.getElementById("messages").appendChild(div);
   typeText(div,text);
   scroll();
