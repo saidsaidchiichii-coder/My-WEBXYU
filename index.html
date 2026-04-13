@@ -279,38 +279,43 @@ function startChat(){
 
 /* IMPROVED TYPING EFFECT */
 function typeText(el, text) {
-  let i = 0;
+  el.innerHTML = "";
 
-  function format(t) {
-    const emojis = ["🔥","💡","😎","🚀","👍"];
-    let e = emojis[Math.floor(Math.random() * emojis.length)];
+  const emojis = ["🔥","💡","😎","🚀","👍"];
+  let emoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-    return t + "\n\n" + e; // نخليو newline حقيقي
+  // detect code block
+  const codeRegex = /```([\s\S]*?)```/;
+  const match = text.match(codeRegex);
+
+  let before = text;
+  let code = null;
+
+  if (match) {
+    before = text.split("```")[0];
+    code = match[1];
   }
 
-  let formatted = format(text);
-  el.innerHTML = "";
+  let formatted = formatText(before + " " + emoji);
+
+  let i = 0;
 
   function type() {
     if (i < formatted.length) {
-
-      if (formatted[i] === "\n") {
-        el.innerHTML += "<br>"; // 🔥 نحولو newline لـ Enter
-      } else {
-        el.innerHTML += formatted[i];
-      }
-
-      // ⚡ سرعة ذكية
-      let speed = 8;
-      if (formatted[i] === ".") speed = 120;
-      if (formatted[i] === "\n") speed = 50;
+      el.innerHTML += formatted[i];
 
       i++;
 
-      // 👇 auto scroll
+      // 🔥 AUTO SCROLL
       messages.scrollTop = messages.scrollHeight;
 
-      setTimeout(type, speed);
+      setTimeout(type, 8);
+    } else {
+      // show code after typing text
+      if (code) {
+        el.innerHTML += `<pre><code>${escapeHtml(code)}</code></pre>`;
+        messages.scrollTop = messages.scrollHeight;
+      }
     }
   }
 
