@@ -285,10 +285,7 @@ function typeText(el, text) {
     const emojis = ["🔥","💡","😎","🚀","👍"];
     let e = emojis[Math.floor(Math.random() * emojis.length)];
 
-    return t
-      .replace(/\n/g, "<br>")
-      .replace(/\. /g, ".<br><br>")
-      + " " + e;
+    return t + "\n\n" + e; // نخليو newline حقيقي
   }
 
   let formatted = format(text);
@@ -296,13 +293,23 @@ function typeText(el, text) {
 
   function type() {
     if (i < formatted.length) {
-      el.innerHTML += formatted.charAt(i);
 
+      if (formatted[i] === "\n") {
+        el.innerHTML += "<br>"; // 🔥 نحولو newline لـ Enter
+      } else {
+        el.innerHTML += formatted[i];
+      }
+
+      // ⚡ سرعة ذكية
       let speed = 8;
       if (formatted[i] === ".") speed = 120;
       if (formatted[i] === "\n") speed = 50;
 
       i++;
+
+      // 👇 auto scroll
+      messages.scrollTop = messages.scrollHeight;
+
       setTimeout(type, speed);
     }
   }
