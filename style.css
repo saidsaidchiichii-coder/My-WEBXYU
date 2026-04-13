@@ -1,0 +1,26 @@
+body{
+  background: linear-gradient(135deg, black, #0f172a);
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+h1{
+  color: #00ffff;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 40px;
+}
+
+button{
+  background: linear-gradient(45deg, red, blue);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover{
+  transform: scale(1.1);
+}
