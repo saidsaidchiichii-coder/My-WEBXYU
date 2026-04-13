@@ -279,15 +279,12 @@ function startChat(){
 
 /* IMPROVED TYPING EFFECT */
 function typeText(el, text) {
-  el.innerHTML = "";
+  el.textContent = "";
 
   const emojis = ["🔥","💡","😎","🚀","👍"];
-  let emoji = emojis[Math.floor(Math.random() * emojis.length)];
+  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
 
-  // detect code block
-  const codeRegex = /```([\s\S]*?)```/;
-  const match = text.match(codeRegex);
-
+  const match = text.match(/```([\s\S]*?)```/);
   let before = text;
   let code = null;
 
@@ -296,32 +293,34 @@ function typeText(el, text) {
     code = match[1];
   }
 
-  let formatted = formatText(before + " " + emoji);
-
+  const formatted = (before + " " + emoji);
   let i = 0;
 
   function type() {
     if (i < formatted.length) {
-      el.innerHTML += formatted[i];
-
+      el.textContent += formatted[i];
       i++;
 
-      // 🔥 AUTO SCROLL
-      messages.scrollTop = messages.scrollHeight;
-
-      setTimeout(type, 8);
-    } else {
-      // show code after typing text
-      if (code) {
-        el.innerHTML += `<pre><code>${escapeHtml(code)}</code></pre>`;
+      const messages = document.getElementById("messages");
+      if (messages) {
         messages.scrollTop = messages.scrollHeight;
+      }
+
+      setTimeout(type, 10);
+    } else {
+      if (code) {
+        const pre = document.createElement("pre");
+        const codeEl = document.createElement("code");
+        codeEl.textContent = code;
+
+        pre.appendChild(codeEl);
+        el.appendChild(pre);
       }
     }
   }
 
   type();
 }
-
 /* ADD MESSAGE */
 function addMessage(text, type) {
   const div = document.createElement("div");
