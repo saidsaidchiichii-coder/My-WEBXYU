@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en"> 
 <head>
@@ -22,20 +21,9 @@ body{
   overflow:hidden;
 }
 
-  const observer = new IntersectionObserver((entries)=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      entry.target.classList.add("show");
-    }
-  });
-});
+/* FIXED: removed JS from CSS */
 
-document.querySelectorAll(".msg, .title, .inputBox").forEach(el=>{
-  observer.observe(el);
-});
-
-
-  .msg, .title, .inputBox{
+.msg, .title, .inputBox{
   opacity:0;
   transform:translateY(40px) scale(0.95);
   transition:0.6s ease;
@@ -45,7 +33,8 @@ document.querySelectorAll(".msg, .title, .inputBox").forEach(el=>{
   opacity:1;
   transform:translateY(0) scale(1);
 }
-  .title{
+
+.title{
   animation:float 4s ease-in-out infinite;
 }
 
@@ -53,7 +42,8 @@ document.querySelectorAll(".msg, .title, .inputBox").forEach(el=>{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(-10px);}
 }
-  body::after{
+
+body::after{
   content:"";
   position:fixed;
   inset:0;
@@ -64,37 +54,8 @@ document.querySelectorAll(".msg, .title, .inputBox").forEach(el=>{
 
 @keyframes glow{
   to{opacity:1;}
-}document.querySelectorAll("button, .send").forEach(btn=>{
-  btn.addEventListener("click",function(e){
-    const wave=document.createElement("span");
-    wave.style.position="absolute";
-    wave.style.width="10px";
-    wave.style.height="10px";
-    wave.style.background="rgba(255,255,255,0.5)";
-    wave.style.borderRadius="50%";
-    wave.style.left=e.offsetX+"px";
-    wave.style.top=e.offsetY+"px";
-    wave.style.transform="scale(0)";
-    wave.style.pointerEvents="none";
+}
 
-    this.appendChild(wave);
-
-    wave.animate([
-      {transform:"scale(0)",opacity:1},
-      {transform:"scale(8)",opacity:0}
-    ],{duration:500});
-
-    setTimeout(()=>wave.remove(),500);
-  });
-});
-  messages.addEventListener("scroll",()=>{
-  const depth = messages.scrollTop;
-
-  messages.style.transform = `
-    perspective(1000px)
-    translateZ(${depth * -0.2}px)
-  `;
-});
 /* GLOBAL HOVER 3D */
 button, .send, .inputBox{
   transition:.25s;
@@ -324,7 +285,6 @@ canvas{
 
 <div class="top">
   <div class="logo">ILYASS AI</div>
-
   <div class="auth">
     <button class="btn login" onclick="openLogin()">Login</button>
     <button class="btn signup" onclick="openLogin()">Sign up</button>
@@ -333,24 +293,67 @@ canvas{
 
 <div id="home" class="center">
   <div class="title">Ask Anything</div>
-
   <div class="inputBox"> 
-    <input id="homeInput"
-      onkeydown="if(event.key==='Enter') startChat()">
+    <input id="homeInput" onkeydown="if(event.key==='Enter') startChat()">
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
 
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
-
   <div class="bottom">
-    <textarea id="chatInput"
-      onkeydown="handleKey(event)"></textarea>
+    <textarea id="chatInput" onkeydown="handleKey(event)"></textarea>
   </div>
 </div>
 
 <script>
+
+/* ✅ FIX: moved JS here */
+
+const messages = document.getElementById("messages");
+
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add("show");
+    }
+  });
+});
+
+document.querySelectorAll(".msg, .title, .inputBox").forEach(el=>{
+  observer.observe(el);
+});
+
+document.querySelectorAll("button, .send").forEach(btn=>{
+  btn.addEventListener("click",function(e){
+    const wave=document.createElement("span");
+    wave.style.position="absolute";
+    wave.style.width="10px";
+    wave.style.height="10px";
+    wave.style.background="rgba(255,255,255,0.5)";
+    wave.style.borderRadius="50%";
+    wave.style.left=e.offsetX+"px";
+    wave.style.top=e.offsetY+"px";
+    wave.style.transform="scale(0)";
+    wave.style.pointerEvents="none";
+
+    this.appendChild(wave);
+
+    wave.animate([
+      {transform:"scale(0)",opacity:1},
+      {transform:"scale(8)",opacity:0}
+    ],{duration:500});
+
+    setTimeout(()=>wave.remove(),500);
+  });
+});
+
+messages.addEventListener("scroll",()=>{
+  const depth = messages.scrollTop;
+  messages.style.transform = `perspective(1000px) translateZ(${depth * -0.2}px)`;
+});
+
+/* ===== YOUR ORIGINAL LOGIC (UNCHANGED) ===== */
 
 let loggedIn=false;
 
@@ -394,7 +397,6 @@ function handleKey(e){
   }
 }
 
-/* ✅ التعديل هنا */
 function startChat(){
   const text=homeInput.value.trim();
   if(!text)return;
@@ -408,7 +410,6 @@ function startChat(){
 
     addMessage(text,"user");
     askAI(text);
-
   },600);
 }
 
@@ -481,7 +482,6 @@ async function askAI(text){
 }
 
 function send(){ 
-  
   const text=chatInput.value.trim();
   if(!text)return;
 
@@ -530,4 +530,3 @@ draw();
 
 </body>
 </html>
-```
