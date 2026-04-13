@@ -10,7 +10,6 @@
 
 <body>
 
-<!-- TOP -->
 <div class="top">
   <div class="logo">ILYASS AI</div>
 
@@ -20,7 +19,6 @@
   </div>
 </div>
 
-<!-- NAV -->
 <div class="nav">
   <button onclick="go('home')" class="active">Home</button>
   <button onclick="go('earn')">Earn Money</button>
@@ -58,25 +56,12 @@
   <h1>⚙️ Settings</h1>
 </div>
 
-<!-- ===================== -->
-<!-- 📦 SCRIPTS (ALL FILES) -->
-<!-- ===================== -->
-
 <script src="navigation.js"></script>
-
 <script src="ControleAi.js"></script>
 
-<!-- 🆕 NEW: BUTTON SYSTEM -->
-<script src="ButtonProgramm.js"></script>
-
-<!-- 🆕 OPTIONAL: TOOLS SYSTEM (if you added it) -->
-<!-- <script src="tools.js"></script> -->
-
 <script>
-
 AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-/* START CHAT */
 function startChat(){
   const text = document.getElementById("homeInput").value.trim();
   if(!text) return;
@@ -90,7 +75,6 @@ function startChat(){
   AI.ask(text);
 }
 
-/* SEND */
 function send(){
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
@@ -102,7 +86,6 @@ function send(){
   AI.ask(text);
 }
 
-/* SHIFT + ENTER FIX */
 function handleKey(e){
   if(e.key === "Enter" && e.shiftKey) return;
 
@@ -111,7 +94,6 @@ function handleKey(e){
     send();
   }
 }
-
 </script>
 
 </body>
