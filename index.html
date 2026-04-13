@@ -5,28 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
 body{
   background:
-    radial-gradient(circle at 100% 50%, rgba(255,255,255,0.12), transparent 40%),
-    linear-gradient(135deg,#000000,#0b0f14);
+    radial-gradient(circle at 85% 50%, rgba(255,255,255,0.15), transparent 40%),
+    linear-gradient(135deg, #000000 0%, #05070a 40%, #0b0f14 100%);
+  background-blend-mode: screen;
   height:100vh;
+  display:flex;
+  flex-direction:column;
   overflow:hidden;
-  color:white;
 }
 
-/* SOFT CURSOR LIGHT */
-.cursor{
+/* GLOBAL HOVER 3D */
+button, .send, .inputBox{
+  transition:.25s;
+}
+button:hover, .send:hover{
+  transform:scale(1.08);
+}
+
+/* 3D ANIM */
+.fadeOut{animation:zoomOut .6s forwards;}
+.fadeIn{animation:zoomIn .6s forwards;}
+.slideUp{animation:slideUp .4s ease;}
+
+@keyframes zoomOut{
+  from{opacity:1;transform:scale(1) rotateX(0deg);}
+  to{opacity:0;transform:scale(1.1) rotateX(10deg);}
+}
+@keyframes zoomIn{
+  from{opacity:0;transform:scale(0.9) rotateX(-10deg);}
+  to{opacity:1;transform:scale(1) rotateX(0deg);}
+}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;}
+}
+
+/* PARTICLES */
+canvas{
   position:fixed;
-  width:150px;
-  height:150px;
-  border-radius:50%;
-  pointer-events:none;
-  background:radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
-  transform:translate(-50%,-50%);
-  z-index:999;
+  inset:0;
+  z-index:-1;
 }
 
 /* TOP */
@@ -36,69 +61,74 @@ body{
   padding:20px;
 }
 
+.logo{font-weight:bold;color:white;}
+
+.auth{display:flex;gap:10px;}
+
 .btn{
   padding:8px 16px;
   border-radius:999px;
   border:none;
   cursor:pointer;
-  transition:.25s;
 }
-.btn:hover{transform:scale(1.08);}
 
 .login{background:#1a1a1a;color:white;}
 .signup{background:white;color:black;}
 
 /* HOME */
 .center{
-  height:100%;
+  flex:1;
   display:flex;
   flex-direction:column;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   gap:25px;
 }
 
 .title{
-  font-size:42px;
+  font-size:40px;
+  font-weight:bold;
+  color:white;
 }
 
-/* INPUT */
 .inputBox{
   width:600px;
   max-width:90%;
-  background:rgba(255,255,255,0.05);
+  background:rgba(255,255,255,0.08);
   border-radius:999px;
-  padding:14px;
+  padding:12px 15px;
   display:flex;
+  box-shadow:0 5px 30px rgba(0,0,0,0.3);
   backdrop-filter:blur(10px);
-  transition:.3s;
 }
-.inputBox:hover{transform:scale(1.02);}
+.inputBox:hover{
+  transform:scale(1.02);
+}
 
 .inputBox input{
   flex:1;
-  background:none;
   border:none;
-  color:white;
   outline:none;
+  background:transparent;
+  color:white;
 }
 
 .send{
-  width:42px;
-  height:42px;
+  width:40px;
+  height:40px;
   border-radius:50%;
   background:white;
-  color:black;
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
+  color:black;
   cursor:pointer;
 }
 
 /* CHAT */
 .chat{
   display:none;
-  height:100%;
+  flex:1;
   flex-direction:column;
 }
 
@@ -106,29 +136,29 @@ body{
   flex:1;
   padding:20px;
   overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
 .msg{
-  margin:10px 0;
-  max-width:60%;
+  max-width:65%;
   padding:12px;
-  border-radius:14px;
-  animation:fade .3s ease;
-}
-
-@keyframes fade{
-  from{opacity:0;transform:translateY(15px);}
-  to{opacity:1;}
+  border-radius:12px;
+  animation:slideUp .3s ease;
 }
 
 .user{
+  align-self:flex-end;
   background:white;
   color:black;
-  margin-left:auto;
 }
 
 .ai{
+  align-self:flex-start;
   background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.1);
+  color:white;
 }
 
 /* THINKING */
@@ -137,6 +167,9 @@ body{
   width:6px;height:6px;background:#aaa;border-radius:50%;
   animation:blink 1s infinite;
 }
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+
 @keyframes blink{
   0%,100%{opacity:.2;}
   50%{opacity:1;}
@@ -145,35 +178,91 @@ body{
 /* INPUT */
 .bottom{
   padding:15px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  display:flex;
 }
-textarea{
-  width:100%;
+
+.bottom textarea{
+  flex:1;
   padding:12px;
   border-radius:10px;
-  background:rgba(255,255,255,0.08);
   border:none;
+  background:rgba(255,255,255,0.08);
   color:white;
+  resize:none;
+}
+
+/* LOGIN MODAL */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(10px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.loginBox{
+  background:#111;
+  padding:30px;
+  border-radius:20px;
+  width:300px;
+  text-align:center;
+  animation:zoomIn .4s ease;
+  color:white;
+}
+
+.loginBox input{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:none;
+  background:#1a1a1a;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="cursor" id="cursor"></div>
+<canvas id="particles"></canvas>
+
+<div class="overlay" id="loginOverlay">
+  <div class="loginBox">
+    <h2>Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign up</button>
+  </div>
+</div>
 
 <div class="top">
-  <div>ILYASS AI</div>
-  <div>
-    <button class="btn login">Login</button>
-    <button class="btn signup">Sign up</button>
+  <div class="logo">ILYASS AI</div>
+
+  <div class="auth">
+    <button class="btn login" onclick="openLogin()">Login</button>
+    <button class="btn signup" onclick="openLogin()">Sign up</button>
   </div>
 </div>
 
 <div id="home" class="center">
   <div class="title">Ask Anything</div>
 
-  <div class="inputBox">
-    <input id="homeInput" onkeydown="if(event.key==='Enter') startChat()">
+  <div class="inputBox"> 
+    <input id="homeInput"
+      onkeydown="if(event.key==='Enter') startChat()">
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
@@ -182,75 +271,124 @@ textarea{
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
-    <textarea id="chatInput" onkeydown="handleKey(event)"></textarea>
+    <textarea id="chatInput"
+      onkeydown="handleKey(event)"></textarea>
   </div>
 </div>
 
 <script>
 
-/* CURSOR LIGHT FIX */
-document.addEventListener("mousemove",e=>{
-  cursor.style.left=e.clientX+"px";
-  cursor.style.top=e.clientY+"px";
-});
+let loggedIn=false;
 
-/* SHIFT ENTER */
+function openLogin(){
+  loginOverlay.style.display="flex";
+}
+
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
+
+async function login(){
+  const {error}=await supabaseClient.auth.signInWithPassword({
+    email:email.value,
+    password:password.value
+  });
+
+  if(error){alert(error.message);return;}
+
+  loggedIn=true;
+  loginOverlay.style.display="none";
+}
+
+async function signup(){
+  const {error}=await supabaseClient.auth.signUp({
+    email:email.value,
+    password:password.value
+  });
+
+  if(error){alert(error.message);return;}
+
+  alert("Check email 📩");
+}
+
 function handleKey(e){
-  if(e.key==="Enter"&&!e.shiftKey){
+  if(e.key==="Enter" && !e.shiftKey){
     e.preventDefault();
     send();
   }
 }
 
-/* START */
 function startChat(){
   const text=homeInput.value.trim();
   if(!text)return;
 
-  home.style.display="none";
-  chat.style.display="flex";
+  if(!loggedIn){
+    openLogin();
+    return;
+  }
 
-  addMessage(text,"user");
-  askAI(text);
+  home.classList.add("fadeOut");
+
+  setTimeout(()=>{
+    home.style.display="none";
+    chat.style.display="flex";
+    chat.classList.add("fadeIn");
+
+    addMessage(text,"user");
+    askAI(text);
+
+  },600);
 }
 
-/* TYPE */
 function typeText(el,text){
   let i=0;
+  el.innerHTML="";
   const int=setInterval(()=>{
-    el.innerHTML+=text[i++];
-    if(i>=text.length)clearInterval(int);
+    el.innerHTML+=text[i];
+    i++;
+    if(i>=text.length) clearInterval(int);
   },15);
 }
 
-/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
 
-  const c=document.createElement("div");
-  div.appendChild(c);
+  const content=document.createElement("div");
+  div.appendChild(content);
+
   messages.appendChild(div);
 
-  if(type==="ai") typeText(c,text);
-  else c.innerText=text;
+  if(type==="ai"){
+    typeText(content,text);
+  }else{
+    content.innerText=text;
+  }
 
+  scrollBottom();
+}
+
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`<div class="thinking">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>`;
+  messages.appendChild(div);
+  scrollBottom();
+  return div;
+}
+
+function scrollBottom(){
   messages.scrollTop=messages.scrollHeight;
 }
 
-/* THINK */
-function thinking(){
-  const d=document.createElement("div");
-  d.className="msg ai";
-  d.innerHTML=`<div class="thinking">
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
-  messages.appendChild(d);
-  return d;
-}
-
-/* AI */
 async function askAI(text){
-  const t=thinking();
+  const t=showThinking();
 
   try{
     const res=await fetch("/api/chat",{
@@ -264,7 +402,7 @@ async function askAI(text){
     setTimeout(()=>{
       t.remove();
       addMessage(data.reply || "No response","ai");
-    },1500);
+    },1200);
 
   }catch{
     t.remove();
@@ -272,8 +410,9 @@ async function askAI(text){
   }
 }
 
-/* SEND */
 function send(){
+  if(!loggedIn){openLogin();return;}
+
   const text=chatInput.value.trim();
   if(!text)return;
 
@@ -281,6 +420,42 @@ function send(){
   chatInput.value="";
   askAI(text);
 }
+
+/* PARTICLES */
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let dots=[];
+for(let i=0;i<50;i++){
+  dots.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5),
+    vy:(Math.random()-0.5)
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  dots.forEach(d=>{
+    d.x+=d.vx;
+    d.y+=d.vy;
+
+    if(d.x<0||d.x>canvas.width)d.vx*=-1;
+    if(d.y<0||d.y>canvas.height)d.vy*=-1;
+
+    ctx.beginPath();
+    ctx.arc(d.x,d.y,2,0,Math.PI*2);
+    ctx.fillStyle="#10a37f";
+    ctx.fill();
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
 
 </script>
 
