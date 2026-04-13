@@ -41,17 +41,12 @@
 
 <!-- CHAT -->
 <div id="chat" class="chat">
-
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
-
-    <!-- 🔥 FIX: textarea (important) -->
     <textarea id="chatInput" placeholder="Send a message..."
       onkeydown="handleKey(event)"></textarea>
-
   </div>
-
 </div>
 
 <!-- OTHER -->
@@ -71,7 +66,7 @@
 
 AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-/* HOME START */
+/* START CHAT */
 function startChat(){
   const text = document.getElementById("homeInput").value.trim();
   if(!text) return;
@@ -97,7 +92,7 @@ function send(){
   AI.ask(text);
 }
 
-/* ⌨ KEYBOARD FIX */
+/* KEYBOARD FIX */
 function handleKey(e){
 
   // SHIFT + ENTER = new line
