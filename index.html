@@ -10,34 +10,63 @@
 
 <body>
 
+<!-- TOP BAR -->
 <div class="top">
   <div class="logo">ILYASS AI</div>
+
   <div class="auth">
     <button class="btn login">Login</button>
     <button class="btn signup">Sign up</button>
   </div>
 </div>
 
-<!-- HOME -->
-<div id="home" class="center">
+<!-- NAVIGATION -->
+<div class="nav">
+  <button onclick="go('home')" class="active">Home</button>
+  <button onclick="go('earn')">Earn Money</button>
+  <button onclick="go('settings')">Settings</button>
+</div>
+
+<!-- HOME (CHAT) -->
+<div id="home" class="center section" style="display:flex;">
+
   <div class="title">Ask anything</div>
 
   <div class="inputBox">
     <input id="homeInput" placeholder="What do you want to know?"
       onkeydown="if(event.key==='Enter') startChat()">
+
     <div class="send" onclick="startChat()">➤</div>
   </div>
+
 </div>
 
-<!-- CHAT -->
+<!-- CHAT AREA -->
 <div id="chat" class="chat">
+
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
     <input id="chatInput" placeholder="Send a message..."
       onkeydown="if(event.key==='Enter') send()">
   </div>
+
 </div>
+
+<!-- EARN MONEY -->
+<div id="earn" class="section" style="display:none; padding:20px; color:white;">
+  <h1>💰 Earn Money</h1>
+  <p>Coming soon...</p>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="section" style="display:none; padding:20px; color:white;">
+  <h1>⚙️ Settings</h1>
+  <p>Customize your experience</p>
+</div>
+
+<!-- SCRIPTS -->
+<script src="navigation.js"></script>
 
 <script>
 
@@ -91,7 +120,7 @@ function thinking(){
   return div;
 }
 
-/* 🚀 CALL YOUR VERCEL API */
+/* CALL API */
 async function askAI(message){
   const t = thinking();
 
@@ -113,7 +142,7 @@ async function askAI(message){
   }
 }
 
-/* SEND FROM CHAT INPUT */
+/* SEND */
 function send(){
   const input=document.getElementById("chatInput");
   const text=input.value.trim();
