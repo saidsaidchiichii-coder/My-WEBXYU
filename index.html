@@ -6,37 +6,73 @@
 <title>ILYASS AI</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter;
+}
 
 body{
-  background:linear-gradient(135deg,#ffffff,#f3f4f6);
+  background: radial-gradient(circle at top, #ffffff, #eef1f6);
   height:100vh;
   display:flex;
   flex-direction:column;
-  animation:fadeIn .6s ease;
+  overflow:hidden;
+  animation:fadeIn .8s ease;
 }
 
+/* 🌈 RGB ANIMATION BORDER */
+@keyframes rgbBorder {
+  0%{filter:hue-rotate(0deg);}
+  100%{filter:hue-rotate(360deg);}
+}
+
+/* FADE IN */
 @keyframes fadeIn{
-  from{opacity:0;transform:translateY(15px);}
-  to{opacity:1;}
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
 }
 
-/* TOP BAR */
+/* FLOAT */
+@keyframes float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+
+/* TOP */
 .top{
   display:flex;
   justify-content:space-between;
   padding:20px;
+  animation:fadeIn 1s ease;
 }
 
-.logo{font-weight:bold;font-size:18px;}
+.logo{
+  font-weight:bold;
+  font-size:20px;
+  background:linear-gradient(90deg,#00f,#f0f,#0ff);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:rgbBorder 6s infinite linear;
+}
 
-.auth{display:flex;gap:10px;}
+.auth{
+  display:flex;
+  gap:10px;
+}
 
 .btn{
   padding:8px 16px;
   border-radius:999px;
   border:none;
   cursor:pointer;
+  transition:.3s;
+}
+
+.btn:hover{
+  transform:scale(1.05) rotateX(10deg);
+  box-shadow:0 10px 20px rgba(0,0,0,0.2);
 }
 
 .login{background:#eee;}
@@ -52,18 +88,41 @@ body{
   gap:25px;
 }
 
-.title{font-size:40px;font-weight:bold;}
+.title{
+  font-size:45px;
+  font-weight:bold;
+  animation:float 3s infinite ease-in-out;
+}
 
-/* INPUT */
+/* INPUT BOX RGB */
 .inputBox{
   width:600px;
   max-width:90%;
   background:white;
   border-radius:999px;
-  padding:12px 15px;
+  padding:14px 15px;
   display:flex;
   align-items:center;
-  box-shadow:0 5px 20px rgba(0,0,0,0.05);
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  border:2px solid transparent;
+  transition:.3s;
+  position:relative;
+}
+
+.inputBox::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#ff00ff,#00ffff,#ff00ff);
+  z-index:-1;
+  filter:blur(10px);
+  opacity:.6;
+  animation:rgbBorder 4s linear infinite;
+}
+
+.inputBox:hover{
+  transform:scale(1.02);
 }
 
 .inputBox input{
@@ -73,42 +132,83 @@ body{
   font-size:15px;
 }
 
+/* SEND BUTTON 3D */
 .send{
-  width:40px;height:40px;
+  width:45px;
+  height:45px;
   border-radius:50%;
-  background:#10a37f;
+  background:linear-gradient(45deg,#10a37f,#00f0ff);
   display:flex;
   align-items:center;
   justify-content:center;
   color:white;
   cursor:pointer;
+  transition:.3s;
+  box-shadow:0 10px 20px rgba(0,0,0,0.2);
+}
+
+.send:hover{
+  transform:rotateY(180deg) scale(1.1);
 }
 
 /* CHAT */
-.chat{display:none;flex:1;flex-direction:column;}
+.chat{
+  display:none;
+  flex:1;
+  flex-direction:column;
+  animation:fadeIn .6s ease;
+}
 
+/* MESSAGES */
 .messages{
   flex:1;
   padding:20px;
   overflow:auto;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
+  scroll-behavior:smooth;
 }
 
+/* MESSAGE 3D POP */
 .msg{
   max-width:65%;
   padding:12px;
-  border-radius:12px;
+  border-radius:14px;
+  transform:translateY(10px) rotateX(20deg);
+  opacity:0;
+  animation:pop .4s forwards;
 }
 
-.user{align-self:flex-end;background:#10a37f;color:white;}
-.ai{align-self:flex-start;background:white;border:1px solid #eee;}
+@keyframes pop{
+  to{
+    transform:translateY(0) rotateX(0);
+    opacity:1;
+  }
+}
+
+.user{
+  align-self:flex-end;
+  background:linear-gradient(135deg,#10a37f,#00ffd5);
+  color:white;
+}
+
+.ai{
+  align-self:flex-start;
+  background:white;
+  border:1px solid #eee;
+}
 
 /* THINKING */
-.thinking{display:flex;gap:5px;}
+.thinking{
+  display:flex;
+  gap:5px;
+}
 .dot{
-  width:6px;height:6px;background:#999;border-radius:50%;
+  width:6px;
+  height:6px;
+  background:#999;
+  border-radius:50%;
   animation:blink 1s infinite;
 }
 .dot:nth-child(2){animation-delay:.2s;}
@@ -119,19 +219,37 @@ body{
   50%{opacity:1;}
 }
 
-/* INPUT CHAT */
+/* BOTTOM INPUT */
 .bottom{
   padding:15px;
   border-top:1px solid #eee;
   display:flex;
+  background:white;
 }
 
 .bottom input{
   flex:1;
   padding:12px;
   border-radius:10px;
-  border:1px solid #ddd;
+  border:2px solid transparent;
+  outline:none;
+  transition:.3s;
 }
+
+.bottom input:focus{
+  border-color:#00f0ff;
+  box-shadow:0 0 15px rgba(0,255,255,0.5);
+}
+
+/* SCROLLBAR */
+.messages::-webkit-scrollbar{
+  width:5px;
+}
+.messages::-webkit-scrollbar-thumb{
+  background:linear-gradient(#00f,#0ff);
+  border-radius:10px;
+}
+
 </style>
 </head>
 
@@ -168,7 +286,6 @@ body{
 
 <script>
 
-/* 🔥 YOUR VERCEL API */
 const API_URL = "https://my-webxyu.vercel.app/api/chat";
 
 /* START CHAT */
@@ -176,8 +293,11 @@ function startChat(){
   const text=document.getElementById("homeInput").value.trim();
   if(!text) return;
 
-  document.getElementById("home").style.display="none";
-  document.getElementById("chat").style.display="flex";
+  document.getElementById("home").style.transform="scale(0.9)";
+  setTimeout(()=>{
+    document.getElementById("home").style.display="none";
+    document.getElementById("chat").style.display="flex";
+  },200);
 
   addMessage(text,"user");
   document.getElementById("homeInput").value="";
@@ -185,15 +305,16 @@ function startChat(){
   askAI(text);
 }
 
-/* ADD MESSAGE */
+/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
   document.getElementById("messages").appendChild(div);
   typeText(div,text);
+  scroll();
 }
 
-/* TYPE EFFECT */
+/* TYPE */
 function typeText(el,text){
   let i=0;
   el.innerHTML="";
@@ -202,6 +323,12 @@ function typeText(el,text){
     i++;
     if(i>=text.length) clearInterval(int);
   },10);
+}
+
+/* SCROLL */
+function scroll(){
+  const box=document.getElementById("messages");
+  box.scrollTop=box.scrollHeight;
 }
 
 /* THINKING */
@@ -215,21 +342,22 @@ function thinking(){
       <div class="dot"></div>
     </div>`;
   document.getElementById("messages").appendChild(div);
+  scroll();
   return div;
 }
 
-/* 🚀 CALL YOUR VERCEL API */
+/* API */
 async function askAI(message){
-  const t = thinking();
+  const t=thinking();
 
   try{
-    const res = await fetch(API_URL,{
+    const res=await fetch(API_URL,{
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message })
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message})
     });
 
-    const data = await res.json();
+    const data=await res.json();
 
     t.remove();
     addMessage(data.reply || "No response","ai");
@@ -240,7 +368,7 @@ async function askAI(message){
   }
 }
 
-/* SEND FROM CHAT INPUT */
+/* SEND */
 function send(){
   const input=document.getElementById("chatInput");
   const text=input.value.trim();
@@ -248,7 +376,6 @@ function send(){
 
   addMessage(text,"user");
   input.value="";
-
   askAI(text);
 }
 
