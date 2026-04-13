@@ -56,30 +56,29 @@ const AI = {
   },
 
   /* =========================
-      🔥 FINAL CODE BLOCK UI
+      🔥 FIXED RENDER
   ========================= */
   render(text){
-
-    const container = document.createElement("div");
-    container.className = "msg ai";
 
     const parts = text.split("```");
 
     parts.forEach((part, i)=>{
 
-      // 💻 CODE BLOCK
+      // 💻 CODE BLOCK فقط داخل box
       if(i % 2 === 1){
 
         let code = part.trim();
         let langName = "Code";
 
-        // 🧠 detect language (cpp, js...)
         const firstLine = code.split("\n")[0];
 
         if(firstLine.length < 15 && !firstLine.includes(" ")){
           langName = firstLine.toUpperCase();
           code = code.substring(firstLine.length).trim();
         }
+
+        const msg = document.createElement("div");
+        msg.className = "msg ai";
 
         const wrapper = document.createElement("div");
         wrapper.className = "code-box";
@@ -109,20 +108,18 @@ const AI = {
         header.appendChild(lang);
         header.appendChild(copyBtn);
 
-        /* CODE BODY */
+        /* CODE */
         const pre = document.createElement("pre");
         const codeEl = document.createElement("code");
-
         codeEl.textContent = code;
 
         pre.appendChild(codeEl);
 
-        /* ARROW (only if long) */
+        /* ARROW */
         const arrow = document.createElement("div");
         arrow.className = "code-arrow";
         arrow.textContent = "⬇";
 
-        // show arrow only if overflow
         setTimeout(()=>{
           if(pre.scrollHeight <= pre.clientHeight){
             arrow.style.display = "none";
@@ -133,26 +130,25 @@ const AI = {
         wrapper.appendChild(pre);
         wrapper.appendChild(arrow);
 
-        container.appendChild(wrapper);
+        msg.appendChild(wrapper);
+        this.messagesBox.appendChild(msg);
       }
 
-      // 🧠 TEXT
+      // 🧠 TEXT خارج code box
       else{
         const clean = part.trim();
         if(!clean) return;
 
-        const p = document.createElement("div");
-        p.className = "ai-text";
+        const msg = document.createElement("div");
+        msg.className = "msg ai-text";
 
-        // preserve line breaks
-        p.innerHTML = clean.replace(/\n/g,"<br>");
+        msg.innerHTML = clean.replace(/\n/g,"<br>");
 
-        container.appendChild(p);
+        this.messagesBox.appendChild(msg);
       }
 
     });
 
-    this.messagesBox.appendChild(container);
     this.scroll();
   },
 
