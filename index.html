@@ -22,6 +22,22 @@ body{
   animation:fadeIn .8s ease;
 }
 
+  /* 🌟 INTRO SCREEN EFFECT */
+body{
+  animation:siteIntro 1s ease;
+}
+
+@keyframes siteIntro{
+  from{
+    opacity:0;
+    transform:scale(1.1) rotateX(10deg);
+  }
+  to{
+    opacity:1;
+    transform:scale(1) rotateX(0);
+  }
+}
+  
 /* 🌈 RGB ANIMATION BORDER */
 @keyframes rgbBorder {
   0%{filter:hue-rotate(0deg);}
