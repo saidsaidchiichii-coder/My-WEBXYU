@@ -41,15 +41,20 @@
 
 <!-- CHAT -->
 <div id="chat" class="chat">
+
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
-    <input id="chatInput" placeholder="Send a message..."
-      onkeydown="if(event.key==='Enter') send()">
+
+    <!-- 🔥 FIX: textarea (important) -->
+    <textarea id="chatInput" placeholder="Send a message..."
+      onkeydown="handleKey(event)"></textarea>
+
   </div>
+
 </div>
 
-<!-- OTHER SECTIONS -->
+<!-- OTHER -->
 <div id="earn" class="section" style="display:none; padding:20px; color:white;">
   <h1>💰 Earn Money</h1>
 </div>
@@ -64,12 +69,11 @@
 
 <script>
 
-/* 🔥 INIT AI CONTROLLER */
 AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-/* START CHAT */
+/* HOME START */
 function startChat(){
-  const text=document.getElementById("homeInput").value.trim();
+  const text = document.getElementById("homeInput").value.trim();
   if(!text) return;
 
   document.getElementById("home").style.display="none";
@@ -83,14 +87,29 @@ function startChat(){
 
 /* SEND */
 function send(){
-  const input=document.getElementById("chatInput");
-  const text=input.value.trim();
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
   if(!text) return;
 
   AI.user(text);
   input.value="";
 
   AI.ask(text);
+}
+
+/* ⌨ KEYBOARD FIX */
+function handleKey(e){
+
+  // SHIFT + ENTER = new line
+  if(e.key === "Enter" && e.shiftKey){
+    return;
+  }
+
+  // ENTER = send
+  if(e.key === "Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
 }
 
 </script>
