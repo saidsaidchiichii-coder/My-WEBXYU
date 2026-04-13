@@ -5,237 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
-/* ================= GLOBAL ================= */
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Inter;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 body{
-  background:
-    radial-gradient(circle at 85% 50%, rgba(255,255,255,0.15), transparent 40%),
-    linear-gradient(135deg, #000000 0%, #05070a 40%, #0b0f14 100%);
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
+  background:radial-gradient(circle at 85% 50%, rgba(255,255,255,0.15), transparent 40%),
+  linear-gradient(135deg,#000,#05070a,#0b0f14);
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;
 }
-canvas{
-  position:fixed;
-  inset:0;
-  z-index:-1;
-}
+canvas{position:fixed;inset:0;z-index:-1;}
 body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:radial-gradient(circle, rgba(16,163,127,0.15), transparent 70%);
+  content:"";position:fixed;inset:0;
+  background:radial-gradient(circle,rgba(16,163,127,0.15),transparent 70%);
   animation:glow 8s ease infinite alternate;
-  pointer-events:none;
 }
-@keyframes glow{
-  from{opacity:0.6; transform:scale(0.95);}
-  to{opacity:1; transform:scale(1.05);}
-}
+@keyframes glow{from{opacity:.6;transform:scale(.95)}to{opacity:1;transform:scale(1.05)}}
+
 /* TOP */
-.top{
-  display:flex;
-  justify-content:space-between;
-  padding:20px;
-  animation: fadeInDown 1s ease forwards;
-}
-.logo{
-  color:white;
-  font-weight:bold;
-  font-size:24px;
-  text-shadow: 0 0 20px rgba(16,163,127,0.6);
-  animation: logoGlow 4s ease infinite alternate;
-}
-@keyframes logoGlow {
-  from { text-shadow: 0 0 10px rgba(16,163,127,0.4); }
-  to { text-shadow: 0 0 30px rgba(16,163,127,0.9); }
-}
-.auth{display:flex;gap:10px;}
-.btn{
-  padding:8px 16px;
-  border:none;
-  border-radius:999px;
-  cursor:pointer;
-  transition:.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position:relative;
-  overflow:hidden;
-}
-.btn::before{
-  content:"";
-  position:absolute;
-  top:0; left:-100%;
-  width:40%;
-  height:100%;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition:0.6s;
-}
-.btn:hover::before{ left:200%; }
-.btn:hover{transform:scale(1.08) translateY(-2px); box-shadow:0 0 25px rgba(16,163,127,0.5);}
-.login{background:#1a1a1a;color:white;}
-.signup{background:white;color:black;}
+.top{display:flex;justify-content:space-between;padding:20px;}
+.logo{color:#fff;font-size:24px;font-weight:bold;}
+.auth{display:flex;gap:10px}
+.btn{padding:8px 16px;border:none;border-radius:999px;cursor:pointer}
+.login{background:#1a1a1a;color:#fff}
+.signup{background:#fff;color:#000}
+
 /* HOME */
-.center{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:25px;
-  animation: fadeIn 1.5s ease forwards;
-}
-.title{
-  font-size:52px;
-  color:white;
-  font-weight:700;
-  animation: float 5s infinite ease-in-out, titleGlow 6s ease infinite alternate;
-  text-shadow: 0 0 40px rgba(16,163,127,0.7);
-}
-@keyframes titleGlow {
-  from { text-shadow: 0 0 20px rgba(16,163,127,0.5); }
-  to { text-shadow: 0 0 50px rgba(16,163,127,0.9); }
-}
-@keyframes float{
-  0%,100%{transform:translateY(0) rotate(-1deg);}
-  50%{transform:translateY(-15px) rotate(1deg);}
-}
-/* Input Box */
-.inputBox{
-  display:flex;
-  width:600px;
-  max-width:90%;
-  background:rgba(255,255,255,0.08);
-  border-radius:999px;
-  padding:12px;
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(16,163,127,0.2);
-  transition: all 0.4s ease;
-}
-.inputBox:hover{
-  border-color:rgba(16,163,127,0.5);
-  box-shadow:0 0 30px rgba(16,163,127,0.3);
-  transform:scale(1.02);
-}
-.inputBox input{
-  flex:1;
-  background:none;
-  border:none;
-  outline:none;
-  color:white;
-  font-size:17px;
-}
-/* Send Button Home */
-.send{
-  width:48px;
-  height:48px;
-  border-radius:50%;
-  background:#10a37f;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:white;
-  cursor:pointer;
-  transition:all 0.4s ease;
-  box-shadow:0 0 20px rgba(16,163,127,0.6);
-}
-.send:hover{
-  transform:scale(1.15) rotate(20deg);
-  box-shadow:0 0 35px rgba(16,163,127,0.9);
-}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:25px}
+.title{font-size:52px;color:#fff}
+
+/* INPUT HOME */
+.inputBox{display:flex;width:600px;max-width:90%;background:rgba(255,255,255,0.08);padding:12px;border-radius:999px}
+.inputBox input{flex:1;background:none;border:none;color:#fff;outline:none}
+.send{width:48px;height:48px;background:#10a37f;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}
+
 /* CHAT */
-.chat{
-  display:none;
-  flex:1;
-  flex-direction:column;
-}
-.messages{
-  flex:1;
-  padding:20px;
-  overflow:auto;
-  display:flex;
-  flex-direction:column;
-  gap:15px;
-}
-.msg{
-  max-width:65%;
-  padding:14px 18px;
-  border-radius:16px;
-  animation: messagePop 0.4s ease forwards;
-  box-shadow:0 4px 15px rgba(0,0,0,0.3);
-}
-@keyframes messagePop {
-  from { opacity:0; transform:scale(0.8) translateY(20px); }
-  to { opacity:1; transform:scale(1) translateY(0); }
-}
-.user{align-self:flex-end;background:white;color:black;}
-.ai{align-self:flex-start;background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(16,163,127,0.3);}
-/* Thinking */
-.thinking{display:flex;gap:8px; padding:10px 0;}
-.dot{
-  width:7px;height:7px;background:#10a37f;border-radius:50%;
-  animation: blink 1.2s infinite;
-}
-.dot:nth-child(2){animation-delay:0.2s;}
-.dot:nth-child(3){animation-delay:0.4s;}
-@keyframes blink{
-  0%,100%{transform:scale(0.6); opacity:0.4;}
-  50%{transform:scale(1.2); opacity:1;}
-}
-/* Bottom Input */
-.bottom{
-  display:flex;
-  gap:12px;
-  padding:15px;
-}
+.chat{display:none;flex:1;flex-direction:column}
+.messages{flex:1;padding:20px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+
+.msg{max-width:70%;padding:12px 16px;border-radius:14px;animation:pop .3s ease}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.user{align-self:flex-end;background:#fff;color:#000}
+.ai{align-self:flex-start;background:rgba(255,255,255,0.08);color:#fff}
+
+/* INPUT */
+.bottom{display:flex;gap:10px;padding:15px}
 .bottom textarea{
-  flex:1;
-  padding:14px;
-  border-radius:14px;
-  border:none;
-  background:rgba(255,255,255,0.08);
-  color:white;
-  resize:none;
-  font-size:16px;
-  transition:0.3s;
-  line-height:1.4;
+  flex:1;padding:12px;border-radius:12px;border:none;
+  background:rgba(255,255,255,0.08);color:#fff;resize:none;outline:none;
 }
-.bottom textarea:focus{
-  box-shadow:0 0 0 3px rgba(16,163,127,0.4);
-  background:rgba(255,255,255,0.12);
-}
-.sendBtn{
-  width:52px;
-  border:none;
-  border-radius:12px;
-  background:#10a37f;
-  color:white;
-  cursor:pointer;
-  transition:all 0.4s ease;
-  box-shadow:0 0 20px rgba(16,163,127,0.6);
-}
-.sendBtn:hover{
-  transform:scale(1.12) rotate(15deg);
-  box-shadow:0 0 40px rgba(16,163,127,0.9);
-}
-/* Fade In */
-@keyframes fadeInDown {
-  from { opacity:0; transform:translateY(-30px); }
-  to { opacity:1; transform:translateY(0); }
-}
-@keyframes fadeIn {
-  from { opacity:0; }
-  to { opacity:1; }
-}
+.sendBtn{width:52px;background:#10a37f;border:none;border-radius:12px;color:#fff}
+
+/* thinking */
+.thinking{display:flex;gap:6px}
+.dot{width:6px;height:6px;background:#10a37f;border-radius:50%;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
 </style>
 </head>
+
 <body>
+
 <canvas id="particles"></canvas>
+
 <div class="top">
   <div class="logo">ILYASS AI</div>
   <div class="auth">
@@ -243,192 +73,181 @@ body::after{
     <button class="btn signup" onclick="openLogin()">Sign up</button>
   </div>
 </div>
+
 <div id="home" class="center">
   <div class="title">Ask Anything</div>
   <div class="inputBox">
-    <input id="homeInput" onkeydown="if(event.key==='Enter') startChat()" placeholder="Type your question...">
+    <input id="homeInput" placeholder="Type..." onkeydown="if(event.key==='Enter')startChat()">
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
+
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
+
   <div class="bottom">
-    <textarea id="chatInput" rows="1" onkeydown="handleKey(event)" placeholder="Send a message..."></textarea>
+    <textarea id="chatInput" onkeydown="handleKey(event)" placeholder="Send message..."></textarea>
     <button class="sendBtn" onclick="send()">➤</button>
   </div>
 </div>
 
 <script>
-const messages = document.getElementById("messages");
+
+/* FIX REFERENCES */
+const home = document.getElementById("home");
+const chat = document.getElementById("chat");
+const homeInput = document.getElementById("homeInput");
 const chatInput = document.getElementById("chatInput");
+const messages = document.getElementById("messages");
 
 /* LOGIN */
 function openLogin(){
-  alert("Login system already UI only (Supabase not connected)");
+  alert("UI only");
 }
 
-/* CHAT START */
+/* START CHAT */
 function startChat(){
   const text = homeInput.value.trim();
   if(!text) return;
+
   home.style.display="none";
   chat.style.display="flex";
+
   addMessage(text,"user");
+  homeInput.value="";
   askAI(text);
+
+  chatInput.focus();
 }
 
-/* IMPROVED TYPING EFFECT */
-function typeText(el, text) {
-  el.textContent = "";
+/* AUTO SCROLL */
+function autoScroll(){
+  messages.scrollTo({top:messages.scrollHeight,behavior:"smooth"});
+}
 
-  const emojis = ["🔥","💡","😎","🚀","👍"];
-  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+/* TYPE EFFECT */
+function typeText(el,text){
+  el.textContent="";
+  const emoji=["🔥","💡","😎","🚀","👍"][Math.floor(Math.random()*5)];
 
-  const match = text.match(/```([\s\S]*?)```/);
-  let before = text;
-  let code = null;
+  let i=0;
+  const msg=(text+" "+emoji);
 
-  if (match) {
-    before = text.split("```")[0];
-    code = match[1];
+  function type(){
+    if(i<msg.length){
+      el.textContent+=msg[i++];
+      autoScroll();
+      setTimeout(type,10);
+    }else autoScroll();
   }
-
-  const formatted = (before + " " + emoji);
-  let i = 0;
-
-  function type() {
-    if (i < formatted.length) {
-      el.textContent += formatted[i];
-      i++;
-
-      const messages = document.getElementById("messages");
-      if (messages) {
-        messages.scrollTop = messages.scrollHeight;
-      }
-
-      setTimeout(type, 10);
-    } else {
-      if (code) {
-        const pre = document.createElement("pre");
-        const codeEl = document.createElement("code");
-        codeEl.textContent = code;
-
-        pre.appendChild(codeEl);
-        el.appendChild(pre);
-      }
-    }
-  }
-
   type();
 }
+
 /* ADD MESSAGE */
-function addMessage(text, type) {
-  const div = document.createElement("div");
-  div.className = `msg ${type}`;
-  
-  const content = document.createElement("div");
+function addMessage(text,type){
+  const div=document.createElement("div");
+  div.className="msg "+type;
+
+  const content=document.createElement("div");
   div.appendChild(content);
   messages.appendChild(div);
 
-  if (type === "ai") {
-    typeText(content, text);
-  } else {
-    content.innerText = text;
-  }
+  if(type==="ai") typeText(content,text);
+  else content.innerText=text;
 
-  messages.scrollTop = messages.scrollHeight;
+  autoScroll();
 }
 
 /* THINKING */
-function showThinking() {
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  div.innerHTML = `<div class="thinking">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>`;
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`
+    <div class="thinking">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>`;
   messages.appendChild(div);
-  messages.scrollTop = messages.scrollHeight;
+  autoScroll();
   return div;
 }
 
-/* 🔥 REAL API */
-async function askAI(text) {
-  const t = showThinking();
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text })
+/* AI */
+async function askAI(text){
+  const t=showThinking();
+
+  try{
+    const res=await fetch("/api/chat",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text})
     });
-    const data = await res.json();
+
+    const data=await res.json();
     t.remove();
-    addMessage(data.reply || "No response", "ai");
-  } catch (err) {
+    addMessage(data.reply||"no response","ai");
+  }catch(e){
     t.remove();
-    addMessage("Server not connected ❌", "ai");
+    addMessage("server error","ai");
   }
 }
 
-/* SEND - IMPROVED KEY HANDLING */
-function handleKey(e) {
-  if (e.key === "Enter") {
-    if (e.shiftKey) {
-      // Shift + Enter = new line (multiline)
-      return; // نترك الـ textarea تتصرف طبيعي
-    } else {
-      // Enter فقط = send message
-      e.preventDefault();
-      send();
-    }
-  }
-}
+/* SEND */
+function send(){
+  const text=chatInput.value.trim();
+  if(!text) return;
 
-function send() {
-  const text = chatInput.value.trim();
-  if (!text) return;
+  addMessage(text,"user");
+  chatInput.value="";
+  chatInput.style.height="auto";
 
-  addMessage(text, "user");
-  chatInput.value = "";
   askAI(text);
+  chatInput.focus();
+}
+
+/* KEY HANDLER */
+function handleKey(e){
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
 }
 
 /* PARTICLES */
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-let dots = [];
-for (let i = 0; i < 50; i++) {
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let dots=[];
+for(let i=0;i<50;i++){
   dots.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - 0.5) * 0.8,
-    vy: (Math.random() - 0.5) * 0.8
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5)*0.8,
+    vy:(Math.random()-0.5)*0.8
   });
 }
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  dots.forEach(d => {
-    d.x += d.vx;
-    d.y += d.vy;
-    if (d.x < 0 || d.x > canvas.width) d.vx *= -1;
-    if (d.y < 0 || d.y > canvas.height) d.vy *= -1;
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  dots.forEach(d=>{
+    d.x+=d.vx;
+    d.y+=d.vy;
+
+    if(d.x<0||d.x>canvas.width)d.vx*=-1;
+    if(d.y<0||d.y>canvas.height)d.vy*=-1;
+
     ctx.beginPath();
-    ctx.arc(d.x, d.y, 2.2, 0, Math.PI * 2);
-    ctx.fillStyle = "#10a37f";
+    ctx.arc(d.x,d.y,2,0,Math.PI*2);
+    ctx.fillStyle="#10a37f";
     ctx.fill();
   });
   requestAnimationFrame(draw);
 }
 draw();
 
-/* Auto resize textarea */
-chatInput.addEventListener('input', function () {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
 </script>
 </body>
 </html>
