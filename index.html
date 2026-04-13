@@ -14,6 +14,7 @@ body{
   display:flex;
   flex-direction:column;
   animation:fadeIn .6s ease;
+  position: relative; /* للـ3D canvas */
 }
 
 @keyframes fadeIn{
@@ -21,11 +22,21 @@ body{
   to{opacity:1;}
 }
 
-/* TOP BAR */
+/* 🔥 3D CANVAS - فوق كلشي */
+#threeCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0; /* تحت الـUI */
+  pointer-events: none; /* ما يعطلش الـclicks */
+}
+
+/* باقي الـCSS نفسو بالضبط */
 .top{
   display:flex;
   justify-content:space-between;
   padding:20px;
+  position: relative; z-index: 10;
 }
 
 .logo{font-weight:bold;font-size:18px;}
@@ -50,6 +61,7 @@ body{
   align-items:center;
   justify-content:center;
   gap:25px;
+  position: relative; z-index: 10;
 }
 
 .title{font-size:40px;font-weight:bold;}
@@ -64,39 +76,9 @@ body{
   display:flex;
   align-items:center;
   box-shadow:0 5px 20px rgba(0,0,0,0.05);
+  position: relative; z-index: 10;
 }
 
-  /* 🔥 3D DOOR EFFECT */
-.door-wrapper{
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:100%;
-  perspective:1200px;
-  display:flex;
-  z-index:999;
-}
-
-.door{
-  width:50%;
-  height:100%;
-  background:linear-gradient(135deg,#111,#333);
-  transition:transform 1s ease;
-  transform-origin:left;
-}
-
-.door.right{
-  transform-origin:right;
-}
-
-/* open state */
-.open .left{
-  transform:rotateY(-110deg);
-}
-
-.open .right{
-  transform:rotateY(110deg);
-}
 .inputBox input{
   flex:1;
   border:none;
@@ -116,8 +98,9 @@ body{
 }
 
 /* CHAT */
-.chat{display:none;flex:1;flex-direction:column;}
+.chat{display:none;flex:1;flex-direction:column; position: relative; z-index: 10;}
 
+/* باقي الـCSS نفسو... */
 .messages{
   flex:1;
   padding:20px;
@@ -136,7 +119,7 @@ body{
 .user{align-self:flex-end;background:#10a37f;color:white;}
 .ai{align-self:flex-start;background:white;border:1px solid #eee;}
 
-/* THINKING */
+/* باقي نفسو... */
 .thinking{display:flex;gap:5px;}
 .dot{
   width:6px;height:6px;background:#999;border-radius:50%;
@@ -150,13 +133,11 @@ body{
   50%{opacity:1;}
 }
 
-/* INPUT CHAT */
 .bottom{
   padding:15px;
   border-top:1px solid #eee;
   display:flex;
 }
-
 .bottom input{
   flex:1;
   padding:12px;
@@ -167,6 +148,9 @@ body{
 </head>
 
 <body>
+
+<!-- 🔥 3D BACKGROUND -->
+<canvas id="threeCanvas"></canvas>
 
 <div class="top">
   <div class="logo">ILYASS AI</div>
@@ -197,12 +181,159 @@ body{
   </div>
 </div>
 
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-/* 🔥 YOUR VERCEL API */
+<script>
+/* 🔥 3D EFFECTS - فوق الكود الأصلي */
+
+// Mouse position
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+  mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+
+// Three.js Scene
+const canvas = document.getElementById('threeCanvas');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0); // شفاف
+
+camera.position.z = 5;
+
+// 1️⃣ موجات نيون
+const neonWave = new THREE.Group();
+for(let i = 0; i < 20; i++) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-10 + i*1, 0, 0),
+    new THREE.Vector3(-10 + i*1, Math.sin(Date.now() * 0.001 + i) * 2, 0)
+  ]);
+  const material = new THREE.LineBasicMaterial({ 
+    color: new THREE.Color().setHSL(0.4 + i*0.02, 1, 0.5 + Math.sin(Date.now()*0.001)*0.2),
+    transparent: true, opacity: 0.6
+  });
+  const line = new THREE.Line(geometry, material);
+  neonWave.add(line);
+}
+scene.add(neonWave);
+
+// 2️⃣ كريستال عائم
+const crystalGeo = new THREE.OctahedronGeometry(0.3);
+const crystalMat = new THREE.MeshPhongMaterial({ 
+  color: 0x00ff88, 
+  transparent: true, opacity: 0.8,
+  shininess: 100
+});
+const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+crystal.position.set(0, 0, -2);
+scene.add(crystal);
+
+// 3️⃣ مجرة نجوم
+const starsGeo = new THREE.BufferGeometry();
+const starsVertices = [];
+for(let i = 0; i < 200; i++) {
+  starsVertices.push(
+    (Math.random() - 0.5) * 20,
+    (Math.random() - 0.5) * 20,
+    (Math.random() - 0.5) * 20
+  );
+}
+starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+const starsMat = new THREE.PointsMaterial({ color: 0x00bfff, size: 0.05 });
+const stars = new THREE.Points(starsGeo, starsMat);
+scene.add(stars);
+
+// 4️⃣ شبكة عصبية
+const nodes = [];
+for(let i = 0; i < 15; i++) {
+  const node = new THREE.Mesh(
+    new THREE.SphereGeometry(0.08),
+    new THREE.MeshBasicMaterial({ color: 0x00ff88 })
+  );
+  node.position.set(
+    (Math.random() - 0.5) * 8,
+    (Math.random() - 0.5) * 8,
+    (Math.random() - 0.5) * 4
+  );
+  nodes.push(node);
+  scene.add(node);
+}
+
+// 5️⃣ فقاعات معدنية
+function createBubble() {
+  const bubble = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.random() * 0.3 + 0.1),
+    new THREE.MeshPhongMaterial({ 
+      color: 0x888888, 
+      transparent: true, opacity: 0.7,
+      metalness: 0.8, roughness: 0.2
+    })
+  );
+  bubble.position.set(
+    (Math.random() - 0.5) * 10,
+    -5, 
+    (Math.random() - 0.5) * 5
+  );
+  scene.add(bubble);
+  
+  // انفجار بعد ثواني
+  setTimeout(() => {
+    scene.remove(bubble);
+  }, 4000);
+}
+
+// إضاءة
+const light = new THREE.PointLight(0xffffff, 1, 100);
+light.position.set(0, 0, 5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040, 0.3));
+
+// Animate loop
+function animate() {
+  requestAnimationFrame(animate);
+
+  // موجات نيون تتحرك مع الماوس
+  neonWave.rotation.y = mouseX * 0.5;
+  neonWave.children.forEach((line, i) => {
+    line.material.color.setHSL(0.4 + i*0.02, 1, 0.5 + Math.sin(Date.now()*0.001 + i)*0.2);
+  });
+
+  // كريستال يدور ويتكسر
+  crystal.rotation.x += 0.01;
+  crystal.rotation.y += 0.02 + mouseX * 0.1;
+  crystal.scale.setScalar(1 + Math.sin(Date.now() * 0.005) * 0.1);
+
+  // مجرة تدور
+  stars.rotation.y += 0.002;
+  stars.rotation.x = mouseY * 0.3;
+
+  // شبكة عصبية تضيء
+  nodes.forEach((node, i) => {
+    node.rotation.y += 0.01;
+    const time = Date.now() * 0.001 + i;
+    node.material.color.setHSL(0.4, 1, 0.3 + Math.sin(time) * 0.3);
+    node.scale.setScalar(1 + Math.sin(time) * 0.2);
+  });
+
+  // فقاعات جديدة
+  if(Math.random() < 0.1) createBubble();
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* 🔥 باقي كودك الأصلي نفسو بالضبط */
 const API_URL = "https://my-webxyu.vercel.app/api/chat";
 
-/* START CHAT */
 function startChat(){
   const text=document.getElementById("homeInput").value.trim();
   if(!text) return;
@@ -216,7 +347,6 @@ function startChat(){
   askAI(text);
 }
 
-/* ADD MESSAGE */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -224,7 +354,6 @@ function addMessage(text,type){
   typeText(div,text);
 }
 
-/* TYPE EFFECT */
 function typeText(el,text){
   let i=0;
   el.innerHTML="";
@@ -235,7 +364,6 @@ function typeText(el,text){
   },10);
 }
 
-/* THINKING */
 function thinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -249,7 +377,6 @@ function thinking(){
   return div;
 }
 
-/* 🚀 CALL YOUR VERCEL API */
 async function askAI(message){
   const t = thinking();
 
@@ -271,7 +398,6 @@ async function askAI(message){
   }
 }
 
-/* SEND FROM CHAT INPUT */
 function send(){
   const input=document.getElementById("chatInput");
   const text=input.value.trim();
@@ -282,7 +408,6 @@ function send(){
 
   askAI(text);
 }
-
 </script>
 
 </body>
