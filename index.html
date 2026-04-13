@@ -9,229 +9,134 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
 body{
-  background:linear-gradient(135deg,#0a0a23,#1a1a3a);
+  background:linear-gradient(135deg,#ffffff,#f3f4f6);
   height:100vh;
   display:flex;
   flex-direction:column;
-  animation:fadeIn .8s ease;
-  overflow:hidden;
+  animation:fadeIn .6s ease;
 }
 
 @keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px);}
+  from{opacity:0;transform:translateY(15px);}
   to{opacity:1;}
 }
 
-/* 🔥 3D CANVAS - محسن */
-#threeCanvas {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* TOP BAR - محسن */
+/* TOP BAR */
 .top{
   display:flex;
   justify-content:space-between;
-  padding:25px 30px;
-  position: relative; z-index: 20;
-  backdrop-filter: blur(20px);
-  background: rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(0,255,136,0.2);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  padding:20px;
 }
 
-.logo{
-  font-weight:900;
-  font-size:22px;
-  background: linear-gradient(45deg, #00ff88, #00bfff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 20px rgba(0,255,136,0.5);
-}
+.logo{font-weight:bold;font-size:18px;}
 
-.auth{display:flex;gap:12px;}
+.auth{display:flex;gap:10px;}
 
 .btn{
-  padding:12px 24px;
-  border-radius:25px;
-  border:1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.1);
-  color:white;
+  padding:8px 16px;
+  border-radius:999px;
+  border:none;
   cursor:pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  font-weight: 500;
 }
 
-.btn:hover{
-  background: rgba(0,255,136,0.2);
-  box-shadow: 0 5px 20px rgba(0,255,136,0.3);
-  transform: translateY(-2px);
-}
+.login{background:#eee;}
+.signup{background:#111;color:white;}
 
-/* CENTER - محسن */
+/* CENTER */
 .center{
   flex:1;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:35px;
-  position: relative; z-index: 20;
-  padding: 20px;
+  gap:25px;
 }
 
-.title{
-  font-size:48px;
-  font-weight:900;
-  background: linear-gradient(45deg, #ffffff, #00ff88);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-align: center;
-  text-shadow: 0 0 30px rgba(255,255,255,0.5);
-}
+.title{font-size:40px;font-weight:bold;}
 
-/* INPUT - محسن */
+/* INPUT */
 .inputBox{
-  width:650px;
-  max-width:95%;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(25px);
-  border-radius:50px;
-  padding:18px 25px;
+  width:600px;
+  max-width:90%;
+  background:white;
+  border-radius:999px;
+  padding:12px 15px;
   display:flex;
   align-items:center;
-  border: 2px solid rgba(0,255,136,0.3);
-  box-shadow: 
-    0 20px 40px rgba(0,0,0,0.3),
-    0 0 0 1px rgba(0,255,136,0.2);
-  transition: all 0.3s ease;
-}
-
-.inputBox:hover{
-  border-color: rgba(0,255,136,0.6);
-  box-shadow: 
-    0 25px 50px rgba(0,0,0,0.4),
-    0 0 30px rgba(0,255,136,0.4);
-  transform: translateY(-3px);
+  box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
 .inputBox input{
   flex:1;
   border:none;
   outline:none;
-  font-size:16px;
-  color: white;
-  background: transparent;
-  padding: 5px 0;
-}
-
-.inputBox input::placeholder { 
-  color: rgba(255,255,255,0.6); 
+  font-size:15px;
 }
 
 .send{
-  width:50px;height:50px;
+  width:40px;height:40px;
   border-radius:50%;
-  background: linear-gradient(45deg, #00ff88, #00bfff);
+  background:#10a37f;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:#111;
+  color:white;
   cursor:pointer;
-  font-weight: bold;
-  font-size: 18px;
-  box-shadow: 0 10px 25px rgba(0,255,136,0.4);
-  transition: all 0.3s ease;
 }
 
-.send:hover{
-  transform: scale(1.1) rotate(180deg);
-  box-shadow: 0 15px 35px rgba(0,255,136,0.6);
-}
-
-/* CHAT - محسن */
-.chat{
-  display:none;
-  flex:1;
-  flex-direction:column;
-  position: relative; z-index: 20;
-}
+/* CHAT */
+.chat{display:none;flex:1;flex-direction:column;}
 
 .messages{
   flex:1;
-  padding:30px;
+  padding:20px;
   overflow:auto;
   display:flex;
   flex-direction:column;
-  gap:15px;
+  gap:10px;
 }
 
 .msg{
-  max-width:70%;
-  padding:18px 25px;
-  border-radius:20px;
-  backdrop-filter: blur(15px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  max-width:65%;
+  padding:12px;
+  border-radius:12px;
 }
 
-.user{
-  align-self:flex-end;
-  background: linear-gradient(45deg, #10a37f, #00ff88);
-  color:white;
-}
+.user{align-self:flex-end;background:#10a37f;color:white;}
+.ai{align-self:flex-start;background:white;border:1px solid #eee;}
 
-.ai{
-  align-self:flex-start;
-  background: rgba(255,255,255,0.15);
-  border:1px solid rgba(255,255,255,0.2);
-  color: white;
-}
-
-.thinking{display:flex;gap:8px;}
+/* THINKING */
+.thinking{display:flex;gap:5px;}
 .dot{
-  width:8px;height:8px;
-  background: rgba(255,255,255,0.5);
-  border-radius:50%;
-  animation:blink 1.2s infinite;
+  width:6px;height:6px;background:#999;border-radius:50%;
+  animation:blink 1s infinite;
 }
-.dot:nth-child(2){animation-delay:.3s;}
-.dot:nth-child(3){animation-delay:.6s;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
 
 @keyframes blink{
-  0%,100%{opacity:.3; transform: scale(0.8);}
-  50%{opacity:1; transform: scale(1.2);}
+  0%,100%{opacity:.2;}
+  50%{opacity:1;}
 }
 
+/* INPUT CHAT */
 .bottom{
-  padding:25px 30px;
-  border-top:1px solid rgba(255,255,255,0.1);
+  padding:15px;
+  border-top:1px solid #eee;
   display:flex;
-  gap:15px;
-  backdrop-filter: blur(20px);
 }
+
 .bottom input{
   flex:1;
-  padding:18px 25px;
-  border-radius:25px;
-  border:1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.1);
-  color: white;
-  font-size: 16px;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
 }
-.bottom input::placeholder { color: rgba(255,255,255,0.6); }
 </style>
 </head>
 
 <body>
 
-<!-- 🔥 3D BACKGROUND - محسن وخفيف -->
-<canvas id="threeCanvas"></canvas>
-
-<!-- باقي HTML نفسو -->
 <div class="top">
   <div class="logo">ILYASS AI</div>
   <div class="auth">
@@ -240,8 +145,10 @@ body{
   </div>
 </div>
 
+<!-- HOME -->
 <div id="home" class="center">
   <div class="title">Ask anything</div>
+
   <div class="inputBox">
     <input id="homeInput" placeholder="What do you want to know?"
       onkeydown="if(event.key==='Enter') startChat()">
@@ -249,99 +156,36 @@ body{
   </div>
 </div>
 
+<!-- CHAT -->
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
+
   <div class="bottom">
     <input id="chatInput" placeholder="Send a message..."
       onkeydown="if(event.key==='Enter') send()">
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* 🔥 3D خفيف ومحسن */
-let mouseX = 0, mouseY = 0;
-document.addEventListener('mousemove', (e) => {
-  mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-  mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-});
 
-const canvas = document.getElementById('threeCanvas');
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x000000, 0);
-
-camera.position.z = 4;
-
-// Particles خفيفة
-const particlesGeo = new THREE.BufferGeometry();
-const particlesCount = 150;
-const posArray = new Float32Array(particlesCount * 3);
-for(let i = 0; i < particlesCount * 3; i++) {
-  posArray[i] = (Math.random() - 0.5) * 15;
-}
-particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-const particlesMat = new THREE.PointsMaterial({
-  size: 0.008,
-  color: 0x00ff88,
-  transparent: true,
-  opacity: 0.6
-});
-const particlesMesh = new THREE.Points(particlesGeo, particlesMat);
-scene.add(particlesMesh);
-
-// Lines نيون
-const lineMaterial = new THREE.LineBasicMaterial({ 
-  color: 0x00bfff, 
-  transparent: true, 
-  opacity: 0.4 
-});
-for(let i = 0; i < 5; i++) {
-  const points = [];
-  for(let j = 0; j < 50; j++) {
-    points.push(new THREE.Vector3(
-      Math.sin(j * 0.3 + i) * 3 + mouseX * 2,
-      Math.cos(j * 0.3 + i) * 3 + mouseY * 2,
-      j * -0.1
-    ));
-  }
-  const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-  const line = new THREE.Line(lineGeo, lineMaterial);
-  scene.add(line);
-}
-
-// Animate خفيف
-function animate() {
-  requestAnimationFrame(animate);
-  
-  particlesMesh.rotation.y += 0.001;
-  particlesMesh.rotation.x = mouseY * 0.2;
-  
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-/* 🔥 كودك الأصلي 100% نفسو */
+/* 🔥 YOUR VERCEL API */
 const API_URL = "https://my-webxyu.vercel.app/api/chat";
 
+/* START CHAT */
 function startChat(){
   const text=document.getElementById("homeInput").value.trim();
   if(!text) return;
+
   document.getElementById("home").style.display="none";
   document.getElementById("chat").style.display="flex";
+
   addMessage(text,"user");
   document.getElementById("homeInput").value="";
+
   askAI(text);
 }
 
+/* ADD MESSAGE */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -349,6 +193,7 @@ function addMessage(text,type){
   typeText(div,text);
 }
 
+/* TYPE EFFECT */
 function typeText(el,text){
   let i=0;
   el.innerHTML="";
@@ -356,44 +201,57 @@ function typeText(el,text){
     el.innerHTML+=text[i];
     i++;
     if(i>=text.length) clearInterval(int);
-  },15);
+  },10);
 }
 
+/* THINKING */
 function thinking(){
   const div=document.createElement("div");
   div.className="msg ai";
-  div.innerHTML=`<div class="thinking">
-    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-  </div>`;
+  div.innerHTML=`
+    <div class="thinking">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>`;
   document.getElementById("messages").appendChild(div);
   return div;
 }
 
+/* 🚀 CALL YOUR VERCEL API */
 async function askAI(message){
   const t = thinking();
+
   try{
     const res = await fetch(API_URL,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ message })
     });
+
     const data = await res.json();
+
     t.remove();
     addMessage(data.reply || "No response","ai");
+
   }catch(err){
     t.remove();
     addMessage("Error connecting to API ❌","ai");
   }
 }
 
+/* SEND FROM CHAT INPUT */
 function send(){
   const input=document.getElementById("chatInput");
   const text=input.value.trim();
   if(!text) return;
+
   addMessage(text,"user");
   input.value="";
+
   askAI(text);
 }
+
 </script>
 
 </body>
