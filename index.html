@@ -10,7 +10,7 @@
 
 <body>
 
-<!-- TOP BAR -->
+<!-- TOP -->
 <div class="top">
   <div class="logo">ILYASS AI</div>
 
@@ -20,16 +20,15 @@
   </div>
 </div>
 
-<!-- NAVIGATION -->
+<!-- NAV -->
 <div class="nav">
   <button onclick="go('home')" class="active">Home</button>
   <button onclick="go('earn')">Earn Money</button>
   <button onclick="go('settings')">Settings</button>
 </div>
 
-<!-- HOME (CHAT) -->
+<!-- HOME -->
 <div id="home" class="center section" style="display:flex;">
-
   <div class="title">Ask anything</div>
 
   <div class="inputBox">
@@ -38,40 +37,35 @@
 
     <div class="send" onclick="startChat()">➤</div>
   </div>
-
 </div>
 
-<!-- CHAT AREA -->
+<!-- CHAT -->
 <div id="chat" class="chat">
-
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
     <input id="chatInput" placeholder="Send a message..."
       onkeydown="if(event.key==='Enter') send()">
   </div>
-
 </div>
 
-<!-- EARN MONEY -->
+<!-- OTHER SECTIONS -->
 <div id="earn" class="section" style="display:none; padding:20px; color:white;">
   <h1>💰 Earn Money</h1>
-  <p>Coming soon...</p>
 </div>
 
-<!-- SETTINGS -->
 <div id="settings" class="section" style="display:none; padding:20px; color:white;">
   <h1>⚙️ Settings</h1>
-  <p>Customize your experience</p>
 </div>
 
 <!-- SCRIPTS -->
 <script src="navigation.js"></script>
+<script src="ControleAi.js"></script>
 
 <script>
 
-/* 🔥 YOUR VERCEL API */
-const API_URL = "https://my-webxyu.vercel.app/api/chat";
+/* 🔥 INIT AI CONTROLLER */
+AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
 /* START CHAT */
 function startChat(){
@@ -81,65 +75,10 @@ function startChat(){
   document.getElementById("home").style.display="none";
   document.getElementById("chat").style.display="flex";
 
-  addMessage(text,"user");
+  AI.user(text);
   document.getElementById("homeInput").value="";
 
-  askAI(text);
-}
-
-/* ADD MESSAGE */
-function addMessage(text,type){
-  const div=document.createElement("div");
-  div.className="msg "+type;
-  document.getElementById("messages").appendChild(div);
-  typeText(div,text);
-}
-
-/* TYPE EFFECT */
-function typeText(el,text){
-  let i=0;
-  el.innerHTML="";
-  const int=setInterval(()=>{
-    el.innerHTML+=text[i];
-    i++;
-    if(i>=text.length) clearInterval(int);
-  },10);
-}
-
-/* THINKING */
-function thinking(){
-  const div=document.createElement("div");
-  div.className="msg ai";
-  div.innerHTML=`
-    <div class="thinking">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>`;
-  document.getElementById("messages").appendChild(div);
-  return div;
-}
-
-/* CALL API */
-async function askAI(message){
-  const t = thinking();
-
-  try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    const data = await res.json();
-
-    t.remove();
-    addMessage(data.reply || "No response","ai");
-
-  }catch(err){
-    t.remove();
-    addMessage("Error connecting to API ❌","ai");
-  }
+  AI.ask(text);
 }
 
 /* SEND */
@@ -148,10 +87,10 @@ function send(){
   const text=input.value.trim();
   if(!text) return;
 
-  addMessage(text,"user");
+  AI.user(text);
   input.value="";
 
-  askAI(text);
+  AI.ask(text);
 }
 
 </script>
