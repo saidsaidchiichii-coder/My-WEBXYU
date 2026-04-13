@@ -70,16 +70,7 @@ const AI = {
       // 💻 CODE BLOCK
       if(i % 2 === 1){
 
-        let code = part.trim();
-        let langName = "Code";
-
-        // 🧠 detect language (cpp, js...)
-        const firstLine = code.split("\n")[0];
-
-        if(firstLine.length < 15 && !firstLine.includes(" ")){
-          langName = firstLine.toUpperCase();
-          code = code.substring(firstLine.length).trim();
-        }
+        const code = part.trim();
 
         const wrapper = document.createElement("div");
         wrapper.className = "code-box";
@@ -90,19 +81,15 @@ const AI = {
 
         const lang = document.createElement("div");
         lang.className = "code-lang";
-        lang.textContent = langName;
+        lang.textContent = "C++";
 
         const copyBtn = document.createElement("button");
         copyBtn.className = "copy-btn";
         copyBtn.textContent = "📋";
 
-        copyBtn.onclick = async () => {
-          try{
-            await navigator.clipboard.writeText(code);
-            copyBtn.textContent = "✔";
-          }catch{
-            copyBtn.textContent = "❌";
-          }
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(code);
+          copyBtn.textContent = "✔";
           setTimeout(()=>copyBtn.textContent="📋",1000);
         };
 
@@ -117,17 +104,10 @@ const AI = {
 
         pre.appendChild(codeEl);
 
-        /* ARROW (only if long) */
+        /* ARROW */
         const arrow = document.createElement("div");
         arrow.className = "code-arrow";
         arrow.textContent = "⬇";
-
-        // show arrow only if overflow
-        setTimeout(()=>{
-          if(pre.scrollHeight <= pre.clientHeight){
-            arrow.style.display = "none";
-          }
-        },50);
 
         wrapper.appendChild(header);
         wrapper.appendChild(pre);
@@ -138,15 +118,9 @@ const AI = {
 
       // 🧠 TEXT
       else{
-        const clean = part.trim();
-        if(!clean) return;
-
         const p = document.createElement("div");
         p.className = "ai-text";
-
-        // preserve line breaks
-        p.innerHTML = clean.replace(/\n/g,"<br>");
-
+        p.textContent = part.trim();
         container.appendChild(p);
       }
 
