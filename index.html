@@ -280,16 +280,33 @@ function startChat(){
 /* IMPROVED TYPING EFFECT */
 function typeText(el, text) {
   let i = 0;
+
+  function format(t) {
+    const emojis = ["🔥","💡","😎","🚀","👍"];
+    let e = emojis[Math.floor(Math.random() * emojis.length)];
+
+    return t
+      .replace(/\n/g, "<br>")
+      .replace(/\. /g, ".<br><br>")
+      + " " + e;
+  }
+
+  let formatted = format(text);
   el.innerHTML = "";
-  const typingSpeed = 20; // سرعة الكتابة (يمكن تغييرها)
 
   function type() {
-    if (i < text.length) {
-      el.innerHTML += text.charAt(i);
+    if (i < formatted.length) {
+      el.innerHTML += formatted.charAt(i);
+
+      let speed = 8;
+      if (formatted[i] === ".") speed = 120;
+      if (formatted[i] === "\n") speed = 50;
+
       i++;
-      setTimeout(type, typingSpeed);
+      setTimeout(type, speed);
     }
   }
+
   type();
 }
 
