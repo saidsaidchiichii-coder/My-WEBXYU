@@ -1,14 +1,12 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
-  lastPrompt: "",
 
   init(boxId, api){
     this.messagesBox = document.getElementById(boxId);
     this.API_URL = api;
   },
 
-  /* 👤 USER MESSAGE */
   user(text){
     const div = document.createElement("div");
     div.className = "msg user";
@@ -18,7 +16,6 @@ const AI = {
     this.scroll();
   },
 
-  /* 🤖 THINKING */
   thinking(){
     const div = document.createElement("div");
     div.className = "msg ai";
@@ -37,10 +34,7 @@ const AI = {
     return div;
   },
 
-  /* 🚀 ASK AI */
   async ask(message){
-
-    this.lastPrompt = message; // 🔥 important for refresh
 
     const load = this.thinking();
 
@@ -54,8 +48,7 @@ const AI = {
       const data = await res.json();
 
       load.remove();
-
-      this.render(data.reply || "No response", message);
+      this.render(data.reply || "No response");
 
     }catch(e){
       load.remove();
@@ -63,89 +56,94 @@ const AI = {
     }
   },
 
-  /* 🎯 MAIN RENDER (CHATGPT STYLE SPLIT) */
-  render(text, prompt){
+  /* =========================
+     MAIN RENDER ENGINE FIX
+  ========================= */
+  render(text){
 
-    const div = document.createElement("div");
-    div.className = "msg ai";
+    const container = document.createElement("div");
+    container.className = "msg ai";
 
     const parts = text.split("```");
 
-    let html = "";
+    parts.forEach((part, i) => {
 
-    parts.forEach((part, i)=>{
-
-      /* 💻 CODE BLOCK */
+      // 💻 CODE BLOCK
       if(i % 2 === 1){
 
-        const cleanCode = this.cleanCode(part);
+        const code = part.trim();
 
-        html += `
-          <div class="code-box">
-            <div class="code-label">💻 Code / Prompt</div>
-            <pre><code>${cleanCode}</code></pre>
-          </div>
-        `;
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-box";
+
+        const pre = document.createElement("pre");
+        const codeEl = document.createElement("code");
+
+        codeEl.textContent = code;
+
+        pre.appendChild(codeEl);
+
+        // buttons
+        const actions = document.createElement("div");
+        actions.className = "code-actions";
+
+        // COPY BUTTON
+        const copyBtn = document.createElement("button");
+        copyBtn.textContent = "📋 Copy";
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(code);
+        };
+
+        // DOWNLOAD BUTTON
+        const downloadBtn = document.createElement("button");
+        downloadBtn.textContent = "⬇ Download";
+        downloadBtn.onclick = () => {
+          const blob = new Blob([code], {type:"text/plain"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "code.txt";
+          a.click();
+        };
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(downloadBtn);
+
+        wrapper.appendChild(actions);
+        wrapper.appendChild(pre);
+
+        container.appendChild(wrapper);
       }
 
-      /* 🧾 TEXT / RESPONSE */
+      // 🧠 TEXT BLOCK
       else{
+        const textLines = part.trim().split("\n");
 
-        const clean = this.cleanText(part);
-
-        const lines = clean.split("\n");
-
-        lines.forEach(line=>{
-          const t = line.trim();
-          if(!t) return;
-
-          html += `<div class="text-box">🤖 ${t}</div>`;
+        textLines.forEach(line => {
+          if(line.trim()){
+            const p = document.createElement("p");
+            p.className = "ai-text";
+            p.textContent = line;
+            container.appendChild(p);
+          }
         });
-
       }
-
     });
 
-    /* 💣 BUTTON SYSTEM ATTACH */
-    div.innerHTML = html;
-
-    this.messagesBox.appendChild(div);
+    this.messagesBox.appendChild(container);
     this.scroll();
-
-    // 🔥 attach buttons (copy / like / refresh / download)
-    if(window.ButtonProgram){
-      ButtonProgram.attach(div, text, prompt);
-    }
   },
 
-  /* 🧹 CLEAN TEXT (ALLOW EMOJIS) */
-  cleanText(t){
-    return t
-      .replace(/\*\*/g,"")
-      .replace(/```/g,"")
-      .trim();
-  },
-
-  /* 💻 CLEAN CODE (NO EMOJIS) */
-  cleanCode(t){
-    return t
-      .replace(/🤖|💻|👤|✔|❌|💰|🔎|📌|🔥/g,"")
-      .trim();
-  },
-
-  /* 📍 SCROLL */
   scroll(){
     setTimeout(()=>{
       this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
     },20);
   },
 
-  /* ❌ ERROR */
   error(){
     const div = document.createElement("div");
     div.className = "msg ai";
     div.textContent = "❌ AI error";
-
     this.messagesBox.appendChild(div);
   }
 };
