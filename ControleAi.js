@@ -1,77 +1,87 @@
-/* 🤖 AI ENGINE (Typing + Thinking + Animations) */
+/* 🤖 CONTROLE AI SYSTEM (PRO VERSION) */
 
-let messagesBox;
-let API_URL;
+const AI = {
+  messagesBox: null,
+  API_URL: null,
+  typingSpeed: 12,
 
-/* INIT */
-function initAI(boxId, api){
-  messagesBox = document.getElementById(boxId);
-  API_URL = api;
-}
+  init(boxId, apiUrl){
+    this.messagesBox = document.getElementById(boxId);
+    this.API_URL = apiUrl;
+  },
 
-/* ADD MESSAGE */
-function addMessage(text, type){
-  const div = document.createElement("div");
-  div.className = "msg " + type;
-  messagesBox.appendChild(div);
+  /* USER MESSAGE */
+  user(text){
+    this.add(text, "user");
+  },
 
-  if(type === "ai"){
-    typeText(div, text);
-  }else{
+  /* AI MESSAGE (typed) */
+  ai(text){
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    this.messagesBox.appendChild(div);
+    this.type(div, text);
+  },
+
+  /* ADD SIMPLE MESSAGE */
+  add(text, type){
+    const div = document.createElement("div");
+    div.className = "msg " + type;
     div.innerHTML = text;
-  }
-}
+    this.messagesBox.appendChild(div);
+  },
 
-/* TYPE EFFECT */
-function typeText(el, text){
-  let i = 0;
-  el.innerHTML = "";
+  /* TYPE EFFECT */
+  type(el, text){
+    let i = 0;
+    el.innerHTML = "";
 
-  const interval = setInterval(() => {
-    el.innerHTML += text[i];
-    i++;
+    const interval = setInterval(() => {
+      el.innerHTML += text[i];
+      i++;
 
-    if(i >= text.length){
-      clearInterval(interval);
+      if(i >= text.length){
+        clearInterval(interval);
+      }
+    }, this.typingSpeed);
+  },
+
+  /* THINKING ANIMATION */
+  thinking(){
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.innerHTML = `
+      <div class="thinking">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    `;
+
+    this.messagesBox.appendChild(div);
+    return div;
+  },
+
+  /* ASK AI */
+  async ask(message){
+
+    const loading = this.thinking();
+
+    try{
+      const res = await fetch(this.API_URL,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+
+      loading.remove();
+      this.ai(data.reply || "No response");
+
+    }catch(err){
+      loading.remove();
+      this.add("AI error ❌", "ai");
     }
-  }, 15);
-}
-
-/* THINKING ANIMATION */
-function showThinking(){
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  div.innerHTML = `
-    <div class="thinking">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
-  `;
-
-  messagesBox.appendChild(div);
-  return div;
-}
-
-/* ASK AI */
-async function askAI(message){
-
-  const thinkingBox = showThinking();
-
-  try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message })
-    });
-
-    const data = await res.json();
-
-    thinkingBox.remove();
-    addMessage(data.reply || "No response", "ai");
-
-  }catch(err){
-    thinkingBox.remove();
-    addMessage("AI connection error ❌", "ai");
   }
-}
+};
