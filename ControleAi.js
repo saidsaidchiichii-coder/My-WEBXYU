@@ -35,7 +35,6 @@ const AI = {
   },
 
   async ask(message){
-
     const load = this.thinking();
 
     try{
@@ -56,9 +55,6 @@ const AI = {
     }
   },
 
-  /* =========================
-     MAIN RENDER ENGINE FIX
-  ========================= */
   render(text){
 
     const container = document.createElement("div");
@@ -66,68 +62,60 @@ const AI = {
 
     const parts = text.split("```");
 
-    parts.forEach((part, i) => {
+    parts.forEach((part, i)=>{
 
-      // 💻 CODE BLOCK
+      // CODE BLOCK
       if(i % 2 === 1){
 
         const code = part.trim();
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "code-box";
+        const box = document.createElement("div");
+        box.className = "code-container";
+
+        const header = document.createElement("div");
+        header.className = "code-header";
+
+        const lang = document.createElement("div");
+        lang.textContent = "CODE";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "copy-btn";
+        copyBtn.textContent = "📋";
+
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(code);
+          copyBtn.textContent = "✔";
+          setTimeout(()=>copyBtn.textContent="📋",1000);
+        };
+
+        header.appendChild(lang);
+        header.appendChild(copyBtn);
 
         const pre = document.createElement("pre");
         const codeEl = document.createElement("code");
-
         codeEl.textContent = code;
 
         pre.appendChild(codeEl);
 
-        // buttons
-        const actions = document.createElement("div");
-        actions.className = "code-actions";
+        const arrow = document.createElement("div");
+        arrow.className = "scroll-arrow";
+        arrow.textContent = "⬇";
 
-        // COPY BUTTON
-        const copyBtn = document.createElement("button");
-        copyBtn.textContent = "📋 Copy";
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(code);
-        };
+        box.appendChild(header);
+        box.appendChild(pre);
+        box.appendChild(arrow);
 
-        // DOWNLOAD BUTTON
-        const downloadBtn = document.createElement("button");
-        downloadBtn.textContent = "⬇ Download";
-        downloadBtn.onclick = () => {
-          const blob = new Blob([code], {type:"text/plain"});
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "code.txt";
-          a.click();
-        };
-
-        actions.appendChild(copyBtn);
-        actions.appendChild(downloadBtn);
-
-        wrapper.appendChild(actions);
-        wrapper.appendChild(pre);
-
-        container.appendChild(wrapper);
+        container.appendChild(box);
       }
 
-      // 🧠 TEXT BLOCK
+      // TEXT
       else{
-        const textLines = part.trim().split("\n");
-
-        textLines.forEach(line => {
-          if(line.trim()){
-            const p = document.createElement("p");
-            p.className = "ai-text";
-            p.textContent = line;
-            container.appendChild(p);
-          }
-        });
+        const p = document.createElement("div");
+        p.className = "ai-text";
+        p.textContent = part.trim();
+        container.appendChild(p);
       }
+
     });
 
     this.messagesBox.appendChild(container);
