@@ -480,9 +480,8 @@ async function askAI(text){
   }
 }
 
-function send(){
-  if(!loggedIn){openLogin();return;}
-
+function send(){ 
+  
   const text=chatInput.value.trim();
   if(!text)return;
 
