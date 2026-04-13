@@ -13,47 +13,35 @@
   box-sizing:border-box;
   font-family:Inter;
 }
-html, body{
-  height:100%;
-  overflow-x:hidden;
-}
-
-/* 3D Parallax Container */
 body{
-  perspective: 1200px;           /* أهم شيء للتأثير الـ 3D */
-  perspective-origin: 50% 30%;
   background:
     radial-gradient(circle at 85% 50%, rgba(255,255,255,0.15), transparent 40%),
     linear-gradient(135deg, #000000 0%, #05070a 40%, #0b0f14 100%);
-  transform-style: preserve-3d;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
 }
-
 canvas{
   position:fixed;
   inset:0;
-  z-index:-2;
-  transform: translateZ(-300px) scale(1.4);   /* يخلي الـ particles أبعد = يتحرك ببطء */
+  z-index:-1;
 }
-
 body::after{
   content:"";
   position:fixed;
   inset:0;
-  z-index:-1;
-  background:radial-gradient(circle, rgba(16,163,127,0.18), transparent 75%);
-  animation:glow 10s ease infinite alternate;
+  background:radial-gradient(circle, rgba(16,163,127,0.15), transparent 70%);
+  animation:glow 8s ease infinite alternate;
   pointer-events:none;
-  transform: translateZ(-150px);   /* طبقة متوسطة */
 }
 @keyframes glow{ 
-  from{opacity:0.5; transform:translateZ(-150px) scale(0.95);} 
-  to{opacity:1; transform:translateZ(-150px) scale(1.08);} 
+  from{opacity:0.6; transform:scale(0.95);} 
+  to{opacity:1; transform:scale(1.05);} 
 }
 
 /* TOP */
 .top{
-  position:relative;
-  z-index:10;
   display:flex;
   justify-content:space-between;
   padding:20px;
@@ -79,7 +67,6 @@ body::after{
   transition:.4s cubic-bezier(0.4, 0, 0.2, 1);
   position:relative;
   overflow:hidden;
-  z-index:10;
 }
 .btn::before{
   content:"";
@@ -97,16 +84,13 @@ body::after{
 
 /* HOME */
 .center{
-  position:relative;
-  z-index:5;
   flex:1;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
   gap:25px;
-  min-height:100vh;
-  transform: translateZ(50px);   /* أقرب = يتحرك أسرع */
+  animation: fadeIn 1.5s ease forwards;
 }
 .title{
   font-size:52px;
@@ -135,12 +119,11 @@ body::after{
   backdrop-filter:blur(12px);
   border:1px solid rgba(16,163,127,0.2);
   transition: all 0.4s ease;
-  transform: translateZ(80px);
 }
 .inputBox:hover{
   border-color:rgba(16,163,127,0.5);
   box-shadow:0 0 30px rgba(16,163,127,0.3);
-  transform:scale(1.02) translateZ(90px);
+  transform:scale(1.02);
 }
 .inputBox input{
   flex:1;
@@ -164,10 +147,9 @@ body::after{
   cursor:pointer;
   transition:all 0.4s ease;
   box-shadow:0 0 20px rgba(16,163,127,0.6);
-  transform: translateZ(100px);
 }
 .send:hover{
-  transform:scale(1.15) rotate(20deg) translateZ(110px);
+  transform:scale(1.15) rotate(20deg);
   box-shadow:0 0 35px rgba(16,163,127,0.9);
 }
 
@@ -176,9 +158,6 @@ body::after{
   display:none;
   flex:1;
   flex-direction:column;
-  position:relative;
-  z-index:5;
-  transform: translateZ(30px);
 }
 .messages{
   flex:1;
@@ -196,8 +175,8 @@ body::after{
   box-shadow:0 4px 15px rgba(0,0,0,0.3);
 }
 @keyframes messagePop {
-  from { opacity:0; transform:scale(0.8) translateY(20px) translateZ(50px); }
-  to { opacity:1; transform:scale(1) translateY(0) translateZ(0); }
+  from { opacity:0; transform:scale(0.8) translateY(20px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
 }
 .user{align-self:flex-end;background:white;color:black;}
 .ai{align-self:flex-start;background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(16,163,127,0.3);}
@@ -220,8 +199,6 @@ body::after{
   display:flex;
   gap:12px;
   padding:15px;
-  position:relative;
-  z-index:10;
 }
 .bottom textarea{
   flex:1;
@@ -253,15 +230,18 @@ body::after{
   box-shadow:0 0 40px rgba(16,163,127,0.9);
 }
 
-/* Animations */
+/* Fade In */
 @keyframes fadeInDown {
-  from { opacity:0; transform:translateY(-30px) translateZ(50px); }
-  to { opacity:1; transform:translateY(0) translateZ(0); }
+  from { opacity:0; transform:translateY(-30px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to { opacity:1; }
 }
 </style>
 </head>
 <body>
-
 <canvas id="particles"></canvas>
 
 <div class="top">
@@ -343,7 +323,7 @@ function showThinking(){
   return div;
 }
 
-/* API */
+/* 🔥 REAL API */
 async function askAI(text){
   const t = showThinking();
   try{
@@ -376,7 +356,7 @@ function send(){
   askAI(text);
 }
 
-/* PARTICLES */
+/* PARTICLES (unchanged) */
 const canvas=document.getElementById("particles");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
@@ -405,12 +385,6 @@ function draw(){
   requestAnimationFrame(draw);
 }
 draw();
-
-/* Resize handler */
-window.addEventListener('resize', () => {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-});
 </script>
 </body>
 </html>
