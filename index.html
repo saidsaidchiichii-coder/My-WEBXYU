@@ -18,16 +18,18 @@ body{
   overflow:hidden;
 }
 
-/* GLOBAL 3D */
-.glass{
-  backdrop-filter:blur(10px);
-  background:rgba(255,255,255,0.7);
+/* GLOBAL HOVER 3D */
+button, .send, .inputBox{
+  transition:.25s;
+}
+button:hover, .send:hover{
+  transform:scale(1.08);
 }
 
-/* 3D ANIMATIONS */
+/* 3D ANIM */
 .fadeOut{animation:zoomOut .6s forwards;}
 .fadeIn{animation:zoomIn .6s forwards;}
-.slideUp{animation:slideUp .5s ease;}
+.slideUp{animation:slideUp .4s ease;}
 
 @keyframes zoomOut{
   from{opacity:1;transform:scale(1) rotateX(0deg);}
@@ -65,9 +67,7 @@ canvas{
   border-radius:999px;
   border:none;
   cursor:pointer;
-  transition:.2s;
 }
-.btn:hover{transform:scale(1.05);}
 
 .login{background:#eee;}
 .signup{background:#111;color:white;}
@@ -80,7 +80,6 @@ canvas{
   align-items:center;
   justify-content:center;
   gap:25px;
-  transition:.5s;
 }
 
 .title{
@@ -96,7 +95,6 @@ canvas{
   padding:12px 15px;
   display:flex;
   box-shadow:0 5px 20px rgba(0,0,0,0.05);
-  transition:.3s;
 }
 .inputBox:hover{
   transform:scale(1.02);
@@ -193,7 +191,6 @@ canvas{
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:999;
 }
 
 .loginBox{
@@ -338,19 +335,42 @@ function startChat(){
     addMessage(text,"user");
     askAI(text);
 
-  },500);
+  },600);
+}
+
+/* TYPE EFFECT */
+function typeText(el,text){
+  let i=0;
+  el.innerHTML="";
+  const speed=15;
+
+  const int=setInterval(()=>{
+    el.innerHTML+=text[i];
+    i++;
+    if(i>=text.length) clearInterval(int);
+  },speed);
 }
 
 /* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
-  div.innerText=text;
+
+  const content=document.createElement("div");
+  div.appendChild(content);
+
   messages.appendChild(div);
+
+  if(type==="ai"){
+    typeText(content,text);
+  }else{
+    content.innerText=text;
+  }
+
   scrollBottom();
 }
 
-/* THINKING */
+/* THINKING LONGER */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -381,8 +401,10 @@ async function askAI(text){
 
     const data=await res.json();
 
-    t.remove();
-    addMessage(data.reply || "No response","ai");
+    setTimeout(()=>{   // ⬅️ thinking longer
+      t.remove();
+      addMessage(data.reply || "No response","ai");
+    },1200);
 
   }catch{
     t.remove();
@@ -409,7 +431,7 @@ canvas.width=innerWidth;
 canvas.height=innerHeight;
 
 let dots=[];
-for(let i=0;i<40;i++){
+for(let i=0;i<50;i++){
   dots.push({
     x:Math.random()*canvas.width,
     y:Math.random()*canvas.height,
