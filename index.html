@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en"> 
 <head>
@@ -18,7 +19,17 @@ body{
   height:100vh;
   display:flex;
   flex-direction:column;
-  overflow:hidden;
+  overflow:auto;
+  transition:1s;
+}
+
+/* 🎬 CINEMATIC INTRO */
+body.loaded{
+  animation:introFade 2s ease forwards;
+}
+@keyframes introFade{
+  from{opacity:0;filter:blur(20px);transform:scale(1.05);}
+  to{opacity:1;filter:blur(0);transform:scale(1);}
 }
 
 /* GLOBAL HOVER 3D */
@@ -63,6 +74,16 @@ canvas{
 
 .logo{font-weight:bold;color:white;}
 
+/* 🧊 3D LOGO */
+.logo{
+  transform-style:preserve-3d;
+  animation:logoSpin 6s linear infinite;
+}
+@keyframes logoSpin{
+  0%{transform:rotateY(0deg);}
+  100%{transform:rotateY(360deg);}
+}
+
 .auth{display:flex;gap:10px;}
 
 .btn{
@@ -89,6 +110,7 @@ canvas{
   font-size:40px;
   font-weight:bold;
   color:white;
+  transition:.3s;
 }
 
 .inputBox{
@@ -146,6 +168,7 @@ canvas{
   padding:12px;
   border-radius:12px;
   animation:slideUp .3s ease;
+  transition:.5s;
 }
 
 .user{
@@ -352,6 +375,7 @@ function typeText(el,text){
   },15);
 }
 
+/* 🧊 3D MESSAGE REVEAL */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -359,7 +383,15 @@ function addMessage(text,type){
   const content=document.createElement("div");
   div.appendChild(content);
 
+  div.style.opacity="0";
+  div.style.transform="translateY(40px) scale(0.9) rotateX(20deg)";
+
   messages.appendChild(div);
+
+  setTimeout(()=>{
+    div.style.opacity="1";
+    div.style.transform="translateY(0) scale(1) rotateX(0deg)";
+  },50);
 
   if(type==="ai"){
     typeText(content,text);
@@ -421,7 +453,32 @@ function send(){
   askAI(text);
 }
 
-/* PARTICLES */
+/* 🌌 PARALLAX MOUSE */
+document.addEventListener("mousemove",(e)=>{
+  const x=(e.clientX/window.innerWidth-0.5);
+  const y=(e.clientY/window.innerHeight-0.5);
+
+  document.querySelectorAll(".msg, .inputBox, .title").forEach(el=>{
+    el.style.transform=`
+      translate(${x*10}px, ${y*10}px)
+      rotateY(${x*10}deg)
+      rotateX(${-y*10}deg)
+    `;
+  });
+});
+
+/* 🌀 SCROLL CAMERA */
+window.addEventListener("scroll",()=>{
+  const scroll=window.scrollY;
+  document.body.style.transform=`perspective(1200px) translateZ(${scroll*-0.5}px)`;
+});
+
+/* 🎬 INTRO LOAD */
+window.addEventListener("load",()=>{
+  document.body.classList.add("loaded");
+});
+
+/* 🌠 PARTICLES PARALLAX */
 const canvas=document.getElementById("particles");
 const ctx=canvas.getContext("2d");
 canvas.width=innerWidth;
@@ -440,16 +497,16 @@ for(let i=0;i<50;i++){
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  dots.forEach(d=>{
-    d.x+=d.vx;
-    d.y+=d.vy;
+  dots.forEach((d,i)=>{
+    d.x+=d.vx*(i%3+1);
+    d.y+=d.vy*(i%3+1);
 
     if(d.x<0||d.x>canvas.width)d.vx*=-1;
     if(d.y<0||d.y>canvas.height)d.vy*=-1;
 
     ctx.beginPath();
-    ctx.arc(d.x,d.y,2,0,Math.PI*2);
-    ctx.fillStyle="#10a37f";
+    ctx.arc(d.x,d.y,2+(i%3),0,Math.PI*2);
+    ctx.fillStyle="rgba(16,163,127,0.7)";
     ctx.fill();
   });
 
@@ -461,3 +518,4 @@ draw();
 
 </body>
 </html>
+```
