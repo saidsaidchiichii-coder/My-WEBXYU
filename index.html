@@ -66,6 +66,37 @@ body{
   box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
+  /* 🔥 3D DOOR EFFECT */
+.door-wrapper{
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  perspective:1200px;
+  display:flex;
+  z-index:999;
+}
+
+.door{
+  width:50%;
+  height:100%;
+  background:linear-gradient(135deg,#111,#333);
+  transition:transform 1s ease;
+  transform-origin:left;
+}
+
+.door.right{
+  transform-origin:right;
+}
+
+/* open state */
+.open .left{
+  transform:rotateY(-110deg);
+}
+
+.open .right{
+  transform:rotateY(110deg);
+}
 .inputBox input{
   flex:1;
   border:none;
