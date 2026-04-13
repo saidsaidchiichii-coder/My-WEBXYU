@@ -36,7 +36,7 @@ const AI = {
 
   async ask(message){
 
-    const load = this.thinking();
+    const loading = this.thinking();
 
     try{
       const res = await fetch(this.API_URL,{
@@ -47,16 +47,17 @@ const AI = {
 
       const data = await res.json();
 
-      load.remove();
+      loading.remove();
 
       this.render(data.reply || "No response");
 
     }catch(e){
-      load.remove();
+      loading.remove();
       this.error();
     }
   },
 
+  /* 🚀 CLEAN RENDER SYSTEM */
   render(text){
 
     const div = document.createElement("div");
@@ -66,28 +67,43 @@ const AI = {
 
     let html = "";
 
-    parts.forEach((p,i)=>{
+    parts.forEach((part, i)=>{
 
-      // 💻 CODE
+      // 💻 CODE BLOCK
       if(i % 2 === 1){
-        html += `<pre><code>${this.cleanCode(p)}</code></pre>`;
+        html += `
+          <pre><code>${this.cleanCode(part)}</code></pre>
+        `;
       }
 
-      // 🧠 TEXT
+      // 🧠 TEXT BLOCK
       else{
-        html += `<div>${this.cleanText(p)}</div>`;
+
+        const lines = part.split("\n");
+
+        lines.forEach(line=>{
+          const clean = line.trim();
+          if(!clean) return;
+
+          if(clean.includes(":")){
+            html += `<p>🔎 ${this.cleanText(clean)}</p>`;
+          }else{
+            html += `<p>${this.cleanText(clean)}</p>`;
+          }
+        });
+
       }
 
     });
 
     div.innerHTML = html;
-
     this.messagesBox.appendChild(div);
     this.scroll();
   },
 
   cleanText(t){
     return t
+      .replace(/```/g,"")
       .replace(/🤖|💻|👤|✔|❌/g,"")
       .replace(/\*\*/g,"")
       .trim();
@@ -95,6 +111,7 @@ const AI = {
 
   cleanCode(t){
     return t
+      .replace(/```/g,"")
       .replace(/🤖|💻|👤|✔|❌/g,"")
       .trim();
   },
@@ -102,13 +119,13 @@ const AI = {
   scroll(){
     setTimeout(()=>{
       this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
-    },30);
+    },20);
   },
 
   error(){
     const div = document.createElement("div");
     div.className = "msg ai";
-    div.textContent = "❌ error";
+    div.textContent = "❌ AI Error";
     this.messagesBox.appendChild(div);
   }
 };
