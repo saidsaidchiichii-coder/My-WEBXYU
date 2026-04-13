@@ -18,7 +18,7 @@ function go(page){
     active.style.display = "flex";
   }
 
-  // optional: active button highlight
+  // active button highlight
   const buttons = document.querySelectorAll(".nav button");
   buttons.forEach(btn => btn.classList.remove("active"));
 
