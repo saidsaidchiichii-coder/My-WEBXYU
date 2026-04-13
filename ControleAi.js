@@ -1,7 +1,7 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
-  speed: 4, // ⚡ VERY FAST typing
+  speed: 3, // ⚡ FAST typing
 
   /* INIT */
   init(boxId, api){
@@ -15,7 +15,6 @@ const AI = {
   user(text){
     const div = document.createElement("div");
     div.className = "msg user";
-
     div.innerHTML = "👤 " + this.escape(this.addEmojis(text));
 
     this.messagesBox.appendChild(div);
@@ -44,7 +43,7 @@ const AI = {
   /* 🧠 DETECT TYPE */
   detect(text){
     if(text.includes("```")) return "code";
-    if(/how|what|why|explain|\?/.test(text.toLowerCase())) return "request";
+    if(/\?|how|what|why|explain/i.test(text)) return "request";
     return "response";
   },
 
@@ -74,7 +73,7 @@ const AI = {
     }
   },
 
-  /* 🎨 MAIN RENDER ENGINE */
+  /* 🎨 MAIN RENDER */
   render(text, type){
 
     const div = document.createElement("div");
@@ -85,12 +84,12 @@ const AI = {
 
     parts.forEach((part, i) => {
 
-      // 💻 CODE BLOCK (NO EMOJIS)
+      // 💻 CODE BLOCK CLEAN
       if(i % 2 === 1){
-        html += `<pre><code>${this.escape(part)}</code></pre>`;
+        html += `<pre><code>${this.cleanCode(part)}</code></pre>`;
       }
 
-      // 📝 TEXT BLOCK (WITH EMOJIS)
+      // 📝 TEXT BLOCK
       else{
         let clean = this.addEmojis(part);
 
@@ -109,7 +108,7 @@ const AI = {
     this.scroll();
   },
 
-  /* ⚡ EMOJIS ONLY IN TEXT */
+  /* ⚡ EMOJIS ONLY TEXT */
   addEmojis(text){
     return text
       .replace(/hello/gi,"👋 hello")
@@ -119,7 +118,15 @@ const AI = {
       .replace(/python/gi,"🐍 python");
   },
 
-  /* ⚡ ESCAPE HTML (SAFE CODE) */
+  /* 💻 CLEAN CODE (NO EMOJIS EVER INSIDE CODE) */
+  cleanCode(text){
+    return text
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, "") // remove emojis
+      .replace(/🤖|💰|💻|🔎|👤/g, "")
+      .trim();
+  },
+
+  /* ⚡ ESCAPE HTML */
   escape(str){
     return str
       .replaceAll("&","&amp;")
@@ -143,7 +150,7 @@ const AI = {
     this.messagesBox.appendChild(div);
   },
 
-  /* ⌨ KEYBOARD SYSTEM (SHIFT + ENTER SUPPORT) */
+  /* ⌨ SHIFT + ENTER SUPPORT */
   enableKeyboard(){
 
     document.addEventListener("keydown",(e)=>{
@@ -151,20 +158,19 @@ const AI = {
       const chatInput = document.getElementById("chatInput");
       const homeInput = document.getElementById("homeInput");
 
+      // SHIFT + ENTER = NEW LINE
+      if(e.key === "Enter" && e.shiftKey){
+        return;
+      }
+
+      // ENTER = SEND
       if(e.key === "Enter"){
 
-        // SHIFT + ENTER = NEW LINE
-        if(e.shiftKey){
-          return;
-        }
-
-        // CHAT INPUT
         if(document.activeElement === chatInput){
           e.preventDefault();
           if(typeof send === "function") send();
         }
 
-        // HOME INPUT
         if(document.activeElement === homeInput){
           e.preventDefault();
           if(typeof startChat === "function") startChat();
