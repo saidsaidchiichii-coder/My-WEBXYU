@@ -1,7 +1,7 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
-  speed: 3, // ⚡ FAST typing
+  speed: 3,
 
   /* INIT */
   init(boxId, api){
@@ -11,11 +11,12 @@ const AI = {
     this.enableKeyboard();
   },
 
-  /* 👤 USER MESSAGE */
+  /* 👤 USER MESSAGE (NO EMOJIS INSIDE INPUT TEXT) */
   user(text){
     const div = document.createElement("div");
     div.className = "msg user";
-    div.innerHTML = "👤 " + this.escape(this.addEmojis(text));
+
+    div.innerHTML = "👤 " + this.escape(text);
 
     this.messagesBox.appendChild(div);
     this.scroll();
@@ -40,11 +41,36 @@ const AI = {
     return div;
   },
 
-  /* 🧠 DETECT TYPE */
+  /* 🧠 DETECT TYPE (IMPORTANT FIX) */
   detect(text){
+
+    const t = text.toLowerCase();
+
     if(text.includes("```")) return "code";
-    if(/\?|how|what|why|explain/i.test(text)) return "request";
-    return "response";
+    if(t.includes("@") && t.includes(".")) return "email";
+
+    if(
+      t.startsWith("write") ||
+      t.startsWith("make") ||
+      t.startsWith("create") ||
+      t.includes("code") ||
+      t.includes("program") ||
+      t.includes("python")
+    ){
+      return "code_request";
+    }
+
+    if(
+      t.includes("?") ||
+      t.startsWith("how") ||
+      t.startsWith("what") ||
+      t.startsWith("why") ||
+      t.includes("explain")
+    ){
+      return "request";
+    }
+
+    return "chat";
   },
 
   /* 🚀 ASK AI */
@@ -73,31 +99,43 @@ const AI = {
     }
   },
 
-  /* 🎨 MAIN RENDER */
+  /* 🎨 RENDER ENGINE (FULL FIX) */
   render(text, type){
 
     const div = document.createElement("div");
     div.className = "msg ai";
 
-    const parts = text.split("```");
+    let parts = text.split("```");
     let html = "";
 
     parts.forEach((part, i) => {
 
-      // 💻 CODE BLOCK CLEAN
+      // 💻 CODE BLOCK (NO EMOJIS EVER)
       if(i % 2 === 1){
         html += `<pre><code>${this.cleanCode(part)}</code></pre>`;
       }
 
-      // 📝 TEXT BLOCK
+      // 🧠 TEXT BLOCK
       else{
-        let clean = this.addEmojis(part);
+
+        let cleanText = this.cleanText(part);
 
         if(type === "request"){
-          html += `<p>🔎 ${clean}</p>`;
-        } else {
-          html += `<p>🤖 ${clean}</p>`;
+          html += `<p>🔎 ${cleanText}</p>`;
         }
+
+        else if(type === "code_request"){
+          html += `<p>💻 ${cleanText}</p>`;
+        }
+
+        else if(type === "email"){
+          html += `<p>📧 ${cleanText}</p>`;
+        }
+
+        else{
+          html += `<p>🤖 ${cleanText}</p>`;
+        }
+
       }
 
     });
@@ -108,25 +146,24 @@ const AI = {
     this.scroll();
   },
 
-  /* ⚡ EMOJIS ONLY TEXT */
-  addEmojis(text){
+  /* 🧹 CLEAN TEXT (ALLOW EMOJIS HERE ONLY) */
+  cleanText(text){
     return text
-      .replace(/hello/gi,"👋 hello")
-      .replace(/money/gi,"💰 money")
       .replace(/code/gi,"💻 code")
       .replace(/ai/gi,"🤖 AI")
-      .replace(/python/gi,"🐍 python");
+      .replace(/python/gi,"🐍 python")
+      .replace(/money/gi,"💰 money");
   },
 
-  /* 💻 CLEAN CODE (NO EMOJIS EVER INSIDE CODE) */
+  /* 💻 CLEAN CODE (NO EMOJIS EVER) */
   cleanCode(text){
     return text
-      .replace(/[\u{1F300}-\u{1FAFF}]/gu, "") // remove emojis
-      .replace(/🤖|💰|💻|🔎|👤/g, "")
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+      .replace(/🤖|💰|💻|🔎|👤|📧/g, "")
       .trim();
   },
 
-  /* ⚡ ESCAPE HTML */
+  /* ⚡ ESCAPE */
   escape(str){
     return str
       .replaceAll("&","&amp;")
@@ -138,7 +175,7 @@ const AI = {
   scroll(){
     setTimeout(()=>{
       this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
-    },50);
+    },30);
   },
 
   /* ❌ ERROR */
@@ -150,7 +187,7 @@ const AI = {
     this.messagesBox.appendChild(div);
   },
 
-  /* ⌨ SHIFT + ENTER SUPPORT */
+  /* ⌨ KEYBOARD FIX (SHIFT + ENTER CORRECT) */
   enableKeyboard(){
 
     document.addEventListener("keydown",(e)=>{
@@ -158,13 +195,13 @@ const AI = {
       const chatInput = document.getElementById("chatInput");
       const homeInput = document.getElementById("homeInput");
 
-      // SHIFT + ENTER = NEW LINE
+      // ✔ SHIFT + ENTER = NEW LINE (DO NOTHING)
       if(e.key === "Enter" && e.shiftKey){
         return;
       }
 
-      // ENTER = SEND
-      if(e.key === "Enter"){
+      // ❌ ENTER WITHOUT SHIFT = SEND ONLY
+      if(e.key === "Enter" && !e.shiftKey){
 
         if(document.activeElement === chatInput){
           e.preventDefault();
