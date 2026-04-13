@@ -5,18 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
 body{
-  background:linear-gradient(135deg,#ffffff,#f3f4f6);
+  background:
+    radial-gradient(circle at 85% 50%, rgba(255,255,255,0.15), transparent 40%),
+    linear-gradient(135deg, #000000 0%, #05070a 40%, #0b0f14 100%);
+  background-blend-mode: screen;
   height:100vh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
 }
 
-/* HOVER */
+/* GLOBAL HOVER 3D */
 button, .send, .inputBox{
   transition:.25s;
 }
@@ -52,11 +57,23 @@ canvas{
 /* TOP */
 .top{
   display:flex;
-  justify-content:center;
+  justify-content:space-between;
   padding:20px;
 }
 
-.logo{font-weight:bold;}
+.logo{font-weight:bold;color:white;}
+
+.auth{display:flex;gap:10px;}
+
+.btn{
+  padding:8px 16px;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+}
+
+.login{background:#1a1a1a;color:white;}
+.signup{background:white;color:black;}
 
 /* HOME */
 .center{
@@ -71,16 +88,18 @@ canvas{
 .title{
   font-size:40px;
   font-weight:bold;
+  color:white;
 }
 
 .inputBox{
   width:600px;
   max-width:90%;
-  background:white;
+  background:rgba(255,255,255,0.08);
   border-radius:999px;
   padding:12px 15px;
   display:flex;
-  box-shadow:0 5px 20px rgba(0,0,0,0.05);
+  box-shadow:0 5px 30px rgba(0,0,0,0.3);
+  backdrop-filter:blur(10px);
 }
 .inputBox:hover{
   transform:scale(1.02);
@@ -90,17 +109,19 @@ canvas{
   flex:1;
   border:none;
   outline:none;
+  background:transparent;
+  color:white;
 }
 
 .send{
   width:40px;
   height:40px;
   border-radius:50%;
-  background:#10a37f;
+  background:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:white;
+  color:black;
   cursor:pointer;
 }
 
@@ -129,20 +150,21 @@ canvas{
 
 .user{
   align-self:flex-end;
-  background:#10a37f;
-  color:white;
+  background:white;
+  color:black;
 }
 
 .ai{
   align-self:flex-start;
-  background:white;
-  border:1px solid #eee;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.1);
+  color:white;
 }
 
 /* THINKING */
 .thinking{display:flex;gap:5px;}
 .dot{
-  width:6px;height:6px;background:#999;border-radius:50%;
+  width:6px;height:6px;background:#aaa;border-radius:50%;
   animation:blink 1s infinite;
 }
 .dot:nth-child(2){animation-delay:.2s;}
@@ -156,7 +178,7 @@ canvas{
 /* INPUT */
 .bottom{
   padding:15px;
-  border-top:1px solid #eee;
+  border-top:1px solid rgba(255,255,255,0.1);
   display:flex;
 }
 
@@ -164,8 +186,50 @@ canvas{
   flex:1;
   padding:12px;
   border-radius:10px;
-  border:1px solid #ddd;
+  border:none;
+  background:rgba(255,255,255,0.08);
+  color:white;
   resize:none;
+}
+
+/* LOGIN MODAL */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(10px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+
+.loginBox{
+  background:#111;
+  padding:30px;
+  border-radius:20px;
+  width:300px;
+  text-align:center;
+  animation:zoomIn .4s ease;
+  color:white;
+}
+
+.loginBox input{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:10px;
+  border:none;
+  background:#1a1a1a;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  margin-top:8px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -174,11 +238,25 @@ canvas{
 
 <canvas id="particles"></canvas>
 
-<div class="top">
-  <div class="logo">ILYASS AI</div>
+<div class="overlay" id="loginOverlay">
+  <div class="loginBox">
+    <h2>Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign up</button>
+  </div>
 </div>
 
-<!-- HOME -->
+<div class="top">
+  <div class="logo">ILYASS AI</div>
+
+  <div class="auth">
+    <button class="btn login" onclick="openLogin()">Login</button>
+    <button class="btn signup" onclick="openLogin()">Sign up</button>
+  </div>
+</div>
+
 <div id="home" class="center">
   <div class="title">Ask Anything</div>
 
@@ -189,7 +267,6 @@ canvas{
   </div>
 </div>
 
-<!-- CHAT -->
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
 
@@ -201,7 +278,41 @@ canvas{
 
 <script>
 
-/* SHIFT ENTER */
+let loggedIn=false;
+
+function openLogin(){
+  loginOverlay.style.display="flex";
+}
+
+const { createClient } = supabase;
+const supabaseClient = createClient(
+  "https://idjgsgtupuymysptxrbl.supabase.co",
+  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
+);
+
+async function login(){
+  const {error}=await supabaseClient.auth.signInWithPassword({
+    email:email.value,
+    password:password.value
+  });
+
+  if(error){alert(error.message);return;}
+
+  loggedIn=true;
+  loginOverlay.style.display="none";
+}
+
+async function signup(){
+  const {error}=await supabaseClient.auth.signUp({
+    email:email.value,
+    password:password.value
+  });
+
+  if(error){alert(error.message);return;}
+
+  alert("Check email 📩");
+}
+
 function handleKey(e){
   if(e.key==="Enter" && !e.shiftKey){
     e.preventDefault();
@@ -209,10 +320,14 @@ function handleKey(e){
   }
 }
 
-/* START CHAT */
 function startChat(){
   const text=homeInput.value.trim();
   if(!text)return;
+
+  if(!loggedIn){
+    openLogin();
+    return;
+  }
 
   home.classList.add("fadeOut");
 
@@ -227,7 +342,6 @@ function startChat(){
   },600);
 }
 
-/* TYPE EFFECT */
 function typeText(el,text){
   let i=0;
   el.innerHTML="";
@@ -238,7 +352,6 @@ function typeText(el,text){
   },15);
 }
 
-/* ADD */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
@@ -257,7 +370,6 @@ function addMessage(text,type){
   scrollBottom();
 }
 
-/* THINKING */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -275,7 +387,6 @@ function scrollBottom(){
   messages.scrollTop=messages.scrollHeight;
 }
 
-/* AI */
 async function askAI(text){
   const t=showThinking();
 
@@ -299,8 +410,9 @@ async function askAI(text){
   }
 }
 
-/* SEND */
 function send(){
+  if(!loggedIn){openLogin();return;}
+
   const text=chatInput.value.trim();
   if(!text)return;
 
