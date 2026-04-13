@@ -10,7 +10,6 @@
 
 <body>
 
-<!-- TOP -->
 <div class="top">
   <div class="logo">ILYASS AI</div>
 
@@ -20,14 +19,12 @@
   </div>
 </div>
 
-<!-- NAV -->
 <div class="nav">
   <button onclick="go('home')" class="active">Home</button>
   <button onclick="go('earn')">Earn Money</button>
   <button onclick="go('settings')">Settings</button>
 </div>
 
-<!-- HOME -->
 <div id="home" class="center section" style="display:flex;">
   <div class="title">Ask anything</div>
 
@@ -39,7 +36,6 @@
   </div>
 </div>
 
-<!-- CHAT -->
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
 
@@ -49,7 +45,6 @@
   </div>
 </div>
 
-<!-- OTHER -->
 <div id="earn" class="section" style="display:none; padding:20px; color:white;">
   <h1>💰 Earn Money</h1>
 </div>
@@ -58,7 +53,6 @@
   <h1>⚙️ Settings</h1>
 </div>
 
-<!-- SCRIPTS -->
 <script src="navigation.js"></script>
 <script src="ControleAi.js"></script>
 
@@ -66,7 +60,6 @@
 
 AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-/* START CHAT */
 function startChat(){
   const text = document.getElementById("homeInput").value.trim();
   if(!text) return;
@@ -80,7 +73,6 @@ function startChat(){
   AI.ask(text);
 }
 
-/* SEND */
 function send(){
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
@@ -92,15 +84,9 @@ function send(){
   AI.ask(text);
 }
 
-/* KEYBOARD FIX */
 function handleKey(e){
+  if(e.key === "Enter" && e.shiftKey) return;
 
-  // SHIFT + ENTER = new line
-  if(e.key === "Enter" && e.shiftKey){
-    return;
-  }
-
-  // ENTER = send
   if(e.key === "Enter" && !e.shiftKey){
     e.preventDefault();
     send();
