@@ -35,11 +35,10 @@ body::after{
   animation:glow 8s ease infinite alternate;
   pointer-events:none;
 }
-@keyframes glow{ 
-  from{opacity:0.6; transform:scale(0.95);} 
-  to{opacity:1; transform:scale(1.05);} 
+@keyframes glow{
+  from{opacity:0.6; transform:scale(0.95);}
+  to{opacity:1; transform:scale(1.05);}
 }
-
 /* TOP */
 .top{
   display:flex;
@@ -81,7 +80,6 @@ body::after{
 .btn:hover{transform:scale(1.08) translateY(-2px); box-shadow:0 0 25px rgba(16,163,127,0.5);}
 .login{background:#1a1a1a;color:white;}
 .signup{background:white;color:black;}
-
 /* HOME */
 .center{
   flex:1;
@@ -107,7 +105,6 @@ body::after{
   0%,100%{transform:translateY(0) rotate(-1deg);}
   50%{transform:translateY(-15px) rotate(1deg);}
 }
-
 /* Input Box */
 .inputBox{
   display:flex;
@@ -133,7 +130,6 @@ body::after{
   color:white;
   font-size:17px;
 }
-
 /* Send Button Home */
 .send{
   width:48px;
@@ -152,7 +148,6 @@ body::after{
   transform:scale(1.15) rotate(20deg);
   box-shadow:0 0 35px rgba(16,163,127,0.9);
 }
-
 /* CHAT */
 .chat{
   display:none;
@@ -180,7 +175,6 @@ body::after{
 }
 .user{align-self:flex-end;background:white;color:black;}
 .ai{align-self:flex-start;background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(16,163,127,0.3);}
-
 /* Thinking */
 .thinking{display:flex;gap:8px; padding:10px 0;}
 .dot{
@@ -193,7 +187,6 @@ body::after{
   0%,100%{transform:scale(0.6); opacity:0.4;}
   50%{transform:scale(1.2); opacity:1;}
 }
-
 /* Bottom Input */
 .bottom{
   display:flex;
@@ -210,6 +203,7 @@ body::after{
   resize:none;
   font-size:16px;
   transition:0.3s;
+  line-height:1.4;
 }
 .bottom textarea:focus{
   box-shadow:0 0 0 3px rgba(16,163,127,0.4);
@@ -229,7 +223,6 @@ body::after{
   transform:scale(1.12) rotate(15deg);
   box-shadow:0 0 40px rgba(16,163,127,0.9);
 }
-
 /* Fade In */
 @keyframes fadeInDown {
   from { opacity:0; transform:translateY(-30px); }
@@ -243,7 +236,6 @@ body::after{
 </head>
 <body>
 <canvas id="particles"></canvas>
-
 <div class="top">
   <div class="logo">ILYASS AI</div>
   <div class="auth">
@@ -251,7 +243,6 @@ body::after{
     <button class="btn signup" onclick="openLogin()">Sign up</button>
   </div>
 </div>
-
 <div id="home" class="center">
   <div class="title">Ask Anything</div>
   <div class="inputBox">
@@ -259,7 +250,6 @@ body::after{
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
-
 <div id="chat" class="chat">
   <div id="messages" class="messages"></div>
   <div class="bottom">
@@ -270,6 +260,7 @@ body::after{
 
 <script>
 const messages = document.getElementById("messages");
+const chatInput = document.getElementById("chatInput");
 
 /* LOGIN */
 function openLogin(){
@@ -286,105 +277,130 @@ function startChat(){
   askAI(text);
 }
 
-/* TYPE EFFECT */
-function typeText(el,text){
-  let i=0;
-  el.innerHTML="";
-  const int=setInterval(()=>{
-    el.innerHTML+=text[i];
-    i++;
-    if(i>=text.length) clearInterval(int);
-  },15);
+/* IMPROVED TYPING EFFECT */
+function typeText(el, text) {
+  let i = 0;
+  el.innerHTML = "";
+  const typingSpeed = 20; // سرعة الكتابة (يمكن تغييرها)
+
+  function type() {
+    if (i < text.length) {
+      el.innerHTML += text.charAt(i);
+      i++;
+      setTimeout(type, typingSpeed);
+    }
+  }
+  type();
 }
 
 /* ADD MESSAGE */
-function addMessage(text,type){
-  const div=document.createElement("div");
-  div.className=`msg ${type}`;
-  const content=document.createElement("div");
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = `msg ${type}`;
+  
+  const content = document.createElement("div");
   div.appendChild(content);
   messages.appendChild(div);
-  if(type==="ai") typeText(content,text);
-  else content.innerText=text;
-  messages.scrollTop=messages.scrollHeight;
+
+  if (type === "ai") {
+    typeText(content, text);
+  } else {
+    content.innerText = text;
+  }
+
+  messages.scrollTop = messages.scrollHeight;
 }
 
 /* THINKING */
-function showThinking(){
-  const div=document.createElement("div");
-  div.className="msg ai";
-  div.innerHTML=`<div class="thinking">
+function showThinking() {
+  const div = document.createElement("div");
+  div.className = "msg ai";
+  div.innerHTML = `<div class="thinking">
     <div class="dot"></div>
     <div class="dot"></div>
     <div class="dot"></div>
   </div>`;
   messages.appendChild(div);
-  messages.scrollTop=messages.scrollHeight;
+  messages.scrollTop = messages.scrollHeight;
   return div;
 }
 
 /* 🔥 REAL API */
-async function askAI(text){
+async function askAI(text) {
   const t = showThinking();
-  try{
-    const res = await fetch("/api/chat",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text })
     });
     const data = await res.json();
     t.remove();
     addMessage(data.reply || "No response", "ai");
-  }catch(err){
+  } catch (err) {
     t.remove();
     addMessage("Server not connected ❌", "ai");
   }
 }
 
-/* SEND */
-function handleKey(e){
-  if(e.key==="Enter" && !e.shiftKey){
-    e.preventDefault();
-    send();
+/* SEND - IMPROVED KEY HANDLING */
+function handleKey(e) {
+  if (e.key === "Enter") {
+    if (e.shiftKey) {
+      // Shift + Enter = new line (multiline)
+      return; // نترك الـ textarea تتصرف طبيعي
+    } else {
+      // Enter فقط = send message
+      e.preventDefault();
+      send();
+    }
   }
 }
-function send(){
+
+function send() {
   const text = chatInput.value.trim();
-  if(!text) return;
-  addMessage(text,"user");
-  chatInput.value="";
+  if (!text) return;
+
+  addMessage(text, "user");
+  chatInput.value = "";
   askAI(text);
 }
 
-/* PARTICLES (unchanged) */
-const canvas=document.getElementById("particles");
-const ctx=canvas.getContext("2d");
-canvas.width=innerWidth;
-canvas.height=innerHeight;
-let dots=[];
-for(let i=0;i<50;i++){
+/* PARTICLES */
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+let dots = [];
+for (let i = 0; i < 50; i++) {
   dots.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    vx:(Math.random()-0.5)*0.8,
-    vy:(Math.random()-0.5)*0.8
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: (Math.random() - 0.5) * 0.8
   });
 }
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  dots.forEach(d=>{
-    d.x+=d.vx;
-    d.y+=d.vy;
-    if(d.x<0||d.x>canvas.width)d.vx*=-1;
-    if(d.y<0||d.y>canvas.height)d.vy*=-1;
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  dots.forEach(d => {
+    d.x += d.vx;
+    d.y += d.vy;
+    if (d.x < 0 || d.x > canvas.width) d.vx *= -1;
+    if (d.y < 0 || d.y > canvas.height) d.vy *= -1;
     ctx.beginPath();
-    ctx.arc(d.x,d.y,2.2,0,Math.PI*2);
-    ctx.fillStyle="#10a37f";
+    ctx.arc(d.x, d.y, 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = "#10a37f";
     ctx.fill();
   });
   requestAnimationFrame(draw);
 }
 draw();
+
+/* Auto resize textarea */
+chatInput.addEventListener('input', function () {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
 </script>
 </body>
 </html>
