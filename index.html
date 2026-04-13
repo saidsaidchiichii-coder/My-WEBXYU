@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
 
@@ -18,7 +16,7 @@ body{
   overflow:hidden;
 }
 
-/* GLOBAL HOVER 3D */
+/* HOVER */
 button, .send, .inputBox{
   transition:.25s;
 }
@@ -54,23 +52,11 @@ canvas{
 /* TOP */
 .top{
   display:flex;
-  justify-content:space-between;
+  justify-content:center;
   padding:20px;
 }
 
 .logo{font-weight:bold;}
-
-.auth{display:flex;gap:10px;}
-
-.btn{
-  padding:8px 16px;
-  border-radius:999px;
-  border:none;
-  cursor:pointer;
-}
-
-.login{background:#eee;}
-.signup{background:#111;color:white;}
 
 /* HOME */
 .center{
@@ -181,43 +167,6 @@ canvas{
   border:1px solid #ddd;
   resize:none;
 }
-
-/* LOGIN MODAL */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.4);
-  backdrop-filter:blur(10px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-.loginBox{
-  background:white;
-  padding:30px;
-  border-radius:20px;
-  width:300px;
-  text-align:center;
-  animation:zoomIn .4s ease;
-}
-
-.loginBox input{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:1px solid #ddd;
-}
-
-.loginBox button{
-  width:100%;
-  margin-top:8px;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-}
 </style>
 </head>
 
@@ -225,24 +174,8 @@ canvas{
 
 <canvas id="particles"></canvas>
 
-<!-- LOGIN -->
-<div class="overlay" id="loginOverlay">
-  <div class="loginBox">
-    <h2>Login</h2>
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <button onclick="signup()">Sign up</button>
-  </div>
-</div>
-
 <div class="top">
   <div class="logo">ILYASS AI</div>
-
-  <div class="auth">
-    <button class="btn login" onclick="openLogin()">Login</button>
-    <button class="btn signup" onclick="openLogin()">Sign up</button>
-  </div>
 </div>
 
 <!-- HOME -->
@@ -268,45 +201,6 @@ canvas{
 
 <script>
 
-let loggedIn=false;
-
-/* OPEN LOGIN */
-function openLogin(){
-  loginOverlay.style.display="flex";
-}
-
-/* SUPABASE */
-const { createClient } = supabase;
-const supabaseClient = createClient(
-  "https://idjgsgtupuymysptxrbl.supabase.co",
-  "sb_publishable_XLIIiXZRcS5hrvdQP_pkMA_w2I11xFH"
-);
-
-/* LOGIN */
-async function login(){
-  const {error}=await supabaseClient.auth.signInWithPassword({
-    email:email.value,
-    password:password.value
-  });
-
-  if(error){alert(error.message);return;}
-
-  loggedIn=true;
-  loginOverlay.style.display="none";
-}
-
-/* SIGNUP */
-async function signup(){
-  const {error}=await supabaseClient.auth.signUp({
-    email:email.value,
-    password:password.value
-  });
-
-  if(error){alert(error.message);return;}
-
-  alert("Check email 📩");
-}
-
 /* SHIFT ENTER */
 function handleKey(e){
   if(e.key==="Enter" && !e.shiftKey){
@@ -319,11 +213,6 @@ function handleKey(e){
 function startChat(){
   const text=homeInput.value.trim();
   if(!text)return;
-
-  if(!loggedIn){
-    openLogin();
-    return;
-  }
 
   home.classList.add("fadeOut");
 
@@ -342,13 +231,11 @@ function startChat(){
 function typeText(el,text){
   let i=0;
   el.innerHTML="";
-  const speed=15;
-
   const int=setInterval(()=>{
     el.innerHTML+=text[i];
     i++;
     if(i>=text.length) clearInterval(int);
-  },speed);
+  },15);
 }
 
 /* ADD */
@@ -370,7 +257,7 @@ function addMessage(text,type){
   scrollBottom();
 }
 
-/* THINKING LONGER */
+/* THINKING */
 function showThinking(){
   const div=document.createElement("div");
   div.className="msg ai";
@@ -401,7 +288,7 @@ async function askAI(text){
 
     const data=await res.json();
 
-    setTimeout(()=>{   // ⬅️ thinking longer
+    setTimeout(()=>{
       t.remove();
       addMessage(data.reply || "No response","ai");
     },1200);
@@ -414,8 +301,6 @@ async function askAI(text){
 
 /* SEND */
 function send(){
-  if(!loggedIn){openLogin();return;}
-
   const text=chatInput.value.trim();
   if(!text)return;
 
