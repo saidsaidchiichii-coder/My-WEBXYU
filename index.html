@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"> 
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,14 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Inter;}
+
+/* ================= GLOBAL ================= */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter;
+}
 
 body{
   background:
@@ -20,141 +27,298 @@ body{
   overflow:hidden;
 }
 
-/* glow fix */
+/* ================= BACKGROUND FX ================= */
+canvas{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+}
+
 body::after{
   content:"";
   position:fixed;
   inset:0;
-  pointer-events:none;
   background:radial-gradient(circle, rgba(16,163,127,0.15), transparent 70%);
-  animation:glow 5s forwards;
+  animation:glow 5s ease forwards;
+  pointer-events:none;
 }
-@keyframes glow{to{opacity:1;}}
 
-/* animations */
-.fadeIn{animation:fadeIn .6s;}
-.fadeOut{animation:fadeOut .6s forwards;}
-@keyframes fadeIn{from{opacity:0;transform:scale(.95);}to{opacity:1;}}
-@keyframes fadeOut{to{opacity:0;transform:scale(1.05);}}
+@keyframes glow{
+  from{opacity:0;}
+  to{opacity:1;}
+}
 
-/* layout */
-.top{display:flex;justify-content:space-between;padding:20px;color:white;}
-.btn{padding:8px 16px;border-radius:999px;border:none;cursor:pointer;}
+/* ================= TOP BAR ================= */
+.top{
+  display:flex;
+  justify-content:space-between;
+  padding:20px;
+}
+
+.logo{
+  color:white;
+  font-weight:bold;
+}
+
+.auth{
+  display:flex;
+  gap:10px;
+}
+
+.btn{
+  padding:8px 16px;
+  border:none;
+  border-radius:999px;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.btn:hover{
+  transform:scale(1.1);
+}
+
 .login{background:#1a1a1a;color:white;}
 .signup{background:white;color:black;}
 
+/* ================= HOME ================= */
 .center{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:20px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:25px;
 }
 
 .title{
-  font-size:42px;color:white;
+  font-size:42px;
+  color:white;
   animation:float 4s infinite ease-in-out;
 }
+
 @keyframes float{
+  0%,100%{transform:translateY(0);}
   50%{transform:translateY(-10px);}
 }
 
-/* input */
 .inputBox{
   display:flex;
-  width:600px;max-width:90%;
+  width:600px;
+  max-width:90%;
   background:rgba(255,255,255,0.08);
-  padding:12px;border-radius:999px;
+  border-radius:999px;
+  padding:12px;
   backdrop-filter:blur(10px);
+  transition:.3s;
+}
+
+.inputBox:hover{
+  transform:scale(1.02);
 }
 
 .inputBox input{
-  flex:1;background:none;border:none;color:white;outline:none;
+  flex:1;
+  background:none;
+  border:none;
+  outline:none;
+  color:white;
 }
 
 .send{
-  width:40px;height:40px;
+  width:45px;
+  height:45px;
   border-radius:50%;
-  background:white;color:black;
-  display:flex;align-items:center;justify-content:center;
+  background:#10a37f;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
   cursor:pointer;
-  transition:.2s;
+  transition:.3s;
 }
-.send:hover{transform:scale(1.1);}
 
-/* chat */
-.chat{display:none;flex:1;flex-direction:column;}
+.send:hover{
+  transform:scale(1.1);
+}
+
+/* ================= CHAT ================= */
+.chat{
+  display:none;
+  flex:1;
+  flex-direction:column;
+}
 
 .messages{
-  flex:1;overflow:auto;padding:20px;
-  display:flex;flex-direction:column;gap:10px;
+  flex:1;
+  padding:20px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
   perspective:1000px;
 }
 
+/* 3D scroll */
+.messages.scrolling{
+  transform:rotateX(5deg);
+}
+
+/* ================= MESSAGES ================= */
 .msg{
   max-width:65%;
-  padding:12px;border-radius:12px;
+  padding:12px;
+  border-radius:12px;
   animation:slideUp .3s ease;
 }
+
 @keyframes slideUp{
   from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;}
 }
 
-.user{align-self:flex-end;background:white;color:black;}
-.ai{align-self:flex-start;background:rgba(255,255,255,0.08);color:white;}
+.user{
+  align-self:flex-end;
+  background:white;
+  color:black;
+}
 
-/* thinking */
-.thinking{display:flex;gap:5px;}
+.ai{
+  align-self:flex-start;
+  background:rgba(255,255,255,0.08);
+  color:white;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+/* ================= THINKING ================= */
+.thinking{
+  display:flex;
+  gap:6px;
+}
+
 .dot{
-  width:6px;height:6px;background:#aaa;border-radius:50%;
+  width:6px;
+  height:6px;
+  background:#aaa;
+  border-radius:50%;
   animation:blink 1s infinite;
 }
-@keyframes blink{50%{opacity:1;}}
 
-/* bottom */
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+
+@keyframes blink{
+  0%,100%{opacity:.2;}
+  50%{opacity:1;}
+}
+
+/* ================= INPUT CHAT ================= */
 .bottom{
-  display:flex;gap:10px;padding:15px;
+  display:flex;
+  gap:10px;
+  padding:15px;
   border-top:1px solid rgba(255,255,255,0.1);
 }
-textarea{
-  flex:1;background:rgba(255,255,255,0.08);
-  border:none;border-radius:10px;color:white;padding:10px;
+
+.bottom textarea{
+  flex:1;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:rgba(255,255,255,0.08);
+  color:white;
+  resize:none;
 }
-.send2{
-  width:50px;border-radius:10px;background:white;color:black;
+
+.sendBtn{
+  width:50px;
+  border:none;
+  border-radius:10px;
+  background:#10a37f;
+  color:white;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.sendBtn:hover{
+  transform:scale(1.1);
+}
+
+/* ================= LOGIN ================= */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(10px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+}
+
+.loginBox{
+  background:#111;
+  padding:30px;
+  border-radius:20px;
+  width:300px;
+  color:white;
+  text-align:center;
+  animation:zoomIn .4s ease;
+}
+
+@keyframes zoomIn{
+  from{transform:scale(0.8);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+
+.loginBox input{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:10px;
+  background:#1a1a1a;
+  color:white;
+}
+
+.loginBox button{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border:none;
+  border-radius:10px;
   cursor:pointer;
 }
 
-/* modal */
-.overlay{
-  position:fixed;inset:0;
-  display:none;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.4);
-}
-.loginBox{
-  background:#111;padding:30px;border-radius:20px;color:white;
-}
 </style>
 </head>
 
 <body>
 
+<canvas id="particles"></canvas>
+
 <div class="overlay" id="loginOverlay">
   <div class="loginBox">
+    <h2>Login</h2>
     <input id="email" placeholder="Email">
-    <input id="password" placeholder="Password">
+    <input id="password" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
+    <button onclick="signup()">Sign up</button>
   </div>
 </div>
 
 <div class="top">
-  <div>ILYASS AI</div>
-  <div>
+  <div class="logo">ILYASS AI</div>
+  <div class="auth">
     <button class="btn login" onclick="openLogin()">Login</button>
+    <button class="btn signup" onclick="openLogin()">Sign up</button>
   </div>
 </div>
 
 <div id="home" class="center">
-  <div class="title">What’s in your mind?</div>
+  <div class="title">Ask Anything</div>
+
   <div class="inputBox">
-    <input id="homeInput">
+    <input id="homeInput" onkeydown="if(event.key==='Enter') startChat()">
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
@@ -163,87 +327,151 @@ textarea{
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
-    <textarea id="chatInput"></textarea>
-    <button class="send2" onclick="send()">Send</button>
+    <textarea id="chatInput" onkeydown="handleKey(event)"></textarea>
+    <button class="sendBtn" onclick="send()">➤</button>
   </div>
 </div>
 
 <script>
-const messages=document.getElementById("messages");
 
-/* start */
-function startChat(){
-  if(!homeInput.value.trim())return;
+/* ===== FIX VARIABLES ===== */
+const messages = document.getElementById("messages");
 
-  home.classList.add("fadeOut");
-
-  setTimeout(()=>{
-    home.style.display="none";
-    chat.style.display="flex";
-    chat.classList.add("fadeIn");
-
-    addMessage(homeInput.value,"user");
-    fakeAI();
-  },600);
+/* ===== LOGIN ===== */
+function openLogin(){
+  loginOverlay.style.display="flex";
 }
 
-/* messages */
+/* ===== CHAT ===== */
+function startChat(){
+  const text = homeInput.value.trim();
+  if(!text) return;
+
+  home.style.display="none";
+  chat.style.display="flex";
+
+  addMessage(text,"user");
+  askAI(text);
+}
+
+/* ===== TYPE EFFECT ===== */
+function typeText(el,text){
+  let i=0;
+  el.innerHTML="";
+  const int=setInterval(()=>{
+    el.innerHTML += text[i];
+    i++;
+    if(i>=text.length) clearInterval(int);
+  },15);
+}
+
+/* ===== ADD MESSAGE ===== */
 function addMessage(text,type){
   const div=document.createElement("div");
   div.className="msg "+type;
 
-  const el=document.createElement("div");
-  div.appendChild(el);
+  const content=document.createElement("div");
+  div.appendChild(content);
 
   messages.appendChild(div);
 
   if(type==="ai"){
-    typeEffect(el,text);
-  }else el.innerText=text;
+    typeText(content,text);
+  }else{
+    content.innerText=text;
+  }
 
+  scrollBottom();
+}
+
+/* ===== THINKING ===== */
+function showThinking(){
+  const div=document.createElement("div");
+  div.className="msg ai";
+  div.innerHTML=`<div class="thinking">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>`;
+  messages.appendChild(div);
+  scrollBottom();
+  return div;
+}
+
+function scrollBottom(){
   messages.scrollTop=messages.scrollHeight;
 }
 
-/* typing */
-function typeEffect(el,text){
-  let i=0;
-  const int=setInterval(()=>{
-    el.innerHTML+=text[i];
-    i++;
-    if(i>=text.length)clearInterval(int);
-  },20);
-}
-
-/* thinking */
-function fakeAI(){
-  const t=document.createElement("div");
-  t.className="msg ai";
-  t.innerHTML=`<div class="thinking">
-  <div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
-  messages.appendChild(t);
+/* ===== AI CALL ===== */
+async function askAI(text){
+  const t = showThinking();
 
   setTimeout(()=>{
     t.remove();
-    addMessage("This is AI response with typing effect 🚀","ai");
+    addMessage("This is a demo AI response working perfectly ✅","ai");
   },1200);
 }
 
-/* send */
-function send(){
-  if(!chatInput.value.trim())return;
-  addMessage(chatInput.value,"user");
-  chatInput.value="";
-  fakeAI();
+/* ===== SEND ===== */
+function handleKey(e){
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
 }
 
-/* 3D scroll */
+function send(){
+  const text=chatInput.value.trim();
+  if(!text)return;
+
+  addMessage(text,"user");
+  chatInput.value="";
+  askAI(text);
+}
+
+/* ===== 3D SCROLL ===== */
 messages.addEventListener("scroll",()=>{
-  messages.style.transform=`rotateX(${messages.scrollTop/50}deg)`;
+  messages.classList.add("scrolling");
+  setTimeout(()=>messages.classList.remove("scrolling"),200);
 });
 
-/* login */
-function openLogin(){loginOverlay.style.display="flex";}
-function login(){loginOverlay.style.display="none";}
+/* ===== PARTICLES ===== */
+const canvas=document.getElementById("particles");
+const ctx=canvas.getContext("2d");
+
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let dots=[];
+for(let i=0;i<60;i++){
+  dots.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5),
+    vy:(Math.random()-0.5)
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  dots.forEach(d=>{
+    d.x+=d.vx;
+    d.y+=d.vy;
+
+    if(d.x<0||d.x>canvas.width)d.vx*=-1;
+    if(d.y<0||d.y>canvas.height)d.vy*=-1;
+
+    ctx.beginPath();
+    ctx.arc(d.x,d.y,2,0,Math.PI*2);
+    ctx.fillStyle="#10a37f";
+    ctx.fill();
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+
 </script>
 
 </body>
