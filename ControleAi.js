@@ -1,7 +1,26 @@
 const AI = {
   messagesBox:null,
   API_URL:null,
+highlight(code){
 
+  return code
+    // comments
+    .replace(/(\/\/.*)/g,'<span class="cmt">$1</span>')
+
+    // strings
+    .replace(/(["'`].*?["'`])/g,'<span class="str">$1</span>')
+
+    // numbers
+    .replace(/\b(\d+)\b/g,'<span class="num">$1</span>')
+
+    // keywords
+    .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await)\b/g,
+      '<span class="kw">$1</span>')
+
+    // functions
+    .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g,
+      '<span class="fn">$1</span>(');
+},
   init(box,api){
     this.messagesBox=document.getElementById(box);
     this.API_URL=api;
