@@ -3,16 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok</title>
+    <meta name="description" content="Grok - Advanced AI Chat Interface with Multi-Language Support">
+    <meta name="keywords" content="AI, Chat, Darija, Arabic, English, Moroccan Dialect">
+    <meta name="author" content="Grok Team">
+    <meta name="theme-color" content="#1d9bf0">
+    
+    <title>Grok - Advanced AI Chat</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
+    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- NAVIGATION -->
+    <!-- ==================== NAVIGATION ==================== -->
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container" onclick="location.reload()">
@@ -25,15 +35,16 @@
                     <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
                     <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
                 </svg>
+                <span class="logo-text">Grok</span>
             </div>
         </div>
         
         <div class="nav-right">
-            <button class="nav-btn">
+            <button class="nav-btn" title="Imagine">
                 <i data-lucide="sparkles"></i>
                 <span>Imagine</span>
             </button>
-            <button class="nav-btn" id="settingsTrigger">
+            <button class="nav-btn" id="settingsTrigger" title="Settings">
                 <i data-lucide="settings"></i>
             </button>
             <button class="btn-signin">Sign in</button>
@@ -41,6 +52,7 @@
         </div>
     </header>
 
+    <!-- ==================== MAIN CONTAINER ==================== -->
     <main class="container">
         <!-- HOME VIEW -->
         <section id="home" class="home-view">
@@ -57,26 +69,27 @@
                     </svg>
                     <h1>Grok</h1>
                 </div>
+                <p class="hero-subtitle">Advanced AI Chat with Multi-Language Support</p>
             </div>
             
             <div class="search-container">
                 <div class="search-box">
                     <div class="file-preview-area" id="homeFilePreview"></div>
                     <div class="input-area">
-                        <button class="input-icon" onclick="document.getElementById('homeFileInput').click()">
+                        <button class="input-icon" onclick="document.getElementById('homeFileInput').click()" title="Attach file">
                             <i data-lucide="paperclip"></i>
                         </button>
                         <input type="file" id="homeFileInput" class="hidden-input" multiple>
-                        <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'home')"></textarea>
+                        <textarea id="homeInput" placeholder="How can I help you today? (English, العربية, الدارجة)" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'home')"></textarea>
                         <div class="input-controls">
                             <div class="mode-selector">
                                 <span>Auto</span>
                                 <i data-lucide="chevron-down"></i>
                             </div>
-                            <button class="control-btn" id="homeMicBtn" onclick="toggleMic('home')">
+                            <button class="control-btn" id="homeMicBtn" onclick="toggleMic('home')" title="Voice input (Ctrl+D)">
                                 <i data-lucide="mic"></i>
                             </button>
-                            <button class="control-btn send-btn" onclick="startChat()">
+                            <button class="control-btn send-btn" onclick="startChat()" title="Send message (Ctrl+Enter)">
                                 <i data-lucide="arrow-up"></i>
                             </button>
                         </div>
@@ -84,7 +97,27 @@
                 </div>
                 <div class="search-hint">
                     <i data-lucide="sparkles"></i>
-                    <span>New · Hold Ctrl+D to dictate</span>
+                    <span>New · Hold Ctrl+D to dictate · Ctrl+K to search · Ctrl+L to clear</span>
+                </div>
+            </div>
+
+            <!-- Quick suggestions -->
+            <div class="suggestions-container">
+                <div class="suggestion-card" onclick="startChatWithText('Explain quantum computing')">
+                    <div class="suggestion-icon">🚀</div>
+                    <div class="suggestion-text">Explain quantum computing</div>
+                </div>
+                <div class="suggestion-card" onclick="startChatWithText('كيفاش نتعلم البرمجة؟')">
+                    <div class="suggestion-icon">💻</div>
+                    <div class="suggestion-text">كيفاش نتعلم البرمجة؟</div>
+                </div>
+                <div class="suggestion-card" onclick="startChatWithText('اشرح لي الذكاء الاصطناعي')">
+                    <div class="suggestion-icon">🧠</div>
+                    <div class="suggestion-text">اشرح لي الذكاء الاصطناعي</div>
+                </div>
+                <div class="suggestion-card" onclick="startChatWithText('Write a poem about nature')">
+                    <div class="suggestion-icon">✨</div>
+                    <div class="suggestion-text">Write a poem about nature</div>
                 </div>
             </div>
         </section>
@@ -97,7 +130,7 @@
                 <div class="search-box">
                     <div class="file-preview-area" id="chatFilePreview"></div>
                     <div class="input-area">
-                        <button class="input-icon" onclick="document.getElementById('chatFileInput').click()">
+                        <button class="input-icon" onclick="document.getElementById('chatFileInput').click()" title="Attach file">
                             <i data-lucide="paperclip"></i>
                         </button>
                         <input type="file" id="chatFileInput" class="hidden-input" multiple>
@@ -107,10 +140,10 @@
                                 <span>Auto</span>
                                 <i data-lucide="chevron-down"></i>
                             </div>
-                            <button class="control-btn" id="chatMicBtn" onclick="toggleMic('chat')">
+                            <button class="control-btn" id="chatMicBtn" onclick="toggleMic('chat')" title="Voice input (Ctrl+D)">
                                 <i data-lucide="mic"></i>
                             </button>
-                            <button class="control-btn send-btn" onclick="send()">
+                            <button class="control-btn send-btn" onclick="send()" title="Send message (Ctrl+Enter)">
                                 <i data-lucide="arrow-up"></i>
                             </button>
                         </div>
@@ -120,26 +153,65 @@
         </section>
     </main>
 
+    <!-- ==================== RECORDING INDICATOR ==================== -->
+    <div id="recordingIndicator">
+        <div class="recording-dot"></div>
+        <span class="recording-text">Recording...</span>
+    </div>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <!-- Core AI System -->
     <script src="ControleAi.js"></script>
+    <script src="AIIntegration.js"></script>
+    <script src="ai_config.js"></script>
+    
+    <!-- Text Processing & Notifications -->
+    <script src="TextProcessor.js"></script>
+    <script src="NotificationSystem.js"></script>
+    
+    <!-- Features & Utilities -->
     <script src="features.js"></script>
+
+    <!-- ==================== INITIALIZATION SCRIPT ==================== -->
     <script>
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Lucide icons
             lucide.createIcons();
-            AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
+            
+            // Initialize AI system
+            AI.init('messages', 'https://my-webxyu.vercel.app/api/chat');
+            
+            // Initialize advanced features
+            if (typeof AI.initAdvanced === 'function') {
+                AI.initAdvanced();
+            }
+            
+            // Setup file uploads
             setupFileUpload('homeFileInput', 'homeFilePreview');
             setupFileUpload('chatFileInput', 'chatFilePreview');
+            
+            console.log('✅ Grok AI Chat System Initialized');
+            console.log('🌐 Languages: English, العربية (MSA), الدارجة (Darija)');
+            console.log('🎯 Features: Voice, Images, Code Highlighting, Multi-Language');
         });
 
-        const homeView = document.getElementById("home");
-        const chatView = document.getElementById("chat");
+        // ==================== UI FUNCTIONS ====================
+        const homeView = document.getElementById('home');
+        const chatView = document.getElementById('chat');
 
+        /**
+         * Auto-resize textarea
+         */
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
             textarea.style.transition = 'height 0.2s ease';
         }
 
+        /**
+         * Handle keydown events
+         */
         function handleKeydown(event, type) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -148,44 +220,66 @@
             }
         }
 
+        /**
+         * Start chat from home view
+         */
         function startChat() {
-            const input = document.getElementById("homeInput");
+            const input = document.getElementById('homeInput');
             const text = input.value.trim();
             if (!text) return;
             
             homeView.style.animation = 'slideOut 0.4s ease-out forwards';
             setTimeout(() => {
-                homeView.classList.add("hidden");
-                chatView.classList.remove("hidden");
+                homeView.classList.add('hidden');
+                chatView.classList.remove('hidden');
                 chatView.style.animation = 'slideIn 0.4s ease-out';
                 AI.user(text);
-                input.value = "";
+                input.value = '';
                 input.style.height = 'auto';
-                document.getElementById("homeFilePreview").innerHTML = '';
-                document.getElementById("homeFileInput").value = '';
+                document.getElementById('homeFilePreview').innerHTML = '';
+                document.getElementById('homeFileInput').value = '';
                 AI.ask(text);
             }, 400);
         }
 
+        /**
+         * Start chat with predefined text
+         */
+        function startChatWithText(text) {
+            document.getElementById('homeInput').value = text;
+            startChat();
+        }
+
+        /**
+         * Send message from chat view
+         */
         function send() {
-            const input = document.getElementById("chatInput");
+            const input = document.getElementById('chatInput');
             const text = input.value.trim();
             if (!text) return;
             
-            // Add a subtle feedback animation
             input.style.transform = 'scale(0.98)';
             setTimeout(() => {
                 input.style.transform = 'scale(1)';
             }, 100);
             
             AI.user(text);
-            input.value = "";
+            input.value = '';
             input.style.height = 'auto';
-            document.getElementById("chatFilePreview").innerHTML = '';
-            document.getElementById("chatFileInput").value = '';
+            document.getElementById('chatFilePreview').innerHTML = '';
+            document.getElementById('chatFileInput').value = '';
             AI.ask(text);
         }
-        
+
+        /**
+         * Toggle microphone
+         */
+        function toggleMic(type) {
+            if (typeof AI !== 'undefined' && AI.toggleMic) {
+                AI.toggleMic();
+            }
+        }
+
         // Add CSS animation for slideOut
         const style = document.createElement('style');
         style.textContent = `
@@ -193,8 +287,23 @@
                 from { opacity: 1; transform: scale(1); }
                 to { opacity: 0; transform: scale(0.95) translateY(-20px); }
             }
+            @keyframes slideIn {
+                from { opacity: 0; transform: scale(0.95) translateY(20px); }
+                to { opacity: 1; transform: scale(1); }
+            }
         `;
         document.head.appendChild(style);
+
+        // ==================== KEYBOARD SHORTCUTS ====================
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+D for dictation
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                if (typeof AI !== 'undefined' && AI.toggleMic) {
+                    AI.toggleMic();
+                }
+            }
+        });
     </script>
 </body>
 </html>
