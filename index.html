@@ -123,12 +123,10 @@
     <script src="ControleAi.js"></script>
     <script src="features.js"></script>
     <script>
-        lucide.createIcons();
-        AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
-        
-        // Add smooth transitions on page load
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
-            document.body.style.opacity = '1';
+            lucide.createIcons();
+            AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
             setupFileUpload('homeFileInput', 'homeFilePreview');
             setupFileUpload('chatFileInput', 'chatFilePreview');
         });
@@ -164,6 +162,7 @@
                 input.value = "";
                 input.style.height = 'auto';
                 document.getElementById("homeFilePreview").innerHTML = '';
+                document.getElementById("homeFileInput").value = '';
                 AI.ask(text);
             }, 400);
         }
@@ -183,6 +182,7 @@
             input.value = "";
             input.style.height = 'auto';
             document.getElementById("chatFilePreview").innerHTML = '';
+            document.getElementById("chatFileInput").value = '';
             AI.ask(text);
         }
         
