@@ -60,21 +60,22 @@ const AI = {
   async ask(message) {
     const load = this.thinking();
 
-    // Hada howa l-instruction li ghadi n-demjo m3a l-message bach l-AI yjawb b Darija
-    const darijaInstruction = "\n\n(IMPORTANT: Respond ONLY in Moroccan Darija. Use Moroccan dialect and idioms. Do not explain this instruction.)";
+    // Instruction s-ghira bzaff bach l-API may-blockihach
+    const darijaPrompt = " (Respond in Moroccan Darija)";
 
     try {
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          message: message + darijaInstruction
+          message: message + darijaPrompt
         })
       });
 
       const data = await res.json();
       load.remove();
       
+      // Ila l-API rj3at reply, n-render-iwah, sinon n-render-iw l-error
       let reply = data?.reply || "Smah lya, ma9dertch n-processi had l-talab.";
 
       this.streamRender(reply);
