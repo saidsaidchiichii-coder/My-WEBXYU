@@ -324,6 +324,7 @@ body::before {
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
+    position: relative;
 }
 
 .mode-selector {
@@ -336,6 +337,8 @@ body::before {
     border-radius: 12px;
     cursor: pointer;
     transition: background 0.2s;
+    position: relative;
+    z-index: 10;
 }
 
 .mode-selector:hover {
@@ -345,6 +348,51 @@ body::before {
 .mode-selector i {
     width: 16px;
     height: 16px;
+}
+
+/* ==================== MODE MENU ==================== */
+.mode-menu {
+    position: fixed;
+    background: rgba(22, 24, 28, 0.95);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    min-width: 180px;
+    animation: slideIn 0.2s ease-out;
+}
+
+.mode-option {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mode-option:hover {
+    background: rgba(29, 155, 240, 0.1);
+}
+
+.mode-option.active {
+    background: rgba(29, 155, 240, 0.2);
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
+}
+
+.mode-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.mode-desc {
+    font-size: 11px;
+    color: var(--secondary-text);
 }
 
 .control-btn {
@@ -730,7 +778,6 @@ code {
 }
 
 /* ==================== RESPONSIVE ==================== */
-/* ==================== RESPONSIVE ==================== */
 @media (max-width: 640px) {
     .top-nav {
         padding: 0 12px;
@@ -763,5 +810,9 @@ code {
     .file-preview-item {
         font-size: 11px;
         padding: 4px 8px;
+    }
+
+    .mode-menu {
+        min-width: 160px;
     }
 }
