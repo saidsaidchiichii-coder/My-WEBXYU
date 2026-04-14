@@ -26,28 +26,43 @@ const AI = {
     return div;
   },
 
-  async ask(message){
-    const load = this.thinking();
+async ask(message){
+  const load = this.thinking();
 
-    try{
-      const res = await fetch(this.API_URL,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ message })
-      });
+  try{
+    const res = await fetch(this.API_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ message })
+    });
 
-      const data = await res.json();
-
-      load.remove();
-
-      const reply = data?.reply || "❌ No response from AI";
-      this.render(reply, message);
-
-    }catch(e){
-      load.remove();
-      this.error();
+    // 🔥 CHECK RESPONSE
+    if(!res.ok){
+      throw new Error("Server error");
     }
-  },
+
+    const data = await res.json();
+
+    console.log("API DATA:", data); // مهم باش تشوف المشكل
+
+    load.remove();
+
+    const reply = data?.reply || data?.message || "❌ Empty response";
+
+    this.render(reply, message);
+
+  }catch(e){
+    load.remove();
+
+    console.error("API ERROR:", e);
+
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.textContent = "❌ API OFFLINE or ERROR";
+
+    this.messagesBox.appendChild(div);
+  }
+}
 
   render(text, prompt){
 
