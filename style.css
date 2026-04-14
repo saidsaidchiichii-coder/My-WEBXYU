@@ -19,51 +19,6 @@ body{
   padding:20px;
 }
 
-.msg {
-  max-width:65%;
-  padding:12px;
-  border-radius:12px;
-  transform-style: preserve-3d;
-  transition: transform 0.3s ease, box-shadow 0.3s;
-}
-
-.msg:hover{
-  transform: rotateY(10deg) rotateX(5deg) scale(1.05);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-.title {
-  font-size:40px;
-  font-weight:bold;
-  animation: float 4s ease-in-out infinite;
-}
-
-.inputBox{
-  animation: float 5s ease-in-out infinite;
-}
-body{
-  background: radial-gradient(circle at 20% 20%, #dff9fb, transparent),
-              radial-gradient(circle at 80% 80%, #c7ecee, transparent),
-              linear-gradient(135deg,#ffffff,#f3f4f6);
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  perspective: 1000px;
-}
-.center{
-  transform-style: preserve-3d;
-}
-
-.center:hover .title{
-  transform: translateZ(40px);
-}
-
-
 .logo{
   font-weight:bold;
   font-size:18px;
