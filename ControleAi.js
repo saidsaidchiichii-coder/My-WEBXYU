@@ -1,145 +1,66 @@
-const AI = {
-  messagesBox: null,
-  API_URL: null,
+const ButtonProgram = {
 
-  init(boxId, api){
-    this.messagesBox = document.getElementById(boxId);
-    this.API_URL = api;
-  },
+  attach(messageDiv, text, userPrompt){
 
-  user(text){
-    const div = document.createElement("div");
-    div.className = "msg user";
-    div.textContent = "👤 " + text;
+    const box = document.createElement("div");
+    box.className = "ai-actions";
 
-    this.messagesBox.appendChild(div);
-    this.scroll();
-  },
+    // 📋 COPY
+    const copyBtn = document.createElement("button");
+    copyBtn.innerText = "📋 Copy";
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(text);
+      copyBtn.innerText = "✔";
+      setTimeout(()=> copyBtn.innerText = "📋 Copy", 1200);
+    };
 
-  thinking(){
-    const div = document.createElement("div");
-    div.className = "msg ai";
+    // 👍 LIKE
+    const likeBtn = document.createElement("button");
+    likeBtn.innerText = "👍";
+    likeBtn.onclick = () => {
+      likeBtn.style.color = "#10a37f";
+    };
 
-    div.innerHTML = `
-      🤖 Thinking...
-      <div class="thinking">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
-      </div>
-    `;
+    // 🔁 REFRESH
+    const refreshBtn = document.createElement("button");
+    refreshBtn.innerText = "🔁";
+    refreshBtn.onclick = async () => {
+      refreshBtn.innerText = "⏳";
 
-    this.messagesBox.appendChild(div);
-    this.scroll();
-    return div;
-  },
-
-  async ask(message){
-    const load = this.thinking();
-
-    try{
-      const res = await fetch(this.API_URL,{
+      const res = await fetch(AI.API_URL,{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message: userPrompt })
       });
 
       const data = await res.json();
 
-      load.remove();
-      this.render(data.reply || "No response");
+      messageDiv.remove();
+      AI.render(data.reply || "No response", userPrompt);
 
-    }catch(e){
-      load.remove();
-      this.error();
-    }
-  },
+    };
 
-  /* =========================
-      🔥 FINAL CODE BLOCK UI
-  ========================= */
-  render(text){
+    // 📥 DOWNLOAD
+    const downloadBtn = document.createElement("button");
+    downloadBtn.innerText = "📥";
+    downloadBtn.onclick = () => {
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
 
-    const container = document.createElement("div");
-    container.className = "msg ai";
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ilyass-ai.txt";
+      a.click();
 
-    const parts = text.split("```");
+      URL.revokeObjectURL(url);
+    };
 
-    parts.forEach((part, i)=>{
+    box.appendChild(copyBtn);
+    box.appendChild(likeBtn);
+    box.appendChild(refreshBtn);
+    box.appendChild(downloadBtn);
 
-      // 💻 CODE BLOCK
-      if(i % 2 === 1){
-
-        const code = part.trim();
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "code-box";
-
-        /* HEADER */
-        const header = document.createElement("div");
-        header.className = "code-header";
-
-        const lang = document.createElement("div");
-        lang.className = "code-lang";
-        lang.textContent = "C++";
-
-        const copyBtn = document.createElement("button");
-        copyBtn.className = "copy-btn";
-        copyBtn.textContent = "📋";
-
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(code);
-          copyBtn.textContent = "✔";
-          setTimeout(()=>copyBtn.textContent="📋",1000);
-        };
-
-        header.appendChild(lang);
-        header.appendChild(copyBtn);
-
-        /* CODE BODY */
-        const pre = document.createElement("pre");
-        const codeEl = document.createElement("code");
-
-        codeEl.textContent = code;
-
-        pre.appendChild(codeEl);
-
-        /* ARROW */
-        const arrow = document.createElement("div");
-        arrow.className = "code-arrow";
-        arrow.textContent = "⬇";
-
-        wrapper.appendChild(header);
-        wrapper.appendChild(pre);
-        wrapper.appendChild(arrow);
-
-        container.appendChild(wrapper);
-      }
-
-      // 🧠 TEXT
-      else{
-        const p = document.createElement("div");
-        p.className = "ai-text";
-        p.textContent = part.trim();
-        container.appendChild(p);
-      }
-
-    });
-
-    this.messagesBox.appendChild(container);
-    this.scroll();
-  },
-
-  scroll(){
-    setTimeout(()=>{
-      this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
-    },20);
-  },
-
-  error(){
-    const div = document.createElement("div");
-    div.className = "msg ai";
-    div.textContent = "❌ AI error";
-    this.messagesBox.appendChild(div);
+    messageDiv.appendChild(box);
   }
+
 };
