@@ -120,6 +120,11 @@
     <script>
         lucide.createIcons();
         AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
+        
+        // Add smooth transitions on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.style.opacity = '1';
+        });
 
         const homeView = document.getElementById("home");
         const chatView = document.getElementById("chat");
@@ -127,6 +132,7 @@
         function autoResize(textarea) {
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+            textarea.style.transition = 'height 0.2s ease';
         }
 
         function handleKeydown(event, type) {
@@ -142,23 +148,44 @@
             const text = input.value.trim();
             if (!text) return;
             
-            homeView.classList.add("hidden");
-            chatView.classList.remove("hidden");
-            AI.user(text);
-            input.value = "";
-            input.style.height = 'auto';
-            AI.ask(text);
+            homeView.style.animation = 'slideOut 0.4s ease-out forwards';
+            setTimeout(() => {
+                homeView.classList.add("hidden");
+                chatView.classList.remove("hidden");
+                chatView.style.animation = 'slideIn 0.4s ease-out';
+                AI.user(text);
+                input.value = "";
+                input.style.height = 'auto';
+                AI.ask(text);
+            }, 400);
         }
 
         function send() {
             const input = document.getElementById("chatInput");
             const text = input.value.trim();
             if (!text) return;
+            
+            // Add a subtle feedback animation
+            input.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                input.style.transform = 'scale(1)';
+            }, 100);
+            
             AI.user(text);
             input.value = "";
             input.style.height = 'auto';
             AI.ask(text);
         }
+        
+        // Add CSS animation for slideOut
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                from { opacity: 1; transform: scale(1); }
+                to { opacity: 0; transform: scale(0.95) translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
