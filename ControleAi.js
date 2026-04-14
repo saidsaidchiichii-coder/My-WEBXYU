@@ -65,18 +65,45 @@ const AI = {
       // 💻 CODE BLOCK
       if(i%2===1){
 
-        const codeBox=document.createElement("div");
-        codeBox.className="code-box";
+      const codeBox=document.createElement("div");
+codeBox.className="code-box";
 
-        const pre=document.createElement("pre");
-        const code=document.createElement("code");
+/* HEADER */
+const header=document.createElement("div");
+header.className="code-header";
 
-        code.textContent=part.trim();
+/* LANGUAGE */
+const lang=document.createElement("span");
+lang.className="code-lang";
+lang.textContent="code";
 
-        pre.appendChild(code);
-        codeBox.appendChild(pre);
+/* COPY BUTTON */
+const copy=document.createElement("button");
+copy.className="copy-btn";
+copy.textContent="Copy";
 
-        container.appendChild(codeBox);
+copy.onclick=()=>{
+  navigator.clipboard.writeText(part.trim());
+  copy.textContent="Copied!";
+  setTimeout(()=>copy.textContent="Copy",1500);
+};
+
+header.appendChild(lang);
+header.appendChild(copy);
+
+/* CODE */
+const pre=document.createElement("pre");
+const code=document.createElement("code");
+
+code.textContent=part.trim();
+
+pre.appendChild(code);
+
+/* APPEND */
+codeBox.appendChild(header);
+codeBox.appendChild(pre);
+
+container.appendChild(codeBox);
       }
 
       // 🧠 TEXT
