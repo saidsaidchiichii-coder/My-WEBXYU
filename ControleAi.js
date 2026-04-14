@@ -60,34 +60,11 @@ const AI = {
   async ask(message) {
     const load = this.thinking();
 
-    // 🧠 INTERNAL ROLEPLAY PROMPT
-    const systemPrompt = `أنت نظام ذكاء اصطناعي فيه جوج شخصيات مستقلين كيهضرو مع بعضهم للوصول لأفضل فكرة بزنس:
-
-💡 الشخصية الأولى: "صانع الأفكار"
-- كيقترح أفكار بزنس، فلوس، ومشاريع جديدة.
-- كيبغي الإبداع، المخاطرة، والتجربة.
-- كل مرة كيقترح فكرة وحدة فقط ولكن قوية ومختلفة.
-
-📊 الشخصية الثانية: "المُناقش / المُحلّل"
-- كيرد على فكرة صانع الأفكار، كيناقش، كيعارض أو كيطوّر الفكرة.
-- كيقيم الفكرة من الجوانب التالية: (💰 الربح، ⚠️ المخاطرة، ⚙️ سهولة التنفيذ، 📉 المنافسة).
-
-🔁 طريقة الحوار:
-- الحوار يكون مباشر بين الشخصيتين داخل هاد الرد الواحد.
-- كل شخصية كترد على الأخرى بشكل طبيعي (على الأقل 3 تبادلات).
-- الهدف هو تطوير الفكرة مع كل تبادل حتى الوصول لفكرة نهائية مربحة.
-
-🎯 الهدف النهائي:
-بعد الحوار، قدم النتيجة النهائية بشكل منظم يشمل:
-🧩 شرح المشروع الكامل | 🪜 خطة التنفيذ خطوة بخطوة | 💵 طريقة الربح | ⚠️ تحليل المخاطر | 📊 تقييم شامل للفكرة.
-
-الموضوع المطلوب: ${message}`;
-
     try {
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: systemPrompt })
+        body: JSON.stringify({ message })
       });
 
       const data = await res.json();
@@ -135,7 +112,7 @@ const AI = {
         
         const header = document.createElement("div");
         header.className = "code-header";
-        header.innerHTML = \`<span class="code-lang">code</span><button class="copy-btn">Copy</button>\`;
+        header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
         
         const copyBtn = header.querySelector(".copy-btn");
         copyBtn.onclick = () => {
