@@ -1,6 +1,7 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
+  uploadedFiles: [],
 
   /* =========================
      🎨 SYNTAX HIGHLIGHT
@@ -61,10 +62,21 @@ const AI = {
     const load = this.thinking();
 
     try {
+      // Prepare form data with files
+      const formData = new FormData();
+      formData.append('message', message);
+      
+      // Add uploaded files if any
+      const fileInput = document.getElementById('chatFileInput') || document.getElementById('homeFileInput');
+      if (fileInput && fileInput.files.length > 0) {
+        Array.from(fileInput.files).forEach((file, index) => {
+          formData.append(`file_${index}`, file);
+        });
+      }
+
       const res = await fetch(this.API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
+        body: formData
       });
 
       const data = await res.json();
@@ -101,6 +113,7 @@ const AI = {
     this.messagesBox.appendChild(wrapper);
     
     const parts = fullText.split("```");
+    let textContent = '';
     
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
@@ -145,6 +158,7 @@ const AI = {
             const words = para.trim().split(" ");
             for (const word of words) {
                 p.textContent += word + " ";
+                textContent += word + " ";
                 this.scroll();
                 await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
             }
@@ -152,6 +166,49 @@ const AI = {
         }
       }
       this.scroll();
+    }
+    
+    // Add voice button after streaming is complete
+    if (textContent.trim()) {
+      setTimeout(() => {
+        this.addVoiceButton(container, textContent.trim());
+      }, 300);
+    }
+  },
+
+  addVoiceButton(messageElement, text) {
+    const voiceContainer = document.createElement('div');
+    voiceContainer.className = 'voice-message';
+    voiceContainer.style.animation = 'slideIn 0.3s ease-out';
+    
+    const playBtn = document.createElement('button');
+    playBtn.className = 'voice-btn-play';
+    playBtn.innerHTML = '<i data-lucide="volume-2"></i>';
+    playBtn.onclick = () => this.speakText(text);
+    
+    const duration = document.createElement('span');
+    duration.className = 'voice-duration';
+    duration.textContent = 'Listen';
+    
+    voiceContainer.appendChild(playBtn);
+    voiceContainer.appendChild(duration);
+    
+    messageElement.appendChild(voiceContainer);
+    lucide.createIcons();
+  },
+
+  speakText(text) {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.lang = 'en-US';
+      
+      window.speechSynthesis.speak(utterance);
     }
   },
 
