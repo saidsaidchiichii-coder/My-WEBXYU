@@ -13,6 +13,12 @@
 <!-- TOP -->
 <div class="top">
   <div class="logo">ILYASS AI</div>
+
+  <!-- 🧠 AI CONFIG DISPLAY (NEW) -->
+  <div class="ai-config-box">
+    <div class="ai-title">🧠 AI CONFIG</div>
+    <div id="aiConfigText" class="ai-text"></div>
+  </div>
 </div>
 
 <!-- HOME -->
@@ -37,10 +43,29 @@
   </div>
 </div>
 
+<script src="ai_config.js"></script>
 <script src="ControleAi.js"></script>
 
 <script>
 AI.init("messages","https://my-webxyu.vercel.app/api/chat");
+
+
+// 🧠 SHOW AI CONFIG (NEW)
+document.addEventListener("DOMContentLoaded", () => {
+  const box = document.getElementById("aiConfigText");
+
+  if (window.AI_CONFIG) {
+    box.innerHTML = `
+      Name: ${AI_CONFIG.name}<br>
+      Style: ${AI_CONFIG.style.tone}<br>
+      Length: ${AI_CONFIG.style.length}<br>
+      Language: ${AI_CONFIG.language}
+    `;
+  } else {
+    box.innerHTML = "AI CONFIG NOT LOADED";
+  }
+});
+
 
 function startChat(){
   const text=document.getElementById("homeInput").value.trim();
