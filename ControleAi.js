@@ -1,108 +1,94 @@
-const API_URL = "https://my-webxyu.vercel.app/api/chat";
+const AI = {
+  messagesBox: null,
+  API_URL: null,
 
-const messagesBox = document.getElementById("messages");
+  init(boxId, api){
+    this.messagesBox = document.getElementById(boxId);
+    this.API_URL = api;
+  },
 
-/* START CHAT */
-function startChat(){
-  const text = document.getElementById("homeInput").value.trim();
-  if(!text) return;
+  user(text){
+    const div = document.createElement("div");
+    div.className = "msg user";
+    div.textContent = "👤 " + text;
 
-  document.getElementById("home").style.display="none";
-  document.getElementById("chat").style.display="flex";
+    this.messagesBox.appendChild(div);
+    this.scroll();
+  },
 
-  addMsg(text,"user");
-  document.getElementById("homeInput").value="";
+  thinking(){
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.innerHTML = "🤖 Thinking...";
+    this.messagesBox.appendChild(div);
+    this.scroll();
+    return div;
+  },
 
-  askAI(text);
-}
+  async ask(message){
+    const load = this.thinking();
 
-/* SEND */
-function send(){
-  const input = document.getElementById("chatInput");
-  const text = input.value.trim();
-  if(!text) return;
+    try{
+      const res = await fetch(this.API_URL,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ message })
+      });
 
-  addMsg(text,"user");
-  input.value="";
+      if(!res.ok) throw new Error("API ERROR");
 
-  askAI(text);
-}
+      const data = await res.json();
 
-/* ADD MESSAGE */
-function addMsg(text,type){
-  const div = document.createElement("div");
-  div.className = "msg "+type;
-  div.textContent = text;
-  messagesBox.appendChild(div);
-  scroll();
-}
+      load.remove();
 
-/* THINKING */
-function thinking(){
-  const div = document.createElement("div");
-  div.className = "msg ai";
-  div.innerHTML = "🤖 Thinking...";
-  messagesBox.appendChild(div);
-  scroll();
-  return div;
-}
+      const reply = data?.reply || data?.message || "No response";
 
-/* API CALL (SAFE) */
-async function askAI(message){
-  const load = thinking();
+      this.render(reply);
 
-  try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message })
+    }catch(err){
+      load.remove();
+      this.error();
+      console.error(err);
+    }
+  },
+
+  render(text){
+
+    const container = document.createElement("div");
+    container.className = "msg ai";
+
+    const parts = text.split("```");
+
+    parts.forEach((part, i)=>{
+
+      if(i % 2 === 1){
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+        code.textContent = part;
+        pre.appendChild(code);
+        container.appendChild(pre);
+      }else{
+        const div = document.createElement("div");
+        div.textContent = part;
+        container.appendChild(div);
+      }
+
     });
 
-    if(!res.ok) throw new Error("API FAIL");
+    this.messagesBox.appendChild(container);
+    this.scroll();
+  },
 
-    const data = await res.json();
+  scroll(){
+    setTimeout(()=>{
+      this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
+    },30);
+  },
 
-    load.remove();
-
-    render(data.reply || "No response");
-
-  }catch(e){
-    load.remove();
-    render("❌ AI server error / offline");
+  error(){
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.textContent = "❌ API error";
+    this.messagesBox.appendChild(div);
   }
-}
-
-/* RENDER RESPONSE */
-function render(text){
-
-  const container = document.createElement("div");
-  container.className = "msg ai";
-
-  const parts = text.split("```");
-
-  parts.forEach((part,i)=>{
-
-    if(i % 2 === 1){
-      const pre = document.createElement("pre");
-      const code = document.createElement("code");
-      code.textContent = part;
-      pre.appendChild(code);
-      container.appendChild(pre);
-    }else{
-      const div = document.createElement("div");
-      div.textContent = part;
-      container.appendChild(div);
-    }
-
-  });
-
-  messagesBox.appendChild(container);
-  scroll();
-}
-
-/* SCROLL */
-function scroll(){
-  setTimeout(()=>{
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-  },50);
-}
+};
