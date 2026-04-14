@@ -49,8 +49,6 @@ function setupFileUpload(inputId, previewId) {
 }
 
 // ==================== VOICE RECOGNITION ====================
-let mediaRecorder = null;
-let audioChunks = [];
 let isRecording = false;
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -128,35 +126,8 @@ function stopRecording(type) {
     }
 }
 
-// ==================== TEXT-TO-SPEECH ====================
-function speakText(text) {
-    if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
-        
-        // Split text into chunks for better processing
-        const chunks = text.match(/[^.!?]+[.!?]+/g) || [text];
-        
-        chunks.forEach((chunk, index) => {
-            const utterance = new SpeechSynthesisUtterance(chunk.trim());
-            utterance.rate = 0.95;
-            utterance.pitch = 1;
-            utterance.volume = 1;
-            utterance.lang = 'en-US';
-            
-            // Add delay between chunks
-            setTimeout(() => {
-                window.speechSynthesis.speak(utterance);
-            }, index * 100);
-        });
-    } else {
-        alert('Text-to-Speech is not supported in your browser');
-    }
-}
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    // Ensure file preview areas are hidden initially
     const homePreview = document.getElementById('homeFilePreview');
     const chatPreview = document.getElementById('chatFilePreview');
     if (homePreview) homePreview.style.display = 'none';
