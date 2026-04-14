@@ -1,154 +1,68 @@
-const AI = {
-  messagesBox: null,
-  API_URL: null,
-
-  /* =========================
-     🎨 SYNTAX HIGHLIGHT
-  ========================= */
-  highlight(code){
-
-    return code
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-
-      .replace(/(\/\/.*)/g,'<span class="cmt">$1</span>')
-      .replace(/(["'`].*?["'`])/g,'<span class="str">$1</span>')
-      .replace(/\b(\d+)\b/g,'<span class="num">$1</span>')
-      .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g,
-        '<span class="kw">$1</span>')
-      .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g,
-        '<span class="fn">$1</span>(');
-  },
-
-  init(box,api){
-    this.messagesBox=document.getElementById(box);
-    this.API_URL=api;
-  },
-
-  /* =========================
-     👤 USER MESSAGE
-  ========================= */
-  user(text){
-    const div=document.createElement("div");
-    div.className="msg user";
-    div.textContent=text;
-    this.messagesBox.appendChild(div);
-    this.scroll();
-  },
-
-  /* =========================
-     🔄 DOTS LOADING (NEW)
-  ========================= */
-  thinking(){
-    const div=document.createElement("div");
-    div.className="msg ai";
-
-    div.innerHTML=`
-      <div class="dots">
-        <span></span><span></span><span></span>
-      </div>
-    `;
-
-    this.messagesBox.appendChild(div);
-    this.scroll();
-    return div;
-  },
-
-  async ask(message){
-    const load=this.thinking();
-
-    try{
-      const res=await fetch(this.API_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message})
-      });
-
-      const data=await res.json();
-
-      load.remove();
-
-      // 🔥 typing effect instead of instant render
-      this.typeWriter(data?.reply || "No response");
-
-    }catch(e){
-      load.remove();
-
-      const err=document.createElement("div");
-      err.className="msg ai";
-      err.textContent="❌ API error";
-      this.messagesBox.appendChild(err);
-    }
-  },
-
-  /* =========================
-     ⌨️ TYPEWRITER EFFECT (NEW)
-  ========================= */
-  typeWriter(text){
-
-    const container=document.createElement("div");
-    container.className="msg ai";
-
-    this.messagesBox.appendChild(container);
-
-    let i=0;
-
-    const interval=setInterval(()=>{
-
-      container.textContent = text.slice(0,i);
-
-      i++;
-
-      this.scroll();
-
-      if(i>text.length){
-        clearInterval(interval);
-
-        // بعد ما يسالي typing → render code formatting
-        container.innerHTML = this.formatFinal(text);
-      }
-
-    },10);
-  },
-
-  /* =========================
-     💻 FINAL FORMAT (reuse render logic)
-  ========================= */
-  formatFinal(text){
-
-    const parts=text.split("```");
-    let html="";
+const AI = { messagesBox: null, API_URL: null, /* ========================= 🎨 SYNTAX HIGHLIGHT (FIXED) ========================= */ highlight(code){ return code // escape HTML (IMPORTANT) .replace(/&/g,"&amp;") .replace(/</g,"&lt;") .replace(/>/g,"&gt;") // comments .replace(/(\/\/.*)/g,'<span class="cmt">$1</span>') // strings .replace(/(["'].*?["'])/g,'<span class="str">$1</span>') // numbers .replace(/\b(\d+)\b/g,'<span class="num">$1</span>') // keywords (JS + general) .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g, '<span class="kw">$1</span>') // functions .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>('); }, init(box,api){ this.messagesBox=document.getElementById(box); this.API_URL=api; }, user(text){ const div=document.createElement("div"); div.className="msg user"; div.textContent=text; this.messagesBox.appendChild(div); this.scroll(); }, thinking(){ const div=document.createElement("div"); div.className="msg ai"; div.textContent="🤖 Thinking..."; this.messagesBox.appendChild(div); this.scroll(); return div; }, async ask(message){ const load=this.thinking(); try{ const res=await fetch(this.API_URL,{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message}) }); const data=await res.json(); load.remove(); this.render(data?.reply || "No response"); }catch(e){ load.remove(); const err=document.createElement("div"); err.className="msg ai"; err.textContent="❌ API error"; this.messagesBox.appendChild(err); } }, /* ========================= 💻 RENDER SYSTEM (FIXED) ========================= */ render(text){ const container=document.createElement("div"); container.className="msg ai"; const parts=text.split("
+");
 
     parts.forEach((part,i)=>{
 
+      // 💻 CODE BLOCK
       if(i%2===1){
 
-        html+=`
-          <div class="code-box">
-            <div class="code-header">
-              <span class="code-lang">code</span>
-              <button class="copy-btn"
-                onclick="navigator.clipboard.writeText(\`${part.trim().replace(/`/g,'\\`')}\`)">
-                Copy
-              </button>
-            </div>
+        const codeBox=document.createElement("div");
+        codeBox.className="code-box";
 
-            <pre><code>${this.highlight(part.trim())}</code></pre>
-          </div>
-        `;
+        const header=document.createElement("div");
+        header.className="code-header";
+
+        const lang=document.createElement("span");
+        lang.className="code-lang";
+        lang.textContent="code";
+
+        const copy=document.createElement("button");
+        copy.className="copy-btn";
+        copy.textContent="Copy";
+
+        copy.onclick=()=>{
+          navigator.clipboard.writeText(part.trim());
+          copy.textContent="Copied!";
+          setTimeout(()=>copy.textContent="Copy",1500);
+        };
+
+        header.appendChild(lang);
+        header.appendChild(copy);
+
+        const pre=document.createElement("pre");
+        const code=document.createElement("code");
+
+        // 🔥 IMPORTANT FIX: COLORS WORK HERE
+        code.innerHTML = this.highlight(part.trim());
+
+        pre.appendChild(code);
+
+        codeBox.appendChild(header);
+        codeBox.appendChild(pre);
+
+        container.appendChild(codeBox);
       }
+
+      // 🧠 TEXT
       else{
+        const textDiv=document.createElement("div");
+        textDiv.className="ai-text";
+
         part.split("\n").forEach(line=>{
           if(line.trim()){
-            html+=`<div class="ai-text"><p>${line.trim()}</p></div>`;
+            const p=document.createElement("p");
+            p.textContent=line.trim();
+            textDiv.appendChild(p);
           }
         });
+
+        container.appendChild(textDiv);
       }
 
     });
 
-    return html;
+    this.messagesBox.appendChild(container);
+    this.scroll();
   },
 
   scroll(){
