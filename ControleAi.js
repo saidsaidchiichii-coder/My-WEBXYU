@@ -12,6 +12,7 @@ const AI = {
     div.className="msg user";
     div.textContent=text;
     this.messagesBox.appendChild(div);
+    this.scroll();
   },
 
   thinking(){
@@ -19,6 +20,7 @@ const AI = {
     div.className="msg ai";
     div.textContent="🤖 Thinking...";
     this.messagesBox.appendChild(div);
+    this.scroll();
     return div;
   },
 
@@ -38,11 +40,7 @@ const AI = {
 
       const reply=data?.reply || "No response";
 
-      const div=document.createElement("div");
-      div.className="msg ai";
-      div.textContent=reply;
-
-      this.messagesBox.appendChild(div);
+      this.aiReply(reply);
 
     }catch(e){
       load.remove();
@@ -50,8 +48,55 @@ const AI = {
       const div=document.createElement("div");
       div.className="msg ai";
       div.textContent="❌ API error";
-
       this.messagesBox.appendChild(div);
     }
+  },
+
+  /* =========================
+     🆕 SMART AI RESPONSE UI
+  ========================= */
+  aiReply(text){
+
+    const container=document.createElement("div");
+    container.className="msg ai";
+
+    const parts=text.split("```");
+
+    parts.forEach((part,i)=>{
+
+      // 💻 CODE BLOCK
+      if(i%2===1){
+        const pre=document.createElement("pre");
+        const code=document.createElement("code");
+
+        code.textContent=part.trim();
+
+        pre.style.background="#111";
+        pre.style.color="#0f0";
+        pre.style.padding="10px";
+        pre.style.borderRadius="10px";
+        pre.style.overflowX="auto";
+
+        pre.appendChild(code);
+        container.appendChild(pre);
+      }
+
+      // 🧠 TEXT
+      else{
+        const p=document.createElement("div");
+        p.textContent=part.trim();
+        container.appendChild(p);
+      }
+
+    });
+
+    this.messagesBox.appendChild(container);
+    this.scroll();
+  },
+
+  scroll(){
+    setTimeout(()=>{
+      this.messagesBox.scrollTop=this.messagesBox.scrollHeight;
+    },20);
   }
 };
