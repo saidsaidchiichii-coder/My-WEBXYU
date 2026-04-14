@@ -14,7 +14,14 @@ const ButtonProgram = {
       setTimeout(()=> copyBtn.innerText = "📋", 1000);
     };
 
-    // 🔁 REFRESH (FIXED)
+    // 👍 LIKE
+    const likeBtn = document.createElement("button");
+    likeBtn.innerText = "👍";
+    likeBtn.onclick = () => {
+      likeBtn.style.color = "#10a37f";
+    };
+
+    // 🔁 REFRESH
     const refreshBtn = document.createElement("button");
     refreshBtn.innerText = "🔁";
 
@@ -29,13 +36,17 @@ const ButtonProgram = {
           body: JSON.stringify({ message: userPrompt })
         });
 
-        const data = await res.json();
+        let data;
+
+        try{
+          data = await res.json();
+        }catch{
+          throw new Error("Bad JSON");
+        }
 
         const reply = data?.reply || "No response";
 
-        // ❗ بدل remove → غير بدل المحتوى
         messageDiv.innerHTML = "";
-
         AI.render(reply, userPrompt);
 
       }catch(e){
@@ -43,13 +54,6 @@ const ButtonProgram = {
       }
 
       refreshBtn.innerText = "🔁";
-    };
-
-    // 👍 LIKE
-    const likeBtn = document.createElement("button");
-    likeBtn.innerText = "👍";
-    likeBtn.onclick = () => {
-      likeBtn.style.color = "#10a37f";
     };
 
     // 📥 DOWNLOAD
@@ -61,15 +65,15 @@ const ButtonProgram = {
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = "response.txt";
+      a.download = "ilyass-ai.txt";
       a.click();
 
       URL.revokeObjectURL(url);
     };
 
     box.appendChild(copyBtn);
-    box.appendChild(refreshBtn);
     box.appendChild(likeBtn);
+    box.appendChild(refreshBtn);
     box.appendChild(downloadBtn);
 
     messageDiv.appendChild(box);
