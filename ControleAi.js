@@ -1,7 +1,6 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
-  uploadedFiles: [],
 
   /* =========================
      🎨 SYNTAX HIGHLIGHT
@@ -62,21 +61,35 @@ const AI = {
     const load = this.thinking();
 
     try {
-      // Prepare form data with files
-      const formData = new FormData();
-      formData.append('message', message);
-      
-      // Add uploaded files if any
+      // Prepare data with files as Base64
+      const payload = {
+        message: message,
+        files: []
+      };
+
+      // Get files from input
       const fileInput = document.getElementById('chatFileInput') || document.getElementById('homeFileInput');
       if (fileInput && fileInput.files.length > 0) {
-        Array.from(fileInput.files).forEach((file, index) => {
-          formData.append(`file_${index}`, file);
-        });
+        for (let file of fileInput.files) {
+          const reader = new FileReader();
+          await new Promise((resolve) => {
+            reader.onload = (e) => {
+              payload.files.push({
+                name: file.name,
+                type: file.type,
+                data: e.target.result
+              });
+              resolve();
+            };
+            reader.readAsDataURL(file);
+          });
+        }
       }
 
       const res = await fetch(this.API_URL, {
         method: "POST",
-        body: formData
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -170,13 +183,16 @@ const AI = {
     
     // Add voice button after streaming is complete
     if (textContent.trim()) {
-      setTimeout(() => {
-        this.addVoiceButton(container, textContent.trim());
-      }, 300);
+      this.addVoiceButton(container, textContent.trim());
     }
   },
 
   addVoiceButton(messageElement, text) {
+    // Check if voice button already exists
+    if (messageElement.querySelector('.voice-btn-play')) {
+      return;
+    }
+
     const voiceContainer = document.createElement('div');
     voiceContainer.className = 'voice-message';
     voiceContainer.style.animation = 'slideIn 0.3s ease-out';
