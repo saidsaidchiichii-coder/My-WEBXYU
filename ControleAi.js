@@ -7,6 +7,7 @@ const AI = {
     this.API_URL = api;
   },
 
+  /* 👤 USER */
   user(text){
     const div = document.createElement("div");
     div.className = "msg user";
@@ -16,6 +17,7 @@ const AI = {
     this.scroll();
   },
 
+  /* 🤖 THINKING */
   thinking(){
     const div = document.createElement("div");
     div.className = "msg ai";
@@ -26,44 +28,56 @@ const AI = {
     return div;
   },
 
-async ask(message){
-  const load = this.thinking();
+  /* 🚀 ASK AI (FIXED) */
+  async ask(message){
+    const load = this.thinking();
 
-  try{
-    const res = await fetch(this.API_URL,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ message })
-    });
+    try{
+      const res = await fetch(this.API_URL,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ message })
+      });
 
-    // 🔥 CHECK RESPONSE
-    if(!res.ok){
-      throw new Error("Server error");
+      if(!res.ok){
+        throw new Error("Server not OK");
+      }
+
+      let data;
+
+      try{
+        data = await res.json();
+      }catch{
+        const raw = await res.text();
+        console.log("RAW RESPONSE:", raw);
+        throw new Error("Not JSON");
+      }
+
+      console.log("API DATA:", data);
+
+      load.remove();
+
+      const reply =
+        data?.reply ||
+        data?.message ||
+        "🤖 AI did not return anything";
+
+      this.render(reply, message);
+
+    }catch(e){
+      load.remove();
+
+      console.error("API ERROR:", e);
+
+      const div = document.createElement("div");
+      div.className = "msg ai";
+      div.textContent = "❌ AI server مشكلة (check console)";
+
+      this.messagesBox.appendChild(div);
     }
+  },
 
-    const data = await res.json();
-
-    console.log("API DATA:", data); // مهم باش تشوف المشكل
-
-    load.remove();
-
-    const reply = data?.reply || data?.message || "❌ Empty response";
-
-    this.render(reply, message);
-
-  }catch(e){
-    load.remove();
-
-    console.error("API ERROR:", e);
-
-    const div = document.createElement("div");
-    div.className = "msg ai";
-    div.textContent = "❌ API OFFLINE or ERROR";
-
-    this.messagesBox.appendChild(div);
-  }
-}
-
+  /* 🎨 RENDER */
   render(text, prompt){
 
     const container = document.createElement("div");
@@ -79,12 +93,34 @@ async ask(message){
         const wrapper = document.createElement("div");
         wrapper.className = "code-box";
 
+        const header = document.createElement("div");
+        header.className = "code-header";
+
+        const lang = document.createElement("div");
+        lang.className = "code-lang";
+        lang.textContent = "Code";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "copy-btn";
+        copyBtn.textContent = "📋";
+
+        copyBtn.onclick = () => {
+          navigator.clipboard.writeText(part.trim());
+          copyBtn.textContent = "✔";
+          setTimeout(()=>copyBtn.textContent="📋",1000);
+        };
+
+        header.appendChild(lang);
+        header.appendChild(copyBtn);
+
         const pre = document.createElement("pre");
         const code = document.createElement("code");
 
         code.textContent = part.trim();
 
         pre.appendChild(code);
+
+        wrapper.appendChild(header);
         wrapper.appendChild(pre);
 
         container.appendChild(wrapper);
@@ -92,18 +128,20 @@ async ask(message){
 
       // 🧠 TEXT
       else{
-        const p = document.createElement("div");
-        p.className = "ai-text";
-        p.textContent = part.trim();
-
-        container.appendChild(p);
+        const clean = part.trim();
+        if(clean){
+          const p = document.createElement("div");
+          p.className = "ai-text";
+          p.textContent = clean;
+          container.appendChild(p);
+        }
       }
 
     });
 
     this.messagesBox.appendChild(container);
 
-    // 🔥 buttons (important)
+    // 🔥 BUTTONS
     ButtonProgram.attach(container, text, prompt);
 
     this.scroll();
@@ -113,13 +151,5 @@ async ask(message){
     setTimeout(()=>{
       this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
     },20);
-  },
-
-  error(){
-    const div = document.createElement("div");
-    div.className = "msg ai";
-    div.textContent = "❌ API error";
-
-    this.messagesBox.appendChild(div);
   }
 };
