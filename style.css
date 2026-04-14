@@ -39,6 +39,26 @@ body{
   font-weight:bold;
 }
 
+/* 🎨 SYNTAX COLORS */
+.code-box code {
+  color: #1e1e1e;
+}
+
+/* comments */
+.code-box .cmt { color: #6a9955; }
+
+/* keywords */
+.code-box .kw { color: #569cd6; }
+
+/* strings */
+.code-box .str { color: #ce9178; }
+
+/* numbers */
+.code-box .num { color: #b5cea8; }
+
+/* functions */
+.code-box .fn { color: #dcdcaa; }
+
 /* INPUT */
 .inputBox{
   width:600px;
