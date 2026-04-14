@@ -60,23 +60,17 @@ const AI = {
   async ask(message) {
     const load = this.thinking();
 
-    // Instruction s-ghira bzaff bach l-API may-blockihach
-    const darijaPrompt = " (Respond in Moroccan Darija)";
-
     try {
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          message: message + darijaPrompt
-        })
+        body: JSON.stringify({ message })
       });
 
       const data = await res.json();
       load.remove();
       
-      // Ila l-API rj3at reply, n-render-iwah, sinon n-render-iw l-error
-      let reply = data?.reply || "Smah lya, ma9dertch n-processi had l-talab.";
+      let reply = data?.reply || "I'm sorry, I couldn't process that.";
 
       this.streamRender(reply);
 
