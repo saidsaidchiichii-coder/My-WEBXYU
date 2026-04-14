@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ILYASS AI</title>
+    <title>ILYASS AI | Future of Intelligence</title>
     <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="dark-theme">
 
-    <!-- HEADER -->
+    <!-- NAVIGATION -->
     <header class="top-nav">
         <div class="nav-left">
-            <div class="logo-container">
+            <div class="logo-container" onclick="location.reload()">
                 <svg class="grok-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                 <span class="logo-text">ILYASS AI</span>
             </div>
@@ -37,7 +37,7 @@
     <div id="settingsModal" class="modal-backdrop hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>⚙️ Settings</h3>
+                <h3>⚙️ AI Configuration</h3>
                 <button id="closeSettings" class="btn-icon"><i data-lucide="x"></i></button>
             </div>
             <div class="modal-body">
@@ -49,17 +49,15 @@
     </div>
 
     <main class="container">
-        <!-- HOME VIEW -->
+        <!-- HOME VIEW (INITIAL ENTRANCE) -->
         <section id="home" class="home-view">
             <div class="hero-logo">
-                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                  <h1>ILYASS AI</h1>
             </div>
             
             <div class="search-box">
-                <!-- File Preview Container -->
                 <div id="filePreview" class="hidden"></div>
-                
                 <div class="input-row">
                     <label for="fileInput" class="action-icon">
                         <i data-lucide="paperclip"></i>
@@ -67,7 +65,6 @@
                     </label>
                     <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); startChat(); }"></textarea>
                 </div>
-                
                 <div class="input-controls">
                     <div class="controls-left">
                         <div class="mode-selector">Auto <i data-lucide="chevron-down" class="icon-sm"></i></div>
@@ -78,7 +75,7 @@
                     </div>
                 </div>
             </div>
-            <div class="hint-text">New · Hold Ctrl+D to dictate</div>
+            <div class="hint-text">Advanced AI Engine · Real-time Intelligence</div>
         </section>
 
         <!-- CHAT VIEW -->
@@ -114,13 +111,12 @@
         lucide.createIcons();
         AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-        // UI STATE ELEMENTS
         const homeView = document.getElementById("home");
         const chatView = document.getElementById("chat");
         const settingsModal = document.getElementById("settingsModal");
         const configDetails = document.getElementById("configDetails");
 
-        // SETTINGS / CONFIG LOGIC
+        // SETTINGS
         document.getElementById("configTrigger").onclick = () => settingsModal.classList.remove("hidden");
         document.getElementById("settingsTrigger").onclick = () => settingsModal.classList.remove("hidden");
         document.getElementById("closeSettings").onclick = () => settingsModal.classList.add("hidden");
@@ -129,17 +125,17 @@
             if (window.AI_CONFIG) {
                 document.getElementById("configName").textContent = AI_CONFIG.name;
                 configDetails.innerHTML = `
-                    <div class="config-row"><span class="config-label">Name</span><span class="config-value">${AI_CONFIG.name}</span></div>
-                    <div class="config-row"><span class="config-label">Tone</span><span class="config-value">${AI_CONFIG.style.tone}</span></div>
-                    <div class="config-row"><span class="config-label">Length</span><span class="config-value">${AI_CONFIG.style.length}</span></div>
-                    <div class="config-row"><span class="config-label">Language</span><span class="config-value">${AI_CONFIG.language}</span></div>
-                    <div class="config-row"><span class="config-label">Version</span><span class="config-value">Grok-2.0-Elite</span></div>
-                    <div class="config-row"><span class="config-label">Mode</span><span class="config-value">Standard</span></div>
+                    <div class="config-row"><span class="config-label">Agent Name</span><span class="config-value">${AI_CONFIG.name}</span></div>
+                    <div class="config-row"><span class="config-label">Response Style</span><span class="config-value">${AI_CONFIG.style.tone}</span></div>
+                    <div class="config-row"><span class="config-label">Output Length</span><span class="config-value">${AI_CONFIG.style.length}</span></div>
+                    <div class="config-row"><span class="config-label">Primary Language</span><span class="config-value">${AI_CONFIG.language}</span></div>
+                    <div class="config-row"><span class="config-label">Engine</span><span class="config-value">Grok-3-Ultra</span></div>
+                    <div class="config-row"><span class="config-label">Latency</span><span class="config-value">~140ms</span></div>
                 `;
             }
         });
 
-        // FILE UPLOAD LOGIC
+        // FILE UPLOAD PREVIEW
         function handleFiles(input, previewId) {
             const preview = document.getElementById(previewId);
             input.onchange = (e) => {
@@ -150,7 +146,7 @@
                     Array.from(files).forEach(file => {
                         const div = document.createElement("div");
                         div.className = "file-preview";
-                        div.innerHTML = `<i data-lucide="file-text" class="icon-sm"></i> <span>${file.name}</span> <i data-lucide="x" class="remove-file icon-sm" onclick="this.parentElement.remove()"></i>`;
+                        div.innerHTML = `<i data-lucide="file" class="icon-sm"></i> <span>${file.name}</span> <i data-lucide="x" class="remove-file icon-sm" onclick="this.parentElement.remove()"></i>`;
                         preview.appendChild(div);
                     });
                     lucide.createIcons();
@@ -160,31 +156,34 @@
         handleFiles(document.getElementById("fileInput"), "filePreview");
         handleFiles(document.getElementById("chatFileInput"), "chatFilePreview");
 
-        // AUDIO LOGIC (SIMULATED)
+        // MIC ANIMATION
         function setupMic(btnId) {
             const btn = document.getElementById(btnId);
-            btn.onclick = () => {
-                btn.classList.toggle("active");
-                if (btn.classList.contains("active")) {
-                    console.log("Listening...");
-                }
-            };
+            btn.onclick = () => btn.classList.toggle("active");
         }
         setupMic("micBtn");
         setupMic("chatMicBtn");
 
-        // CHAT TRIGGERS
+        // CHAT TRANSITIONS
         function startChat() {
             const input = document.getElementById("homeInput");
             const text = input.value.trim();
             if (!text) return;
-            homeView.classList.add("hidden");
-            chatView.classList.remove("hidden");
-            AI.user(text);
-            input.value = "";
-            input.style.height = 'auto';
-            document.getElementById("filePreview").classList.add("hidden");
-            AI.ask(text);
+            
+            // Fade out home
+            homeView.style.transition = "all 0.5s ease";
+            homeView.style.opacity = "0";
+            homeView.style.transform = "scale(0.9)";
+            
+            setTimeout(() => {
+                homeView.classList.add("hidden");
+                chatView.classList.remove("hidden");
+                AI.user(text);
+                input.value = "";
+                input.style.height = 'auto';
+                document.getElementById("filePreview").classList.add("hidden");
+                AI.ask(text);
+            }, 500);
         }
 
         function send() {
