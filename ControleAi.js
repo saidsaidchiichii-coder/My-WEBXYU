@@ -3,158 +3,142 @@ const AI = {
   API_URL: null,
 
   /* =========================
-     🎨 SYNTAX HIGHLIGHT (FIXED)
+     🎨 SYNTAX HIGHLIGHT (ENHANCED)
   ========================= */
-  highlight(code){
-
+  highlight(code) {
     return code
-      // escape HTML (IMPORTANT)
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-
-      // comments
-      .replace(/(\/\/.*)/g,'<span class="cmt">$1</span>')
-
-      // strings
-      .replace(/(["'`].*?["'`])/g,'<span class="str">$1</span>')
-
-      // numbers
-      .replace(/\b(\d+)\b/g,'<span class="num">$1</span>')
-
-      // keywords (JS + general)
-      .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g,
-        '<span class="kw">$1</span>')
-
-      // functions
-      .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g,
-        '<span class="fn">$1</span>(');
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/(\/\/.*)/g, '<span class="cmt">$1</span>')
+      .replace(/(["'`].*?["'`])/g, '<span class="str">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="num">$1</span>')
+      .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>(');
   },
 
-  init(box,api){
-    this.messagesBox=document.getElementById(box);
-    this.API_URL=api;
+  init(box, api) {
+    this.messagesBox = document.getElementById(box);
+    this.API_URL = api;
   },
 
-  user(text){
-    const div=document.createElement("div");
-    div.className="msg user";
-    div.textContent=text;
+  user(text) {
+    const div = document.createElement("div");
+    div.className = "msg user";
+    div.textContent = text;
     this.messagesBox.appendChild(div);
     this.scroll();
   },
 
-  thinking(){
-    const div=document.createElement("div");
-    div.className="msg ai";
-    div.textContent="🤖 Thinking...";
+  thinking() {
+    const div = document.createElement("div");
+    div.className = "msg ai thinking-msg";
+    div.innerHTML = `
+        <div class="typing">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    `;
     this.messagesBox.appendChild(div);
     this.scroll();
     return div;
   },
 
-  async ask(message){
-    const load=this.thinking();
+  async ask(message) {
+    const load = this.thinking();
 
-    try{
-      const res=await fetch(this.API_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message})
+    try {
+      const res = await fetch(this.API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
       });
 
-      const data=await res.json();
-
+      const data = await res.json();
       load.remove();
-      this.render(data?.reply || "No response");
+      
+      // STREAMING EFFECT SIMULATION
+      this.streamRender(data?.reply || "No response");
 
-    }catch(e){
+    } catch (e) {
       load.remove();
-
-      const err=document.createElement("div");
-      err.className="msg ai";
-      err.textContent="❌ API error";
+      const err = document.createElement("div");
+      err.className = "msg ai error";
+      err.textContent = "❌ API error. Please check your connection.";
       this.messagesBox.appendChild(err);
     }
   },
 
   /* =========================
-     💻 RENDER SYSTEM (FIXED)
+     🌊 STREAMING RENDER SYSTEM
   ========================= */
-  render(text){
-
-    const container=document.createElement("div");
-    container.className="msg ai";
-
-    const parts=text.split("```");
-
-    parts.forEach((part,i)=>{
-
-      // 💻 CODE BLOCK
-      if(i%2===1){
-
-        const codeBox=document.createElement("div");
-        codeBox.className="code-box";
-
-        const header=document.createElement("div");
-        header.className="code-header";
-
-        const lang=document.createElement("span");
-        lang.className="code-lang";
-        lang.textContent="code";
-
-        const copy=document.createElement("button");
-        copy.className="copy-btn";
-        copy.textContent="Copy";
-
-        copy.onclick=()=>{
+  async streamRender(fullText) {
+    const container = document.createElement("div");
+    container.className = "msg ai";
+    this.messagesBox.appendChild(container);
+    
+    const parts = fullText.split("```");
+    
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      
+      // CODE BLOCK
+      if (i % 2 === 1) {
+        const codeBox = document.createElement("div");
+        codeBox.className = "code-box";
+        
+        const header = document.createElement("div");
+        header.className = "code-header";
+        header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
+        
+        const copyBtn = header.querySelector(".copy-btn");
+        copyBtn.onclick = () => {
           navigator.clipboard.writeText(part.trim());
-          copy.textContent="Copied!";
-          setTimeout(()=>copy.textContent="Copy",1500);
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => copyBtn.textContent = "Copy", 1500);
         };
 
-        header.appendChild(lang);
-        header.appendChild(copy);
-
-        const pre=document.createElement("pre");
-        const code=document.createElement("code");
-
-        // 🔥 IMPORTANT FIX: COLORS WORK HERE
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
         code.innerHTML = this.highlight(part.trim());
-
+        
         pre.appendChild(code);
-
         codeBox.appendChild(header);
         codeBox.appendChild(pre);
-
         container.appendChild(codeBox);
-      }
-
-      // 🧠 TEXT
-      else{
-        const textDiv=document.createElement("div");
-        textDiv.className="ai-text";
-
-        part.split("\n").forEach(line=>{
-          if(line.trim()){
-            const p=document.createElement("p");
-            p.textContent=line.trim();
-            textDiv.appendChild(p);
-          }
-        });
-
+      } 
+      // TEXT WITH TYPING EFFECT
+      else {
+        const textDiv = document.createElement("div");
+        textDiv.className = "ai-text";
         container.appendChild(textDiv);
+        
+        const lines = part.split("\n");
+        for (const line of lines) {
+          if (line.trim()) {
+            const p = document.createElement("p");
+            textDiv.appendChild(p);
+            
+            // Type out characters
+            const words = line.trim().split(" ");
+            for (const word of words) {
+                p.textContent += word + " ";
+                this.scroll();
+                await new Promise(r => setTimeout(r, 20)); // Typing speed
+            }
+          }
+        }
       }
-
-    });
-
-    this.messagesBox.appendChild(container);
-    this.scroll();
+      this.scroll();
+    }
   },
 
-  scroll(){
-    setTimeout(()=>{
-      this.messagesBox.scrollTop=this.messagesBox.scrollHeight;
-    },20);
+  scroll() {
+    const box = this.messagesBox;
+    box.scrollTo({
+        top: box.scrollHeight,
+        behavior: 'smooth'
+    });
   }
 };
