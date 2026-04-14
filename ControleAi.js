@@ -3,7 +3,7 @@ const AI = {
   API_URL: null,
 
   /* =========================
-     🎨 SYNTAX HIGHLIGHT (ENHANCED)
+     🎨 SYNTAX HIGHLIGHT (ULTRA)
   ========================= */
   highlight(code) {
     return code
@@ -30,19 +30,26 @@ const AI = {
     this.scroll();
   },
 
+  /* =========================
+     🧠 ADVANCED THINKING EFFECT
+  ========================= */
   thinking() {
-    const div = document.createElement("div");
-    div.className = "msg ai thinking-msg";
-    div.innerHTML = `
-        <div class="typing">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
+    
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.className = "thinking-container";
+    thinkingDiv.innerHTML = `
+        <div class="loader-dots">
+            <span></span><span></span><span></span>
         </div>
+        <span class="thinking-text">Grok is thinking...</span>
     `;
-    this.messagesBox.appendChild(div);
+    
+    wrapper.appendChild(thinkingDiv);
+    this.messagesBox.appendChild(wrapper);
     this.scroll();
-    return div;
+    return wrapper;
   },
 
   async ask(message) {
@@ -58,20 +65,25 @@ const AI = {
       const data = await res.json();
       load.remove();
       
-      // STREAMING EFFECT SIMULATION
-      this.streamRender(data?.reply || "No response");
+      // EMOJI INJECTION (IF NOT PRESENT)
+      let reply = data?.reply || "I'm sorry, I couldn't process that. 🤖";
+      if (!reply.match(/[\u{1F300}-\u{1F6FF}]/u)) {
+          reply += " ✨";
+      }
+
+      this.streamRender(reply);
 
     } catch (e) {
       load.remove();
       const err = document.createElement("div");
       err.className = "msg ai error";
-      err.textContent = "❌ API error. Please check your connection.";
+      err.textContent = "❌ System Error: API Connection Failed. 🛸";
       this.messagesBox.appendChild(err);
     }
   },
 
   /* =========================
-     🌊 STREAMING RENDER SYSTEM
+     🌊 PIXEL-PERFECT STREAMING
   ========================= */
   async streamRender(fullText) {
     const container = document.createElement("div");
@@ -108,24 +120,25 @@ const AI = {
         codeBox.appendChild(pre);
         container.appendChild(codeBox);
       } 
-      // TEXT WITH TYPING EFFECT
+      // TEXT WITH NATURAL TYPING
       else {
         const textDiv = document.createElement("div");
         textDiv.className = "ai-text";
         container.appendChild(textDiv);
         
-        const lines = part.split("\n");
-        for (const line of lines) {
-          if (line.trim()) {
+        const paragraphs = part.split("\n");
+        for (const para of paragraphs) {
+          if (para.trim()) {
             const p = document.createElement("p");
+            p.style.marginBottom = "1rem";
             textDiv.appendChild(p);
             
-            // Type out characters
-            const words = line.trim().split(" ");
+            const words = para.trim().split(" ");
             for (const word of words) {
                 p.textContent += word + " ";
                 this.scroll();
-                await new Promise(r => setTimeout(r, 20)); // Typing speed
+                // Random typing delay for natural feel
+                await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
             }
           }
         }
