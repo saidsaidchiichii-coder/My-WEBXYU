@@ -1,66 +1,110 @@
-const ButtonProgram = {
+const AI = {
+  messagesBox: null,
+  API_URL: null,
 
-  attach(messageDiv, text, userPrompt){
+  init(boxId, api){
+    this.messagesBox = document.getElementById(boxId);
+    this.API_URL = api;
+  },
 
-    const box = document.createElement("div");
-    box.className = "ai-actions";
+  user(text){
+    const div = document.createElement("div");
+    div.className = "msg user";
+    div.textContent = "👤 " + text;
 
-    // 📋 COPY
-    const copyBtn = document.createElement("button");
-    copyBtn.innerText = "📋 Copy";
-    copyBtn.onclick = () => {
-      navigator.clipboard.writeText(text);
-      copyBtn.innerText = "✔";
-      setTimeout(()=> copyBtn.innerText = "📋 Copy", 1200);
-    };
+    this.messagesBox.appendChild(div);
+    this.scroll();
+  },
 
-    // 👍 LIKE
-    const likeBtn = document.createElement("button");
-    likeBtn.innerText = "👍";
-    likeBtn.onclick = () => {
-      likeBtn.style.color = "#10a37f";
-    };
+  thinking(){
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.innerHTML = "🤖 Thinking...";
 
-    // 🔁 REFRESH
-    const refreshBtn = document.createElement("button");
-    refreshBtn.innerText = "🔁";
-    refreshBtn.onclick = async () => {
-      refreshBtn.innerText = "⏳";
+    this.messagesBox.appendChild(div);
+    this.scroll();
+    return div;
+  },
 
-      const res = await fetch(AI.API_URL,{
+  async ask(message){
+    const load = this.thinking();
+
+    try{
+      const res = await fetch(this.API_URL,{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ message: userPrompt })
+        body: JSON.stringify({ message })
       });
 
       const data = await res.json();
 
-      messageDiv.remove();
-      AI.render(data.reply || "No response", userPrompt);
+      load.remove();
 
-    };
+      const reply = data?.reply || "❌ No response from AI";
+      this.render(reply, message);
 
-    // 📥 DOWNLOAD
-    const downloadBtn = document.createElement("button");
-    downloadBtn.innerText = "📥";
-    downloadBtn.onclick = () => {
-      const blob = new Blob([text], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
+    }catch(e){
+      load.remove();
+      this.error();
+    }
+  },
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "ilyass-ai.txt";
-      a.click();
+  render(text, prompt){
 
-      URL.revokeObjectURL(url);
-    };
+    const container = document.createElement("div");
+    container.className = "msg ai";
 
-    box.appendChild(copyBtn);
-    box.appendChild(likeBtn);
-    box.appendChild(refreshBtn);
-    box.appendChild(downloadBtn);
+    const parts = text.split("```");
 
-    messageDiv.appendChild(box);
+    parts.forEach((part, i)=>{
+
+      // 💻 CODE
+      if(i % 2 === 1){
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-box";
+
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+
+        code.textContent = part.trim();
+
+        pre.appendChild(code);
+        wrapper.appendChild(pre);
+
+        container.appendChild(wrapper);
+      }
+
+      // 🧠 TEXT
+      else{
+        const p = document.createElement("div");
+        p.className = "ai-text";
+        p.textContent = part.trim();
+
+        container.appendChild(p);
+      }
+
+    });
+
+    this.messagesBox.appendChild(container);
+
+    // 🔥 buttons (important)
+    ButtonProgram.attach(container, text, prompt);
+
+    this.scroll();
+  },
+
+  scroll(){
+    setTimeout(()=>{
+      this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
+    },20);
+  },
+
+  error(){
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.textContent = "❌ API error";
+
+    this.messagesBox.appendChild(div);
   }
-
 };
