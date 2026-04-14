@@ -38,24 +38,22 @@ const AI = {
 
       load.remove();
 
-      const reply=data?.reply || "No response";
-
-      this.aiReply(reply);
+      this.render(data?.reply || "No response");
 
     }catch(e){
       load.remove();
 
-      const div=document.createElement("div");
-      div.className="msg ai";
-      div.textContent="❌ API error";
-      this.messagesBox.appendChild(div);
+      const err=document.createElement("div");
+      err.className="msg ai";
+      err.textContent="❌ API error";
+      this.messagesBox.appendChild(err);
     }
   },
 
   /* =========================
-     🆕 SMART AI RESPONSE UI
+      🔥 FIXED RENDER SYSTEM
   ========================= */
-  aiReply(text){
+  render(text){
 
     const container=document.createElement("div");
     container.className="msg ai";
@@ -66,26 +64,35 @@ const AI = {
 
       // 💻 CODE BLOCK
       if(i%2===1){
+
+        const codeBox=document.createElement("div");
+        codeBox.className="code-box";
+
         const pre=document.createElement("pre");
         const code=document.createElement("code");
 
         code.textContent=part.trim();
 
-        pre.style.background="#111";
-        pre.style.color="#0f0";
-        pre.style.padding="10px";
-        pre.style.borderRadius="10px";
-        pre.style.overflowX="auto";
-
         pre.appendChild(code);
-        container.appendChild(pre);
+        codeBox.appendChild(pre);
+
+        container.appendChild(codeBox);
       }
 
       // 🧠 TEXT
       else{
-        const p=document.createElement("div");
-        p.textContent=part.trim();
-        container.appendChild(p);
+        const textDiv=document.createElement("div");
+        textDiv.className="ai-text";
+
+        part.split("\n").forEach(line=>{
+          if(line.trim()){
+            const p=document.createElement("p");
+            p.textContent=line.trim();
+            textDiv.appendChild(p);
+          }
+        });
+
+        container.appendChild(textDiv);
       }
 
     });
