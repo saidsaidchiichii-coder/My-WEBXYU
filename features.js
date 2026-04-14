@@ -16,6 +16,7 @@ function setupFileUpload(inputId, previewId) {
             
             const fileName = document.createElement('span');
             fileName.textContent = file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name;
+            fileName.title = file.name;
             
             const removeBtn = document.createElement('i');
             removeBtn.setAttribute('data-lucide', 'x');
@@ -39,7 +40,10 @@ function setupFileUpload(inputId, previewId) {
         });
         
         if (files.length > 0) {
+            preview.style.display = 'flex';
             lucide.createIcons();
+        } else {
+            preview.style.display = 'none';
         }
     });
 }
@@ -63,40 +67,45 @@ function toggleMic(type) {
     if (!isRecording) {
         isRecording = true;
         micBtn.classList.add('recording');
-        audioChunks = [];
         
-        recognition.start();
-        
-        recognition.onstart = () => {
-            micBtn.style.color = '#ff4444';
-        };
-
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
+        try {
+            recognition.start();
             
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
+            recognition.onstart = () => {
+                micBtn.style.color = '#ff4444';
+                textarea.placeholder = 'Listening...';
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
                 
-                if (event.results[i].isFinal) {
-                    textarea.value += (textarea.value ? ' ' : '') + transcript;
-                } else {
-                    interimTranscript += transcript;
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    
+                    if (event.results[i].isFinal) {
+                        textarea.value += (textarea.value ? ' ' : '') + transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
                 }
-            }
-            
-            if (interimTranscript) {
-                textarea.placeholder = 'Listening: ' + interimTranscript;
-            }
-        };
+                
+                if (interimTranscript) {
+                    textarea.placeholder = 'Listening: ' + interimTranscript;
+                }
+            };
 
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            stopRecording(type);
-        };
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                stopRecording(type);
+            };
 
-        recognition.onend = () => {
+            recognition.onend = () => {
+                stopRecording(type);
+            };
+        } catch (err) {
+            console.error('Speech recognition not supported:', err);
             stopRecording(type);
-        };
+        }
 
     } else {
         stopRecording(type);
@@ -112,7 +121,11 @@ function stopRecording(type) {
     micBtn.style.color = '';
     textarea.placeholder = type === 'home' ? 'How can I help you today?' : 'Send a message...';
     
-    recognition.stop();
+    try {
+        recognition.stop();
+    } catch (err) {
+        console.error('Error stopping recognition:', err);
+    }
 }
 
 // ==================== TEXT-TO-SPEECH ====================
@@ -121,51 +134,31 @@ function speakText(text) {
         // Cancel any ongoing speech
         window.speechSynthesis.cancel();
         
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1;
-        utterance.pitch = 1;
-        utterance.volume = 1;
+        // Split text into chunks for better processing
+        const chunks = text.match(/[^.!?]+[.!?]+/g) || [text];
         
-        window.speechSynthesis.speak(utterance);
+        chunks.forEach((chunk, index) => {
+            const utterance = new SpeechSynthesisUtterance(chunk.trim());
+            utterance.rate = 0.95;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            utterance.lang = 'en-US';
+            
+            // Add delay between chunks
+            setTimeout(() => {
+                window.speechSynthesis.speak(utterance);
+            }, index * 100);
+        });
+    } else {
+        alert('Text-to-Speech is not supported in your browser');
     }
 }
 
-// Add voice button to AI messages
-function addVoiceButton(messageElement, text) {
-    const voiceContainer = document.createElement('div');
-    voiceContainer.className = 'voice-message';
-    
-    const playBtn = document.createElement('button');
-    playBtn.className = 'voice-btn-play';
-    playBtn.innerHTML = '<i data-lucide="volume-2"></i>';
-    playBtn.onclick = () => speakText(text);
-    
-    const duration = document.createElement('span');
-    duration.className = 'voice-duration';
-    duration.textContent = 'Listen';
-    
-    voiceContainer.appendChild(playBtn);
-    voiceContainer.appendChild(duration);
-    
-    messageElement.appendChild(voiceContainer);
-    lucide.createIcons();
-}
-
-// Override the streamRender to add voice buttons
-const originalStreamRender = AI.streamRender;
-AI.streamRender = async function(fullText) {
-    await originalStreamRender.call(this, fullText);
-    
-    // Add voice button to the last AI message
-    const messages = this.messagesBox.querySelectorAll('.msg-wrapper.ai');
-    if (messages.length > 0) {
-        const lastMessage = messages[messages.length - 1];
-        const msgContent = lastMessage.querySelector('.msg.ai');
-        
-        // Extract text without code blocks for voice
-        let textForVoice = fullText.split('```')[0].trim();
-        if (textForVoice) {
-            addVoiceButton(msgContent, textForVoice);
-        }
-    }
-};
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Ensure file preview areas are hidden initially
+    const homePreview = document.getElementById('homeFilePreview');
+    const chatPreview = document.getElementById('chatFilePreview');
+    if (homePreview) homePreview.style.display = 'none';
+    if (chatPreview) chatPreview.style.display = 'none';
+});
