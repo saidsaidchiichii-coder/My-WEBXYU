@@ -1,155 +1,108 @@
-const AI = {
-  messagesBox: null,
-  API_URL: null,
+const API_URL = "https://my-webxyu.vercel.app/api/chat";
 
-  init(boxId, api){
-    this.messagesBox = document.getElementById(boxId);
-    this.API_URL = api;
-  },
+const messagesBox = document.getElementById("messages");
 
-  /* 👤 USER */
-  user(text){
-    const div = document.createElement("div");
-    div.className = "msg user";
-    div.textContent = "👤 " + text;
+/* START CHAT */
+function startChat(){
+  const text = document.getElementById("homeInput").value.trim();
+  if(!text) return;
 
-    this.messagesBox.appendChild(div);
-    this.scroll();
-  },
+  document.getElementById("home").style.display="none";
+  document.getElementById("chat").style.display="flex";
 
-  /* 🤖 THINKING */
-  thinking(){
-    const div = document.createElement("div");
-    div.className = "msg ai";
-    div.innerHTML = "🤖 Thinking...";
+  addMsg(text,"user");
+  document.getElementById("homeInput").value="";
 
-    this.messagesBox.appendChild(div);
-    this.scroll();
-    return div;
-  },
+  askAI(text);
+}
 
-  /* 🚀 ASK AI (FIXED) */
-  async ask(message){
-    const load = this.thinking();
+/* SEND */
+function send(){
+  const input = document.getElementById("chatInput");
+  const text = input.value.trim();
+  if(!text) return;
 
-    try{
-      const res = await fetch(this.API_URL,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ message })
-      });
+  addMsg(text,"user");
+  input.value="";
 
-      if(!res.ok){
-        throw new Error("Server not OK");
-      }
+  askAI(text);
+}
 
-      let data;
+/* ADD MESSAGE */
+function addMsg(text,type){
+  const div = document.createElement("div");
+  div.className = "msg "+type;
+  div.textContent = text;
+  messagesBox.appendChild(div);
+  scroll();
+}
 
-      try{
-        data = await res.json();
-      }catch{
-        const raw = await res.text();
-        console.log("RAW RESPONSE:", raw);
-        throw new Error("Not JSON");
-      }
+/* THINKING */
+function thinking(){
+  const div = document.createElement("div");
+  div.className = "msg ai";
+  div.innerHTML = "🤖 Thinking...";
+  messagesBox.appendChild(div);
+  scroll();
+  return div;
+}
 
-      console.log("API DATA:", data);
+/* API CALL (SAFE) */
+async function askAI(message){
+  const load = thinking();
 
-      load.remove();
-
-      const reply =
-        data?.reply ||
-        data?.message ||
-        "🤖 AI did not return anything";
-
-      this.render(reply, message);
-
-    }catch(e){
-      load.remove();
-
-      console.error("API ERROR:", e);
-
-      const div = document.createElement("div");
-      div.className = "msg ai";
-      div.textContent = "❌ AI server مشكلة (check console)";
-
-      this.messagesBox.appendChild(div);
-    }
-  },
-
-  /* 🎨 RENDER */
-  render(text, prompt){
-
-    const container = document.createElement("div");
-    container.className = "msg ai";
-
-    const parts = text.split("```");
-
-    parts.forEach((part, i)=>{
-
-      // 💻 CODE
-      if(i % 2 === 1){
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "code-box";
-
-        const header = document.createElement("div");
-        header.className = "code-header";
-
-        const lang = document.createElement("div");
-        lang.className = "code-lang";
-        lang.textContent = "Code";
-
-        const copyBtn = document.createElement("button");
-        copyBtn.className = "copy-btn";
-        copyBtn.textContent = "📋";
-
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(part.trim());
-          copyBtn.textContent = "✔";
-          setTimeout(()=>copyBtn.textContent="📋",1000);
-        };
-
-        header.appendChild(lang);
-        header.appendChild(copyBtn);
-
-        const pre = document.createElement("pre");
-        const code = document.createElement("code");
-
-        code.textContent = part.trim();
-
-        pre.appendChild(code);
-
-        wrapper.appendChild(header);
-        wrapper.appendChild(pre);
-
-        container.appendChild(wrapper);
-      }
-
-      // 🧠 TEXT
-      else{
-        const clean = part.trim();
-        if(clean){
-          const p = document.createElement("div");
-          p.className = "ai-text";
-          p.textContent = clean;
-          container.appendChild(p);
-        }
-      }
-
+  try{
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ message })
     });
 
-    this.messagesBox.appendChild(container);
+    if(!res.ok) throw new Error("API FAIL");
 
-    // 🔥 BUTTONS
-    ButtonProgram.attach(container, text, prompt);
+    const data = await res.json();
 
-    this.scroll();
-  },
+    load.remove();
 
-  scroll(){
-    setTimeout(()=>{
-      this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
-    },20);
+    render(data.reply || "No response");
+
+  }catch(e){
+    load.remove();
+    render("❌ AI server error / offline");
   }
-};
+}
+
+/* RENDER RESPONSE */
+function render(text){
+
+  const container = document.createElement("div");
+  container.className = "msg ai";
+
+  const parts = text.split("```");
+
+  parts.forEach((part,i)=>{
+
+    if(i % 2 === 1){
+      const pre = document.createElement("pre");
+      const code = document.createElement("code");
+      code.textContent = part;
+      pre.appendChild(code);
+      container.appendChild(pre);
+    }else{
+      const div = document.createElement("div");
+      div.textContent = part;
+      container.appendChild(div);
+    }
+
+  });
+
+  messagesBox.appendChild(container);
+  scroll();
+}
+
+/* SCROLL */
+function scroll(){
+  setTimeout(()=>{
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  },50);
+}
