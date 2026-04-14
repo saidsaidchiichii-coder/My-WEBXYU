@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ILYASS AI</title>
-
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,27 +11,15 @@
 
 <div class="top">
   <div class="logo">ILYASS AI</div>
-
-  <div class="auth">
-    <button class="btn login">Login</button>
-    <button class="btn signup">Sign up</button>
-  </div>
-</div>
-
-<div class="nav">
-  <button onclick="go('home')" class="active">Home</button>
-  <button onclick="go('earn')">Earn Money</button>
-  <button onclick="go('settings')">Settings</button>
 </div>
 
 <!-- HOME -->
-<div id="home" class="center section" style="display:flex;">
+<div id="home" class="center">
   <div class="title">Ask anything</div>
 
   <div class="inputBox">
-    <input id="homeInput" placeholder="What do you want to know?"
+    <input id="homeInput" placeholder="Type..."
       onkeydown="if(event.key==='Enter') startChat()">
-
     <div class="send" onclick="startChat()">➤</div>
   </div>
 </div>
@@ -42,59 +29,12 @@
   <div id="messages" class="messages"></div>
 
   <div class="bottom">
-    <textarea id="chatInput" placeholder="Send a message..."
-      onkeydown="handleKey(event)"></textarea>
+    <input id="chatInput" placeholder="Send..."
+      onkeydown="if(event.key==='Enter') send()">
   </div>
 </div>
 
-<!-- OTHER -->
-<div id="earn" class="section" style="display:none; padding:20px; color:white;">
-  <h1>💰 Earn Money</h1>
-</div>
-
-<div id="settings" class="section" style="display:none; padding:20px; color:white;">
-  <h1>⚙️ Settings</h1>
-</div>
-
-<script src="navigation.js"></script>
-<script src="ControleAi.js"></script>
-
-<script>
-AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
-
-function startChat(){
-  const text = document.getElementById("homeInput").value.trim();
-  if(!text) return;
-
-  document.getElementById("home").style.display="none";
-  document.getElementById("chat").style.display="flex";
-
-  AI.user(text);
-  document.getElementById("homeInput").value="";
-
-  AI.ask(text);
-}
-
-function send(){
-  const input = document.getElementById("chatInput");
-  const text = input.value.trim();
-  if(!text) return;
-
-  AI.user(text);
-  input.value="";
-
-  AI.ask(text);
-}
-
-function handleKey(e){
-  if(e.key === "Enter" && e.shiftKey) return;
-
-  if(e.key === "Enter" && !e.shiftKey){
-    e.preventDefault();
-    send();
-  }
-}
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
