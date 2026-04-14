@@ -10,9 +10,17 @@ const AI = {
     personality: 'neutral',
     mood: 'neutral',
     interests: [],
-    communicationStyle: 'arabic',
+    communicationStyle: 'english',
     conversationHistory: [],
     learningData: {}
+  },
+
+  // 2. Gamification System
+  gamification: {
+    points: 0,
+    level: 1,
+    streak: 0,
+    achievements: []
   },
 
   // 3. Personality Modes
@@ -38,6 +46,7 @@ const AI = {
     this.API_URL = api;
     this.loadUserProfile();
     this.setupModeSelector();
+    this.showGamificationWidget();
   },
 
   // ==================== 1. PERSONAL LEARNING ====================
@@ -55,23 +64,19 @@ const AI = {
   },
 
   learnFromConversation(userMessage, aiResponse) {
-    // معالجة النص باستخدام TextProcessor
-    const processed = TextProcessor.enhanceMessage(userMessage);
-    const finalMessage = processed.processed;
-
-    const keywords = this.extractKeywords(finalMessage);
+    const keywords = this.extractKeywords(userMessage);
     keywords.forEach(keyword => {
       if (!this.userProfile.interests.includes(keyword)) {
         this.userProfile.interests.push(keyword);
       }
     });
 
-    this.userProfile.mood = this.detectMood(finalMessage);
-    this.userProfile.personality = this.detectPersonality(finalMessage);
+    this.userProfile.mood = this.detectMood(userMessage);
+    this.userProfile.personality = this.detectPersonality(userMessage);
 
     this.userProfile.conversationHistory.push({
       timestamp: new Date(),
-      user: finalMessage,
+      user: userMessage,
       ai: aiResponse,
       mood: this.userProfile.mood,
       personality: this.userProfile.personality
@@ -318,15 +323,11 @@ const AI = {
     const load = this.thinking();
 
     try {
-      // معالجة النص
-      const processed = TextProcessor.enhanceMessage(message);
-      const finalMessage = processed.processed;
-
       // Learn from conversation
-      this.learnFromConversation(finalMessage, '');
+      this.learnFromConversation(message, '');
 
       // Detect bias
-      const biases = this.detectBias(finalMessage);
+      const biases = this.detectBias(message);
       if (biases.length > 0) {
         const corrections = this.generateBiasCorrection(biases);
         this.showBiasAlert(corrections);
@@ -334,11 +335,10 @@ const AI = {
 
       // Prepare payload
       const payload = {
-        message: finalMessage,
+        message: message,
         files: [],
         mode: this.currentMode,
-        timestamp: new Date().toISOString(),
-        systemPrompt: this.getSmartSystemPrompt()
+        timestamp: new Date().toISOString()
       };
 
       // Get files
@@ -394,6 +394,9 @@ const AI = {
       reply = this.getPersonalityResponse(reply);
 
       this.streamRender(reply);
+
+      // Add points
+      this.addPoints(5, 'Received response');
 
     } catch (e) {
       load.remove();
@@ -465,32 +468,70 @@ const AI = {
     this.scroll();
   },
 
-  // ==================== SMART SYSTEM PROMPT ====================
-  getSmartSystemPrompt() {
-    const personality = this.userProfile.personality;
-    const mood = this.userProfile.mood;
-    const interests = this.userProfile.interests.slice(0, 5).join(', ');
+  // ==================== 12. GAMIFICATION ====================
+  addPoints(amount, reason) {
+    this.gamification.points += amount;
+    this.gamification.streak += 1;
 
-    let prompt = `أنت مساعد ذكي متقدم وودود. تتحدث بطريقة طبيعية وإنسانية.`;
-
-    if (personality === 'funny') {
-      prompt += ` استخدم الفكاهة والطرافة في ردودك.`;
-    } else if (personality === 'serious') {
-      prompt += ` كن احترافياً ورسمياً في ردودك.`;
-    } else if (personality === 'motivator') {
-      prompt += ` كن ملهماً وشجاعاً في ردودك.`;
-    } else if (personality === 'coach') {
-      prompt += ` اطرح أسئلة ذكية لتحفيز التفكير.`;
+    const currentLevel = this.gamification.level;
+    const milestones = { 1: 0, 2: 100, 3: 300, 4: 600, 5: 1000, 10: 5000 };
+    
+    for (const [level, pointsNeeded] of Object.entries(milestones)) {
+      if (this.gamification.points >= pointsNeeded && level > currentLevel) {
+        this.gamification.level = parseInt(level);
+        this.showLevelUpNotification(level);
+      }
     }
 
-    if (interests) {
-      prompt += ` المستخدم مهتم بـ: ${interests}.`;
+    this.saveUserProfile();
+    this.showGamificationWidget();
+  },
+
+  showLevelUpNotification(level) {
+    const notification = document.createElement('div');
+    notification.className = 'level-up-notification';
+    notification.innerHTML = `
+      <div class="level-up-content">
+        <h2>🎉 Level ${level} Unlocked!</h2>
+        <p>You're making amazing progress!</p>
+      </div>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+  },
+
+  showGamificationWidget() {
+    let widget = document.getElementById('gamificationWidget');
+    if (!widget) {
+      widget = document.createElement('div');
+      widget.id = 'gamificationWidget';
+      widget.className = 'gamification-widget';
+      document.body.appendChild(widget);
     }
 
-    prompt += ` تجنب الرفض والقول 'لم أفهم'. حاول دائماً فهم السياق والإجابة بذكاء.`;
-    prompt += ` لا تكرر نفس الجمل. كن متنوعاً وطبيعياً.`;
+    const status = {
+      points: this.gamification.points,
+      level: this.gamification.level,
+      streak: this.gamification.streak
+    };
 
-    return prompt;
+    widget.innerHTML = `
+      <div class="gamification-header">
+        <span class="gamification-title">Your Progress</span>
+      </div>
+      <div class="level-badge">${status.level}</div>
+      <div class="points-display">
+        <span>Points:</span>
+        <span class="points-value">${status.points}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${Math.min((status.points % 100), 100)}%"></div>
+      </div>
+      <div class="streak-display">
+        <span class="streak-flame">🔥</span>
+        <span>Streak: ${status.streak}</span>
+      </div>
+    `;
   },
 
   // ==================== STREAMING & VOICE ====================
