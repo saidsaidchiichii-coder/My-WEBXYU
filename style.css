@@ -1,10 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>AI UI</title>
-
-<style>
 *{
   margin:0;
   padding:0;
@@ -13,12 +6,10 @@
 }
 
 body{
-  background:#0b0b0f;
-  color:white;
+  background:linear-gradient(135deg,#ffffff,#f3f4f6);
   height:100vh;
   display:flex;
   flex-direction:column;
-  transition:0.6s;
 }
 
 /* TOP */
@@ -41,42 +32,43 @@ body{
   align-items:center;
   justify-content:center;
   gap:25px;
-  transition:1s;
 }
 
-/* 🔥 3D TITLE */
 .title{
   font-size:40px;
   font-weight:bold;
-  perspective:1000px;
-  animation:floatText 3s ease-in-out infinite;
-}
-
-@keyframes floatText{
-  0%{ transform:rotateX(0deg) translateY(0);}
-  50%{ transform:rotateX(20deg) translateY(-10px);}
-  100%{ transform:rotateX(0deg) translateY(0);}
 }
 
 /* 🎨 SYNTAX COLORS */
-.code-box code { color: #1e1e1e; }
+.code-box code {
+  color: #1e1e1e;
+}
+
+/* comments */
 .code-box .cmt { color: #6a9955; }
+
+/* keywords */
 .code-box .kw { color: #569cd6; }
+
+/* strings */
 .code-box .str { color: #ce9178; }
+
+/* numbers */
 .code-box .num { color: #b5cea8; }
+
+/* functions */
 .code-box .fn { color: #dcdcaa; }
 
 /* INPUT */
 .inputBox{
   width:600px;
   max-width:90%;
-  background:#1a1a22;
+  background:white;
   border-radius:999px;
   padding:12px 15px;
   display:flex;
   align-items:center;
-  box-shadow:0 5px 20px rgba(0,0,0,0.5);
-  transition:0.5s;
+  box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
 .inputBox input{
@@ -84,8 +76,6 @@ body{
   border:none;
   outline:none;
   font-size:15px;
-  background:transparent;
-  color:white;
 }
 
 .send{
@@ -105,12 +95,6 @@ body{
   display:none;
   flex:1;
   flex-direction:column;
-  animation:fadeIn 0.6s ease;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(20px);}
-  to{opacity:1; transform:translateY(0);}
 }
 
 .messages{
@@ -136,150 +120,75 @@ body{
 
 .ai{
   align-self:flex-start;
-  background:#1f1f28;
-  border:1px solid #333;
-}
-
-/* LOADING */
-.loading{
-  display:flex;
-  gap:5px;
-}
-
-.dot{
-  width:8px;
-  height:8px;
-  background:#aaa;
-  border-radius:50%;
-  animation:bounce 1s infinite;
-}
-
-.dot:nth-child(2){ animation-delay:0.2s;}
-.dot:nth-child(3){ animation-delay:0.4s;}
-
-@keyframes bounce{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(-6px);}
+  background:white;
+  border:1px solid #eee;
 }
 
 /* INPUT BOTTOM */
 .bottom{
   padding:15px;
-  border-top:1px solid #222;
+  border-top:1px solid #eee;
+}
+
+/* 💻 CODE BLOCK DESIGN */
+.code-box {
+  background: #f5f5f7;
+  border-radius: 12px;
+  margin: 10px 0;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* HEADER */
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: #ececf1;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* LANGUAGE */
+.code-lang {
+  color: #555;
+}
+
+/* COPY BUTTON */
+.copy-btn {
+  cursor: pointer;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+.copy-btn:hover {
+  background: #ddd;
+}
+
+/* CODE AREA */
+.code-box pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.code-box code {
+  font-family: Consolas, monospace;
+  font-size: 13px;
+  color: #222;
+  line-height: 1.5;
+  white-space: pre;
 }
 
 .bottom input{
   width:100%;
   padding:12px;
   border-radius:10px;
-  border:1px solid #333;
-  background:#1a1a22;
-  color:white;
+  border:1px solid #ddd;
 }
-
-/* 💻 CODE BLOCK DESIGN */
-.code-box {
-  background: #111;
-  border-radius: 12px;
-  margin: 10px 0;
-  overflow: hidden;
-  border: 1px solid #333;
-}
-
-.code-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 10px;
-  background: #1f1f28;
-  font-size: 12px;
-}
-
-.copy-btn {
-  cursor: pointer;
-  background: #333;
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="top">
-  <div class="logo">AI</div>
-</div>
-
-<div class="center" id="center">
-  <div class="title">what do you want to know</div>
-
-  <div class="inputBox">
-    <input id="firstInput" placeholder="Ask anything...">
-    <div class="send" onclick="startChat()">➤</div>
-  </div>
-</div>
-
-<div class="chat" id="chat">
-  <div class="messages" id="messages"></div>
-
-  <div class="bottom">
-    <input id="chatInput" placeholder="Type message..." onkeydown="sendMsg(event)">
-  </div>
-</div>
-
-<script>
-function startChat(){
-  let text = document.getElementById("firstInput").value;
-  if(!text) return;
-
-  document.getElementById("center").style.transform="rotateY(90deg)";
-  
-  setTimeout(()=>{
-    document.getElementById("center").style.display="none";
-    document.getElementById("chat").style.display="flex";
-    addMessage(text,"user");
-    fakeReply();
-  },500);
-}
-
-function sendMsg(e){
-  if(e.key==="Enter"){
-    let input=document.getElementById("chatInput");
-    let val=input.value;
-    if(!val) return;
-
-    addMessage(val,"user");
-    input.value="";
-    fakeReply();
-  }
-}
-
-function addMessage(text,type){
-  let msg=document.createElement("div");
-  msg.className="msg "+type;
-  msg.innerText=text;
-  document.getElementById("messages").appendChild(msg);
-}
-
-function fakeReply(){
-  let loading=document.createElement("div");
-  loading.className="msg ai";
-
-  loading.innerHTML=`
-    <div class="loading">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
-  `;
-
-  document.getElementById("messages").appendChild(loading);
-
-  setTimeout(()=>{
-    loading.innerText="This is AI response...";
-  },1500);
-}
-</script>
-
-</body>
-</html>
