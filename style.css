@@ -687,13 +687,14 @@ code {
 }
 
 .voice-message {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
     background: rgba(29, 155, 240, 0.1);
     border-radius: 12px;
-    margin: 4px 0;
+    margin-top: 8px;
+    width: fit-content;
 }
 
 .voice-btn-play {
@@ -701,27 +702,31 @@ code {
     border: none;
     color: var(--accent);
     cursor: pointer;
-    padding: 4px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     transition: all 0.2s;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 .voice-btn-play:hover {
-    background: rgba(29, 155, 240, 0.2);
-    transform: scale(1.1);
+    color: #71d5ff;
+    transform: scale(1.15);
 }
 
 .voice-btn-play i {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
 }
 
 .voice-duration {
     font-size: 12px;
     color: var(--secondary-text);
+    white-space: nowrap;
 }
 
 /* ==================== RESPONSIVE ==================== */
