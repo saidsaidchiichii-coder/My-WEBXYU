@@ -4,137 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ILYASS AI</title>
-    <!-- Fonts: Inter for modern clean look -->
+    <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Lucide Icons for modern UI icons -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="dark-theme">
 
-    <!-- NAVIGATION / HEADER -->
+    <!-- HEADER -->
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container">
-                <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                <svg class="grok-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                 <span class="logo-text">ILYASS AI</span>
             </div>
         </div>
         
         <div class="nav-right">
-            <div class="ai-config-badge" id="aiConfigTrigger">
+            <button class="badge-btn" id="configTrigger">
                 <i data-lucide="cpu" class="icon-sm"></i>
-                <span id="aiConfigBrief">Config</span>
-            </div>
-            <button class="btn-icon"><i data-lucide="settings"></i></button>
-            <button class="btn-primary">Sign up</button>
+                <span id="configName">Config</span>
+            </button>
+            <button class="btn-icon" id="settingsTrigger"><i data-lucide="settings"></i></button>
+            <button class="btn-signup">Sign up</button>
         </div>
     </header>
 
-    <!-- AI CONFIG OVERLAY (MODAL STYLE) -->
-    <div id="configOverlay" class="overlay hidden">
-        <div class="config-card">
-            <div class="config-header">
-                <h3>🧠 AI Configuration</h3>
-                <button id="closeConfig" class="btn-close"><i data-lucide="x"></i></button>
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Settings</h3>
+                <button id="closeSettings" class="btn-icon"><i data-lucide="x"></i></button>
             </div>
-            <div id="aiConfigText" class="config-body">
-                <!-- Populated by JS -->
+            <div class="modal-body">
+                <div class="config-grid" id="configDetails">
+                    <!-- Populated by JS -->
+                </div>
             </div>
         </div>
     </div>
 
     <main class="container">
-        <!-- HOME VIEW (INITIAL STATE) -->
+        <!-- HOME VIEW -->
         <section id="home" class="home-view">
-            <div class="hero-content">
-                <div class="large-logo">
-                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
-                     <h1>ILYASS AI</h1>
+            <div class="hero-logo">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                 <h1>ILYASS AI</h1>
+            </div>
+            
+            <div class="search-box">
+                <!-- File Preview Container -->
+                <div id="filePreview" class="hidden"></div>
+                
+                <div class="input-row">
+                    <label for="fileInput" class="action-icon">
+                        <i data-lucide="paperclip"></i>
+                        <input type="file" id="fileInput" class="hidden" multiple>
+                    </label>
+                    <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); startChat(); }"></textarea>
                 </div>
                 
-                <div class="search-container">
-                    <div class="input-wrapper">
-                        <div class="input-prefix">
-                            <i data-lucide="paperclip"></i>
-                        </div>
-                        <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); startChat(); }"></textarea>
-                        <div class="input-suffix">
-                            <span class="mode-badge">Auto <i data-lucide="chevron-down"></i></span>
-                            <button class="mic-btn"><i data-lucide="mic"></i></button>
-                            <button class="send-btn" onclick="startChat()"><i data-lucide="arrow-up"></i></button>
-                        </div>
+                <div class="input-controls">
+                    <div class="controls-left">
+                        <div class="mode-selector">Auto <i data-lucide="chevron-down" class="icon-sm"></i></div>
                     </div>
-                    <div class="input-hint">New · Hold Ctrl+D to dictate</div>
+                    <div class="controls-right">
+                        <button class="mic-btn" id="micBtn"><i data-lucide="mic"></i></button>
+                        <button class="send-btn-circle" onclick="startChat()"><i data-lucide="arrow-up"></i></button>
+                    </div>
                 </div>
             </div>
+            <div class="hint-text">New · Hold Ctrl+D to dictate</div>
         </section>
 
-        <!-- CHAT VIEW (ACTIVE STATE) -->
+        <!-- CHAT VIEW -->
         <section id="chat" class="chat-view hidden">
-            <div id="messages" class="messages-container">
-                <!-- Messages will appear here -->
-            </div>
+            <div id="messages" class="messages-list"></div>
 
-            <div class="chat-input-sticky">
-                <div class="input-wrapper">
-                    <div class="input-prefix">
-                        <i data-lucide="paperclip"></i>
+            <div class="sticky-footer">
+                <div class="search-box">
+                    <div id="chatFilePreview" class="hidden"></div>
+                    <div class="input-row">
+                        <label for="chatFileInput" class="action-icon">
+                            <i data-lucide="paperclip"></i>
+                            <input type="file" id="chatFileInput" class="hidden" multiple>
+                        </label>
+                        <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); send(); }"></textarea>
                     </div>
-                    <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); send(); }"></textarea>
-                    <div class="input-suffix">
-                         <button class="send-btn" onclick="send()"><i data-lucide="arrow-up"></i></button>
+                    <div class="input-controls">
+                        <div class="controls-left"></div>
+                        <div class="controls-right">
+                            <button class="mic-btn" id="chatMicBtn"><i data-lucide="mic"></i></button>
+                            <button class="send-btn-circle" onclick="send()"><i data-lucide="arrow-up"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Scripts -->
+    <!-- SCRIPTS -->
     <script src="ai_config.js"></script>
     <script src="ControleAi.js"></script>
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
-
-        // Initialize AI Engine
         AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-        // UI Controls
+        // UI STATE ELEMENTS
         const homeView = document.getElementById("home");
         const chatView = document.getElementById("chat");
-        const configOverlay = document.getElementById("configOverlay");
-        const aiConfigText = document.getElementById("aiConfigText");
+        const settingsModal = document.getElementById("settingsModal");
+        const configDetails = document.getElementById("configDetails");
 
-        document.getElementById("aiConfigTrigger").onclick = () => configOverlay.classList.remove("hidden");
-        document.getElementById("closeConfig").onclick = () => configOverlay.classList.add("hidden");
+        // SETTINGS / CONFIG LOGIC
+        document.getElementById("configTrigger").onclick = () => settingsModal.classList.remove("hidden");
+        document.getElementById("settingsTrigger").onclick = () => settingsModal.classList.remove("hidden");
+        document.getElementById("closeSettings").onclick = () => settingsModal.classList.add("hidden");
 
         document.addEventListener("DOMContentLoaded", () => {
             if (window.AI_CONFIG) {
-                aiConfigText.innerHTML = `
-                    <div class="config-item"><strong>Name:</strong> <span>${AI_CONFIG.name}</span></div>
-                    <div class="config-item"><strong>Tone:</strong> <span>${AI_CONFIG.style.tone}</span></div>
-                    <div class="config-item"><strong>Length:</strong> <span>${AI_CONFIG.style.length}</span></div>
-                    <div class="config-item"><strong>Language:</strong> <span>${AI_CONFIG.language}</span></div>
+                document.getElementById("configName").textContent = AI_CONFIG.name;
+                configDetails.innerHTML = `
+                    <div class="config-row"><span class="config-label">Name</span><span class="config-value">${AI_CONFIG.name}</span></div>
+                    <div class="config-row"><span class="config-label">Tone</span><span class="config-value">${AI_CONFIG.style.tone}</span></div>
+                    <div class="config-row"><span class="config-label">Length</span><span class="config-value">${AI_CONFIG.style.length}</span></div>
+                    <div class="config-row"><span class="config-label">Language</span><span class="config-value">${AI_CONFIG.language}</span></div>
+                    <div class="config-row"><span class="config-label">Version</span><span class="config-value">Grok-2.0-Elite</span></div>
+                    <div class="config-row"><span class="config-label">Mode</span><span class="config-value">Standard</span></div>
                 `;
-                document.getElementById("aiConfigBrief").textContent = AI_CONFIG.name;
             }
         });
 
+        // FILE UPLOAD LOGIC
+        function handleFiles(input, previewId) {
+            const preview = document.getElementById(previewId);
+            input.onchange = (e) => {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    preview.innerHTML = "";
+                    preview.classList.remove("hidden");
+                    Array.from(files).forEach(file => {
+                        const div = document.createElement("div");
+                        div.className = "file-preview";
+                        div.innerHTML = `<i data-lucide="file-text" class="icon-sm"></i> <span>${file.name}</span> <i data-lucide="x" class="remove-file icon-sm" onclick="this.parentElement.remove()"></i>`;
+                        preview.appendChild(div);
+                    });
+                    lucide.createIcons();
+                }
+            };
+        }
+        handleFiles(document.getElementById("fileInput"), "filePreview");
+        handleFiles(document.getElementById("chatFileInput"), "chatFilePreview");
+
+        // AUDIO LOGIC (SIMULATED)
+        function setupMic(btnId) {
+            const btn = document.getElementById(btnId);
+            btn.onclick = () => {
+                btn.classList.toggle("active");
+                if (btn.classList.contains("active")) {
+                    console.log("Listening...");
+                }
+            };
+        }
+        setupMic("micBtn");
+        setupMic("chatMicBtn");
+
+        // CHAT TRIGGERS
         function startChat() {
             const input = document.getElementById("homeInput");
             const text = input.value.trim();
             if (!text) return;
-
             homeView.classList.add("hidden");
             chatView.classList.remove("hidden");
-            
             AI.user(text);
             input.value = "";
             input.style.height = 'auto';
-            
+            document.getElementById("filePreview").classList.add("hidden");
             AI.ask(text);
         }
 
@@ -142,11 +191,10 @@
             const input = document.getElementById("chatInput");
             const text = input.value.trim();
             if (!text) return;
-
             AI.user(text);
             input.value = "";
             input.style.height = 'auto';
-
+            document.getElementById("chatFilePreview").classList.add("hidden");
             AI.ask(text);
         }
     </script>
