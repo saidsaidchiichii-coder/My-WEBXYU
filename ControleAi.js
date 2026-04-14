@@ -64,7 +64,10 @@ const AI = {
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ 
+          message: message,
+          system: "You are a helpful assistant. You MUST always respond in Moroccan Darija (Maghribiya). Use Moroccan dialect, idioms, and cultural context. Keep the tone friendly and helpful."
+        })
       });
 
       const data = await res.json();
