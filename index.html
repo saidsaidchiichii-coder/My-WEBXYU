@@ -3,100 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ILYASS AI | Future of Intelligence</title>
-    <!-- Fonts: Inter -->
+    <title>Grok</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="dark-theme">
+<body>
 
     <!-- NAVIGATION -->
     <header class="top-nav">
         <div class="nav-left">
             <div class="logo-container" onclick="location.reload()">
-                <svg class="grok-logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
-                <span class="logo-text">ILYASS AI</span>
+                <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+                    <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+                    <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+                    <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+                    <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+                    <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+                </svg>
             </div>
         </div>
         
         <div class="nav-right">
-            <button class="badge-btn" id="configTrigger">
-                <i data-lucide="cpu" class="icon-sm"></i>
-                <span id="configName">Config</span>
+            <button class="nav-btn">
+                <i data-lucide="sparkles"></i>
+                <span>Imagine</span>
             </button>
-            <button class="btn-icon" id="settingsTrigger"><i data-lucide="settings"></i></button>
+            <button class="nav-btn" id="settingsTrigger">
+                <i data-lucide="settings"></i>
+            </button>
+            <button class="btn-signin">Sign in</button>
             <button class="btn-signup">Sign up</button>
         </div>
     </header>
 
-    <!-- SETTINGS MODAL -->
-    <div id="settingsModal" class="modal-backdrop hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>⚙️ AI Configuration</h3>
-                <button id="closeSettings" class="btn-icon"><i data-lucide="x"></i></button>
-            </div>
-            <div class="modal-body">
-                <div class="config-grid" id="configDetails">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <main class="container">
-        <!-- HOME VIEW (INITIAL ENTRANCE) -->
+        <!-- HOME VIEW -->
         <section id="home" class="home-view">
-            <div class="hero-logo">
-                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
-                 <h1>ILYASS AI</h1>
+            <div class="hero-section">
+                <div class="hero-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+                        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+                        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+                        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+                        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+                        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+                    </svg>
+                    <h1>Grok</h1>
+                </div>
             </div>
             
-            <div class="search-box">
-                <div id="filePreview" class="hidden"></div>
-                <div class="input-row">
-                    <label for="fileInput" class="action-icon">
-                        <i data-lucide="paperclip"></i>
-                        <input type="file" id="fileInput" class="hidden" multiple>
-                    </label>
-                    <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); startChat(); }"></textarea>
+            <div class="search-container">
+                <div class="search-box">
+                    <div class="input-area">
+                        <button class="input-icon">
+                            <i data-lucide="paperclip"></i>
+                        </button>
+                        <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'home')"></textarea>
+                        <div class="input-controls">
+                            <div class="mode-selector">
+                                <span>Auto</span>
+                                <i data-lucide="chevron-down"></i>
+                            </div>
+                            <button class="control-btn">
+                                <i data-lucide="mic"></i>
+                            </button>
+                            <button class="control-btn send-btn" onclick="startChat()">
+                                <i data-lucide="arrow-up"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-controls">
-                    <div class="controls-left">
-                        <div class="mode-selector">Auto <i data-lucide="chevron-down" class="icon-sm"></i></div>
-                    </div>
-                    <div class="controls-right">
-                        <button class="mic-btn" id="micBtn"><i data-lucide="mic"></i></button>
-                        <button class="send-btn-circle" onclick="startChat()"><i data-lucide="arrow-up"></i></button>
-                    </div>
+                <div class="search-hint">
+                    <i data-lucide="sparkles"></i>
+                    <span>New · Hold Ctrl+D to dictate</span>
                 </div>
             </div>
-            <div class="hint-text">Advanced AI Engine · Real-time Intelligence</div>
         </section>
 
         <!-- CHAT VIEW -->
         <section id="chat" class="chat-view hidden">
             <div id="messages" class="messages-list"></div>
 
-            <div class="sticky-footer">
+            <div class="chat-input-container">
                 <div class="search-box">
-                    <div id="chatFilePreview" class="hidden"></div>
-                    <div class="input-row">
-                        <label for="chatFileInput" class="action-icon">
+                    <div class="input-area">
+                        <button class="input-icon">
                             <i data-lucide="paperclip"></i>
-                            <input type="file" id="chatFileInput" class="hidden" multiple>
-                        </label>
-                        <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); send(); }"></textarea>
-                    </div>
-                    <div class="input-controls">
-                        <div class="controls-left"></div>
-                        <div class="controls-right">
-                            <button class="mic-btn" id="chatMicBtn"><i data-lucide="mic"></i></button>
-                            <button class="send-btn-circle" onclick="send()"><i data-lucide="arrow-up"></i></button>
+                        </button>
+                        <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'chat')"></textarea>
+                        <div class="input-controls">
+                            <div class="mode-selector">
+                                <span>Auto</span>
+                                <i data-lucide="chevron-down"></i>
+                            </div>
+                            <button class="control-btn">
+                                <i data-lucide="mic"></i>
+                            </button>
+                            <button class="control-btn send-btn" onclick="send()">
+                                <i data-lucide="arrow-up"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -104,8 +116,6 @@
         </section>
     </main>
 
-    <!-- SCRIPTS -->
-    <script src="ai_config.js"></script>
     <script src="ControleAi.js"></script>
     <script>
         lucide.createIcons();
@@ -113,77 +123,31 @@
 
         const homeView = document.getElementById("home");
         const chatView = document.getElementById("chat");
-        const settingsModal = document.getElementById("settingsModal");
-        const configDetails = document.getElementById("configDetails");
 
-        // SETTINGS
-        document.getElementById("configTrigger").onclick = () => settingsModal.classList.remove("hidden");
-        document.getElementById("settingsTrigger").onclick = () => settingsModal.classList.remove("hidden");
-        document.getElementById("closeSettings").onclick = () => settingsModal.classList.add("hidden");
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            if (window.AI_CONFIG) {
-                document.getElementById("configName").textContent = AI_CONFIG.name;
-                configDetails.innerHTML = `
-                    <div class="config-row"><span class="config-label">Agent Name</span><span class="config-value">${AI_CONFIG.name}</span></div>
-                    <div class="config-row"><span class="config-label">Response Style</span><span class="config-value">${AI_CONFIG.style.tone}</span></div>
-                    <div class="config-row"><span class="config-label">Output Length</span><span class="config-value">${AI_CONFIG.style.length}</span></div>
-                    <div class="config-row"><span class="config-label">Primary Language</span><span class="config-value">${AI_CONFIG.language}</span></div>
-                    <div class="config-row"><span class="config-label">Engine</span><span class="config-value">Grok-3-Ultra</span></div>
-                    <div class="config-row"><span class="config-label">Latency</span><span class="config-value">~140ms</span></div>
-                `;
+        function handleKeydown(event, type) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                if (type === 'home') startChat();
+                else send();
             }
-        });
-
-        // FILE UPLOAD PREVIEW
-        function handleFiles(input, previewId) {
-            const preview = document.getElementById(previewId);
-            input.onchange = (e) => {
-                const files = e.target.files;
-                if (files.length > 0) {
-                    preview.innerHTML = "";
-                    preview.classList.remove("hidden");
-                    Array.from(files).forEach(file => {
-                        const div = document.createElement("div");
-                        div.className = "file-preview";
-                        div.innerHTML = `<i data-lucide="file" class="icon-sm"></i> <span>${file.name}</span> <i data-lucide="x" class="remove-file icon-sm" onclick="this.parentElement.remove()"></i>`;
-                        preview.appendChild(div);
-                    });
-                    lucide.createIcons();
-                }
-            };
         }
-        handleFiles(document.getElementById("fileInput"), "filePreview");
-        handleFiles(document.getElementById("chatFileInput"), "chatFilePreview");
 
-        // MIC ANIMATION
-        function setupMic(btnId) {
-            const btn = document.getElementById(btnId);
-            btn.onclick = () => btn.classList.toggle("active");
-        }
-        setupMic("micBtn");
-        setupMic("chatMicBtn");
-
-        // CHAT TRANSITIONS
         function startChat() {
             const input = document.getElementById("homeInput");
             const text = input.value.trim();
             if (!text) return;
             
-            // Fade out home
-            homeView.style.transition = "all 0.5s ease";
-            homeView.style.opacity = "0";
-            homeView.style.transform = "scale(0.9)";
-            
-            setTimeout(() => {
-                homeView.classList.add("hidden");
-                chatView.classList.remove("hidden");
-                AI.user(text);
-                input.value = "";
-                input.style.height = 'auto';
-                document.getElementById("filePreview").classList.add("hidden");
-                AI.ask(text);
-            }, 500);
+            homeView.classList.add("hidden");
+            chatView.classList.remove("hidden");
+            AI.user(text);
+            input.value = "";
+            input.style.height = 'auto';
+            AI.ask(text);
         }
 
         function send() {
@@ -193,7 +157,6 @@
             AI.user(text);
             input.value = "";
             input.style.height = 'auto';
-            document.getElementById("chatFilePreview").classList.add("hidden");
             AI.ask(text);
         }
     </script>
