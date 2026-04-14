@@ -1,95 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILYASS AI</title>
-
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ILYASS AI</title>
+    <!-- Fonts: Inter for modern clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons for modern UI icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+<body class="dark-theme">
 
-<body>
+    <!-- NAVIGATION / HEADER -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <div class="logo-container">
+                <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                <span class="logo-text">ILYASS AI</span>
+            </div>
+        </div>
+        
+        <div class="nav-right">
+            <div class="ai-config-badge" id="aiConfigTrigger">
+                <i data-lucide="cpu" class="icon-sm"></i>
+                <span id="aiConfigBrief">Config</span>
+            </div>
+            <button class="btn-icon"><i data-lucide="settings"></i></button>
+            <button class="btn-primary">Sign up</button>
+        </div>
+    </header>
 
-<!-- TOP -->
-<div class="top">
-  <div class="logo">ILYASS AI</div>
+    <!-- AI CONFIG OVERLAY (MODAL STYLE) -->
+    <div id="configOverlay" class="overlay hidden">
+        <div class="config-card">
+            <div class="config-header">
+                <h3>🧠 AI Configuration</h3>
+                <button id="closeConfig" class="btn-close"><i data-lucide="x"></i></button>
+            </div>
+            <div id="aiConfigText" class="config-body">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
 
- 
-  <div class="ai-config-box">
-    <div class="ai-title">🧠 AI CONFIG</div>
-    <div id="aiConfigText" class="ai-text"></div>
-  </div>
-</div>
+    <main class="container">
+        <!-- HOME VIEW (INITIAL STATE) -->
+        <section id="home" class="home-view">
+            <div class="hero-content">
+                <div class="large-logo">
+                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                     <h1>ILYASS AI</h1>
+                </div>
+                
+                <div class="search-container">
+                    <div class="input-wrapper">
+                        <div class="input-prefix">
+                            <i data-lucide="paperclip"></i>
+                        </div>
+                        <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); startChat(); }"></textarea>
+                        <div class="input-suffix">
+                            <span class="mode-badge">Auto <i data-lucide="chevron-down"></i></span>
+                            <button class="mic-btn"><i data-lucide="mic"></i></button>
+                            <button class="send-btn" onclick="startChat()"><i data-lucide="arrow-up"></i></button>
+                        </div>
+                    </div>
+                    <div class="input-hint">New · Hold Ctrl+D to dictate</div>
+                </div>
+            </div>
+        </section>
 
-<!-- HOME -->
-<div id="home" class="center">
-  <div class="title">Ask anything</div>
+        <!-- CHAT VIEW (ACTIVE STATE) -->
+        <section id="chat" class="chat-view hidden">
+            <div id="messages" class="messages-container">
+                <!-- Messages will appear here -->
+            </div>
 
-  <div class="inputBox">
-    <input id="homeInput" placeholder="What do you want to know?"
-      onkeydown="if(event.key==='Enter') startChat()">
+            <div class="chat-input-sticky">
+                <div class="input-wrapper">
+                    <div class="input-prefix">
+                        <i data-lucide="paperclip"></i>
+                    </div>
+                    <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); send(); }"></textarea>
+                    <div class="input-suffix">
+                         <button class="send-btn" onclick="send()"><i data-lucide="arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-    <div class="send" onclick="startChat()">➤</div>
-  </div>
-</div>
+    <!-- Scripts -->
+    <script src="ai_config.js"></script>
+    <script src="ControleAi.js"></script>
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
-<!-- CHAT -->
-<div id="chat" class="chat">
-  <div id="messages" class="messages"></div>
+        // Initialize AI Engine
+        AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-  <div class="bottom">
-    <input id="chatInput" placeholder="Send a message..."
-      onkeydown="if(event.key==='Enter') send()">
-  </div>
-</div>
+        // UI Controls
+        const homeView = document.getElementById("home");
+        const chatView = document.getElementById("chat");
+        const configOverlay = document.getElementById("configOverlay");
+        const aiConfigText = document.getElementById("aiConfigText");
 
-<script src="ai_config.js"></script>
-<script src="ControleAi.js"></script>
+        document.getElementById("aiConfigTrigger").onclick = () => configOverlay.classList.remove("hidden");
+        document.getElementById("closeConfig").onclick = () => configOverlay.classList.add("hidden");
 
-<script>
-AI.init("messages","https://my-webxyu.vercel.app/api/chat");
+        document.addEventListener("DOMContentLoaded", () => {
+            if (window.AI_CONFIG) {
+                aiConfigText.innerHTML = `
+                    <div class="config-item"><strong>Name:</strong> <span>${AI_CONFIG.name}</span></div>
+                    <div class="config-item"><strong>Tone:</strong> <span>${AI_CONFIG.style.tone}</span></div>
+                    <div class="config-item"><strong>Length:</strong> <span>${AI_CONFIG.style.length}</span></div>
+                    <div class="config-item"><strong>Language:</strong> <span>${AI_CONFIG.language}</span></div>
+                `;
+                document.getElementById("aiConfigBrief").textContent = AI_CONFIG.name;
+            }
+        });
 
+        function startChat() {
+            const input = document.getElementById("homeInput");
+            const text = input.value.trim();
+            if (!text) return;
 
-// 🧠 SHOW AI CONFIG (NEW)
-document.addEventListener("DOMContentLoaded", () => {
-  const box = document.getElementById("aiConfigText");
+            homeView.classList.add("hidden");
+            chatView.classList.remove("hidden");
+            
+            AI.user(text);
+            input.value = "";
+            input.style.height = 'auto';
+            
+            AI.ask(text);
+        }
 
-  if (window.AI_CONFIG) {
-    box.innerHTML = `
-      Name: ${AI_CONFIG.name}<br>
-      Style: ${AI_CONFIG.style.tone}<br>
-      Length: ${AI_CONFIG.style.length}<br>
-      Language: ${AI_CONFIG.language}
-    `;
-  } else {
-  }
-});
+        function send() {
+            const input = document.getElementById("chatInput");
+            const text = input.value.trim();
+            if (!text) return;
 
+            AI.user(text);
+            input.value = "";
+            input.style.height = 'auto';
 
-function startChat(){
-  const text=document.getElementById("homeInput").value.trim();
-  if(!text) return;
-
-  document.getElementById("home").style.display="none";
-  document.getElementById("chat").style.display="flex";
-
-  AI.user(text);
-  document.getElementById("homeInput").value="";
-
-  AI.ask(text);
-}
-
-function send(){
-  const input=document.getElementById("chatInput");
-  const text=input.value.trim();
-  if(!text) return;
-
-  AI.user(text);
-  input.value="";
-
-  AI.ask(text);
-}
-</script>
-
+            AI.ask(text);
+        }
+    </script>
 </body>
 </html>
