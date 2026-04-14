@@ -3,7 +3,7 @@ const AI = {
   API_URL: null,
 
   /* =========================
-     🎨 SYNTAX HIGHLIGHT (ULTRA)
+     🎨 SYNTAX HIGHLIGHT
   ========================= */
   highlight(code) {
     return code
@@ -11,7 +11,7 @@ const AI = {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/(\/\/.*)/g, '<span class="cmt">$1</span>')
-      .replace(/(["'`].*?["'`])/g, '<span class="str">$1</span>')
+      .replace(/(["\'`].*?["\'`])/g, '<span class="str">$1</span>')
       .replace(/\b(\d+)\b/g, '<span class="num">$1</span>')
       .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g, '<span class="kw">$1</span>')
       .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>(');
@@ -23,10 +23,15 @@ const AI = {
   },
 
   user(text) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper";
+    
     const div = document.createElement("div");
     div.className = "msg user";
     div.textContent = text;
-    this.messagesBox.appendChild(div);
+    
+    wrapper.appendChild(div);
+    this.messagesBox.appendChild(wrapper);
     this.scroll();
   },
 
@@ -43,7 +48,7 @@ const AI = {
         <div class="loader-dots">
             <span></span><span></span><span></span>
         </div>
-        <span class="thinking-text">Grok is thinking...</span>
+        <span class="thinking-text">Thinking...</span>
     `;
     
     wrapper.appendChild(thinkingDiv);
@@ -65,20 +70,21 @@ const AI = {
       const data = await res.json();
       load.remove();
       
-      // EMOJI INJECTION (IF NOT PRESENT)
-      let reply = data?.reply || "I'm sorry, I couldn't process that. 🤖";
-      if (!reply.match(/[\u{1F300}-\u{1F6FF}]/u)) {
-          reply += " ✨";
-      }
+      let reply = data?.reply || "I'm sorry, I couldn't process that.";
 
       this.streamRender(reply);
 
     } catch (e) {
       load.remove();
+      const wrapper = document.createElement("div");
+      wrapper.className = "msg-wrapper ai";
+      
       const err = document.createElement("div");
-      err.className = "msg ai error";
-      err.textContent = "❌ System Error: API Connection Failed. 🛸";
-      this.messagesBox.appendChild(err);
+      err.className = "msg ai";
+      err.textContent = "System Error: API Connection Failed.";
+      
+      wrapper.appendChild(err);
+      this.messagesBox.appendChild(wrapper);
     }
   },
 
@@ -86,9 +92,13 @@ const AI = {
      🌊 PIXEL-PERFECT STREAMING
   ========================= */
   async streamRender(fullText) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
+    
     const container = document.createElement("div");
     container.className = "msg ai";
-    this.messagesBox.appendChild(container);
+    wrapper.appendChild(container);
+    this.messagesBox.appendChild(wrapper);
     
     const parts = fullText.split("```");
     
@@ -123,21 +133,19 @@ const AI = {
       // TEXT WITH NATURAL TYPING
       else {
         const textDiv = document.createElement("div");
-        textDiv.className = "ai-text";
         container.appendChild(textDiv);
         
         const paragraphs = part.split("\n");
         for (const para of paragraphs) {
           if (para.trim()) {
             const p = document.createElement("p");
-            p.style.marginBottom = "1rem";
+            p.style.marginBottom = "0.5rem";
             textDiv.appendChild(p);
             
             const words = para.trim().split(" ");
             for (const word of words) {
                 p.textContent += word + " ";
                 this.scroll();
-                // Random typing delay for natural feel
                 await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
             }
           }
