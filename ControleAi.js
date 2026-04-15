@@ -3,9 +3,6 @@ const AI = {
   API_URL: null,
   isLoading: false,
 
-  /* =========================
-     🎨 SYNTAX HIGHLIGHT
-  ========================= */
   highlight(code) {
     return code
       .replace(/&/g, "&amp;")
@@ -26,9 +23,6 @@ const AI = {
     this.API_URL = api;
   },
 
-  /* =========================
-     👤 USER MESSAGE
-  ========================= */
   user(text) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper";
@@ -42,9 +36,6 @@ const AI = {
     this.scroll();
   },
 
-  /* =========================
-     🧠 LOADING
-  ========================= */
   thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
@@ -63,9 +54,6 @@ const AI = {
     return wrapper;
   },
 
-  /* =========================
-     🖼️ IMAGE RENDER
-  ========================= */
   renderImage(url) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
@@ -79,58 +67,6 @@ const AI = {
     this.scroll();
   },
 
-  /* =========================
-     📩 MAIN ASK FLOW
-  ========================= */
-  async ask(message) {
-    if (this.isLoading) return;
-    this.isLoading = true;
-
-    const loader = this.thinking();
-
-    try {
-      const res = await fetch(this.API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-
-      const data = await res.json();
-      loader.remove();
-
-      // =========================
-      // 🖼️ IMAGE FLOW SUPPORT
-      // =========================
-      if (data.type === "image") {
-        const url =
-          data.url ||
-          (data.images && data.images[0]) ||
-          null;
-
-        if (url) {
-          this.renderImage(url);
-        } else {
-          this.renderText("Image generation failed (no URL returned).");
-        }
-        return;
-      }
-
-      // =========================
-      // 💬 TEXT FLOW
-      // =========================
-      this.streamRender(data.reply || "No response");
-
-    } catch (err) {
-      loader.remove();
-      this.renderText("System Error: API Connection Failed.");
-    }
-
-    this.isLoading = false;
-  },
-
-  /* =========================
-     💬 TEXT RENDER HELPER
-  ========================= */
   renderText(text) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
@@ -144,9 +80,47 @@ const AI = {
     this.scroll();
   },
 
-  /* =========================
-     🌊 STREAM RENDER
-  ========================= */
+  async ask(message) {
+    if (this.isLoading) return;
+    this.isLoading = true;
+
+    const self = this;
+    const loader = this.thinking();
+
+    try {
+      const res = await fetch(this.API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+      loader.remove();
+
+      if (data.type === "image") {
+        const url =
+          data.url ||
+          (data.images && data.images[0]) ||
+          null;
+
+        if (url) {
+          self.renderImage(url);
+        } else {
+          self.renderText("Image generation failed (no URL returned).");
+        }
+        return;
+      }
+
+      self.streamRender(data.reply || "No response");
+
+    } catch (err) {
+      loader.remove();
+      this.renderText("System Error: API Connection Failed.");
+    } finally {
+      this.isLoading = false;
+    }
+  },
+
   async streamRender(fullText) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
@@ -212,9 +186,6 @@ const AI = {
     }
   },
 
-  /* =========================
-     📜 SCROLL
-  ========================= */
   scroll() {
     this.messagesBox.scrollTo({
       top: this.messagesBox.scrollHeight,
