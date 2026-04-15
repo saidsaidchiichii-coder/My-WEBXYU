@@ -134,7 +134,7 @@ const AI = {
     const load = this.thinking();
 
     try {
-      // CRITICAL: We MUST send the mode to the backend so it knows whether to chat or generate an image
+      // 1. Try to fetch from your backend
       const response = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,9 +147,20 @@ const AI = {
       const data = await response.json();
       load.remove();
       
-      if (this.currentMode === 'image' && data.image_url) {
-          this.renderImage(data.reply || "Image generated successfully!", data.image_url);
-      } else if (data.reply) {
+      // 2. Handle Image Generation Logic
+      if (this.currentMode === 'image') {
+          // If backend returned a real image URL (DALL-E 3)
+          if (data.image_url) {
+              this.renderImage(data.reply || "Image generated successfully!", data.image_url);
+          } 
+          // FALLBACK: If backend didn't return an image, use a direct generator for instant results
+          else {
+              const fallbackUrl = `https://pollinations.ai/p/${encodeURIComponent(message)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+              this.renderImage(message, fallbackUrl);
+          }
+      } 
+      // 3. Handle Normal Chat
+      else if (data.reply) {
           this.streamRender(data.reply);
       } else {
           this.aiMessage("The AI returned an empty response. Please check your API configuration.");
@@ -157,7 +168,13 @@ const AI = {
 
     } catch (e) {
       load.remove();
-      this.aiMessage("System Error: Could not connect to the backend server. Make sure your app.py is running.");
+      // EMERGENCY FALLBACK: If Backend is not running, generate image directly anyway!
+      if (this.currentMode === 'image') {
+          const directUrl = `https://pollinations.ai/p/${encodeURIComponent(message)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+          this.renderImage(message, directUrl);
+      } else {
+          this.aiMessage("System Error: Could not connect to the backend server. Make sure your app.py is running.");
+      }
     }
   },
 
@@ -171,12 +188,13 @@ const AI = {
     container.className = "msg ai";
     
     const p = document.createElement("p");
-    p.innerHTML = `<strong>Refined Prompt:</strong> ${text}`;
+    p.innerHTML = `<strong>Prompt:</strong> ${text}`;
     
     const img = document.createElement("img");
     img.src = url;
     img.className = "generated-img";
     img.alt = "Generated AI Image";
+    img.onload = () => this.scroll(); // Scroll again once image loads
     
     const downloadBtn = document.createElement("button");
     downloadBtn.className = "copy-btn";
