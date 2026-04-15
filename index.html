@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Image Generator & Chat</title>
+    <title>AI Studio - Groq Design</title>
     <link rel="stylesheet" href="style.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -18,10 +18,10 @@
             </div>
             <div class="nav-links">
                 <button class="nav-btn active" onclick="AI.setMode('chat')">
-                    <i data-lucide="message-square"></i> Chat
+                    <i data-lucide="message-square"></i> <span>Chat</span>
                 </button>
                 <button class="nav-btn" onclick="AI.setMode('image')">
-                    <i data-lucide="image"></i> Imagine
+                    <i data-lucide="image"></i> <span>Imagine</span>
                 </button>
             </div>
         </nav>
@@ -29,13 +29,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <div id="messages" class="messages-container">
-                <!-- Welcome Message -->
-                <div class="msg-wrapper ai">
-                    <div class="msg ai">
-                        <h1>Welcome to AI Studio</h1>
-                        <p>How can I help you today? You can switch between Chat and Image generation modes using the sidebar.</p>
-                    </div>
-                </div>
+                <!-- Messages will be injected here by ControleAi.js -->
             </div>
 
             <!-- Input Area -->
@@ -43,7 +37,7 @@
                 <div class="input-wrapper">
                     <input type="text" id="chatInput" placeholder="How can I help you today?" onkeypress="if(event.key === 'Enter') AI.handleSend()">
                     <button class="send-btn" onclick="AI.handleSend()">
-                        <i data-lucide="send"></i>
+                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
                     </button>
                 </div>
             </div>
