@@ -1,9 +1,3 @@
-/**
- * schema.ts
- * Data type definitions for the AI Image Generation System.
- * Ensures compatibility between frontend and backend.
- */
-
 export interface ChatRequest {
     message: string;
     mode: 'chat' | 'image';
