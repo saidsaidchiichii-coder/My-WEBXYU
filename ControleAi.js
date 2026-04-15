@@ -30,7 +30,7 @@ const AI = {
 
   loadInitialMessage() {
     const welcomeText = this.currentMode === 'image' 
-      ? "Welcome to Image Studio. Describe the image you want to create, and I'll generate it for you."
+      ? "Welcome to Image Studio. Describe the image you want to create, and I'll generate it for you instantly."
       : "Welcome to AI Chat. How can I help you today?";
     
     this.aiMessage(welcomeText, false);
@@ -133,48 +133,37 @@ const AI = {
   async ask(message) {
     const load = this.thinking();
 
+    // IMMEDIATE ACTION FOR IMAGINE MODE
+    if (this.currentMode === 'image') {
+        load.remove();
+        // Construct the real Pollinations URL immediately
+        const seed = Math.floor(Math.random() * 1000000);
+        const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(message)}?width=1024&height=1024&seed=${seed}&nologo=true`;
+        
+        // Render the image card directly!
+        this.renderImage(message, imageUrl);
+        return;
+    }
+
+    // CHAT MODE LOGIC
     try {
-      // 1. Try to fetch from your backend
       const response = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-            message: message, 
-            mode: this.currentMode 
-        })
+        body: JSON.stringify({ message, mode: this.currentMode })
       });
 
       const data = await response.json();
       load.remove();
       
-      // 2. Handle Image Generation Logic
-      if (this.currentMode === 'image') {
-          // If backend returned a real image URL (DALL-E 3)
-          if (data.image_url) {
-              this.renderImage(data.reply || "Image generated successfully!", data.image_url);
-          } 
-          // FALLBACK: If backend didn't return an image, use a direct generator for instant results
-          else {
-              const fallbackUrl = `https://pollinations.ai/p/${encodeURIComponent(message)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
-              this.renderImage(message, fallbackUrl);
-          }
-      } 
-      // 3. Handle Normal Chat
-      else if (data.reply) {
+      if (data.reply) {
           this.streamRender(data.reply);
       } else {
-          this.aiMessage("The AI returned an empty response. Please check your API configuration.");
+          this.aiMessage("The AI returned an empty response.");
       }
-
     } catch (e) {
       load.remove();
-      // EMERGENCY FALLBACK: If Backend is not running, generate image directly anyway!
-      if (this.currentMode === 'image') {
-          const directUrl = `https://pollinations.ai/p/${encodeURIComponent(message)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
-          this.renderImage(message, directUrl);
-      } else {
-          this.aiMessage("System Error: Could not connect to the backend server. Make sure your app.py is running.");
-      }
+      this.aiMessage("System Error: Could not connect to the backend server.");
     }
   },
 
@@ -189,17 +178,17 @@ const AI = {
     
     card.innerHTML = `
         <div class="image-header">
-            <p>Generated Artwork</p>
+            <p>AI Generated Masterpiece</p>
         </div>
         <div class="image-container skeleton">
-            <img src="${url}" class="generated-img" alt="AI Generated Artwork" style="opacity: 0; transition: opacity 0.5s ease;">
+            <img src="${url}" class="generated-img" alt="AI Artwork" style="opacity: 0; transition: opacity 0.8s ease;">
         </div>
         <div class="image-actions">
             <button class="action-btn" onclick="window.open('${url}', '_blank')">
-                <i data-lucide="maximize-2"></i> View Fullscreen
+                <i data-lucide="maximize-2"></i> View Full
             </button>
             <button class="action-btn primary" onclick="AI.downloadImage('${url}')">
-                <i data-lucide="download"></i> Download
+                <i data-lucide="download"></i> Save Image
             </button>
             <button class="action-btn" onclick="navigator.clipboard.writeText('${text}')">
                 <i data-lucide="copy"></i> Copy Prompt
