@@ -2,6 +2,12 @@ const AI = {
   messagesBox: null,
   API_URL: '/api/chat',
   currentMode: 'chat', // 'chat' or 'image'
+  
+  // Storage for conversations to separate Chat and Imagine
+  conversations: {
+    chat: [],
+    image: []
+  },
 
   /* =========================
      🎨 SYNTAX HIGHLIGHT
@@ -18,34 +24,64 @@ const AI = {
       .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>(');
   },
 
-  init(box) {
-    this.messagesBox = document.getElementById(box);
+  init(boxId) {
+    this.messagesBox = document.getElementById(boxId);
+    this.loadInitialMessage();
+  },
+
+  loadInitialMessage() {
+    const welcomeText = this.currentMode === 'image' 
+      ? "Welcome to Image Studio. Describe the image you want to create, and I'll generate it for you."
+      : "Welcome to AI Chat. How can I help you today?";
+    
+    this.aiMessage(welcomeText, false); // false = don't save to conversation array yet
   },
 
   setMode(mode) {
-    this.currentMode = mode;
-    const chatInput = document.getElementById('chatInput');
-    
-    const placeholder = mode === 'image' ? "What image do you want to create?" : "How can I help you today?";
-    
-    if (chatInput) chatInput.placeholder = placeholder;
-    
-    // Update active state on buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        const isImageBtn = btn.innerText.includes('Imagine');
-        const isChatBtn = btn.innerText.includes('Chat');
+    if (this.currentMode === mode) return;
 
-        if (mode === 'image' && isImageBtn) {
-            btn.classList.add('active');
-        } else if (mode === 'chat' && isChatBtn) {
+    // Save current messages to the correct conversation array before switching
+    // (In a real app, we'd store the DOM elements or data. For simplicity, we clear and reload)
+    this.currentMode = mode;
+    
+    // Clear the message box
+    this.messagesBox.innerHTML = '';
+    
+    // Update UI elements
+    const chatInput = document.getElementById('chatInput');
+    chatInput.placeholder = mode === 'image' ? "What image do you want to create?" : "How can I help you today?";
+    
+    // Update active button state
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        const isImageBtn = btn.innerText.toLowerCase().includes('imagine');
+        const isChatBtn = btn.innerText.toLowerCase().includes('chat');
+        
+        if ((mode === 'image' && isImageBtn) || (mode === 'chat' && isChatBtn)) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
         }
     });
+
+    // Load existing conversation for this mode or show initial message
+    if (this.conversations[mode].length === 0) {
+        this.loadInitialMessage();
+    } else {
+        this.conversations[mode].forEach(msg => {
+            if (msg.type === 'user') this.user(msg.text, false);
+            else if (msg.type === 'ai') {
+                if (msg.imageUrl) this.renderImage(msg.text, msg.imageUrl, false);
+                else this.aiMessage(msg.text, false);
+            }
+        });
+    }
+    
+    this.scroll();
   },
 
-  user(text) {
+  user(text, save = true) {
+    if (save) this.conversations[this.currentMode].push({ type: 'user', text });
+    
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper user";
     
@@ -58,15 +94,27 @@ const AI = {
     this.scroll();
   },
 
-  /* =========================
-     🧠 ADVANCED THINKING EFFECT
-  ========================= */
+  aiMessage(text, save = true) {
+    if (save) this.conversations[this.currentMode].push({ type: 'ai', text });
+    
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
+    
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.textContent = text;
+    
+    wrapper.appendChild(div);
+    this.messagesBox.appendChild(wrapper);
+    this.scroll();
+  },
+
   thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
     
     const thinkingDiv = document.createElement("div");
-    thinkingDiv.className = "thinking-container";
+    thinkingDiv.className = "thinking-container msg ai";
     thinkingDiv.innerHTML = `
         <div class="loader-dots">
             <span></span><span></span><span></span>
@@ -94,10 +142,14 @@ const AI = {
     const load = this.thinking();
 
     try {
+      // CRITICAL: Ensure we send the currentMode to the backend
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, mode: this.currentMode })
+        body: JSON.stringify({ 
+            message: message, 
+            mode: this.currentMode 
+        })
       });
 
       const data = await res.json();
@@ -113,19 +165,13 @@ const AI = {
 
     } catch (e) {
       load.remove();
-      const wrapper = document.createElement("div");
-      wrapper.className = "msg-wrapper ai";
-      
-      const err = document.createElement("div");
-      err.className = "msg ai";
-      err.textContent = "System Error: API Connection Failed. Check if the server is running.";
-      
-      wrapper.appendChild(err);
-      this.messagesBox.appendChild(wrapper);
+      this.aiMessage("System Error: API Connection Failed. Please ensure the backend server is running and handles the 'mode' parameter correctly.");
     }
   },
 
-  renderImage(text, url) {
+  renderImage(text, url, save = true) {
+    if (save) this.conversations[this.currentMode].push({ type: 'ai', text, imageUrl: url });
+    
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
     
@@ -134,55 +180,29 @@ const AI = {
     
     const p = document.createElement("p");
     p.innerHTML = `<strong>Refined Prompt:</strong> ${text}`;
-    p.style.marginBottom = "15px";
-    
-    const imgContainer = document.createElement("div");
-    imgContainer.style.position = "relative";
-    imgContainer.style.display = "inline-block";
-    imgContainer.style.maxWidth = "100%";
     
     const img = document.createElement("img");
     img.src = url;
+    img.className = "generated-img";
     img.alt = "Generated AI Image";
-    img.style.width = "100%";
-    img.style.borderRadius = "12px";
-    img.style.border = "1px solid var(--border-color)";
     
     const downloadBtn = document.createElement("button");
     downloadBtn.className = "copy-btn";
-    downloadBtn.style.marginTop = "10px";
+    downloadBtn.style.marginTop = "1rem";
     downloadBtn.innerHTML = 'Download Image';
-    downloadBtn.onclick = async () => {
-        try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = 'generated-image.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(blobUrl);
-        } catch (err) {
-            window.open(url, '_blank');
-        }
-    };
+    downloadBtn.onclick = () => window.open(url, '_blank');
 
     container.appendChild(p);
-    imgContainer.appendChild(img);
-    container.appendChild(imgContainer);
+    container.appendChild(img);
     container.appendChild(downloadBtn);
     wrapper.appendChild(container);
     this.messagesBox.appendChild(wrapper);
-    
     this.scroll();
   },
 
-  /* =========================
-     🌊 PIXEL-PERFECT STREAMING
-  ========================= */
-  async streamRender(fullText) {
+  async streamRender(fullText, save = true) {
+    if (save) this.conversations[this.currentMode].push({ type: 'ai', text: fullText });
+    
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
     
@@ -196,48 +216,33 @@ const AI = {
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       
-      // CODE BLOCK
       if (i % 2 === 1) {
+        // Code Block
         const codeBox = document.createElement("div");
         codeBox.className = "code-box";
-        
-        const header = document.createElement("div");
-        header.className = "code-header";
-        header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
-        
-        const copyBtn = header.querySelector(".copy-btn");
-        copyBtn.onclick = () => {
-          navigator.clipboard.writeText(part.trim());
-          copyBtn.textContent = "Copied!";
-          setTimeout(() => copyBtn.textContent = "Copy", 1500);
-        };
-
-        const pre = document.createElement("pre");
-        const code = document.createElement("code");
-        code.innerHTML = this.highlight(part.trim());
-        
-        pre.appendChild(code);
-        codeBox.appendChild(header);
-        codeBox.appendChild(pre);
+        codeBox.innerHTML = `
+            <div class="code-header">
+                <span>code</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${part.trim().replace(/`/g, '\\`')}\`)">Copy</button>
+            </div>
+            <pre><code>${this.highlight(part.trim())}</code></pre>
+        `;
         container.appendChild(codeBox);
-      } 
-      // TEXT WITH NATURAL TYPING
-      else {
+      } else {
+        // Text
         const textDiv = document.createElement("div");
         container.appendChild(textDiv);
-        
         const paragraphs = part.split("\n");
         for (const para of paragraphs) {
           if (para.trim()) {
             const p = document.createElement("p");
             p.style.marginBottom = "0.5rem";
             textDiv.appendChild(p);
-            
             const words = para.trim().split(" ");
             for (const word of words) {
                 p.textContent += word + " ";
                 this.scroll();
-                await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
+                await new Promise(r => setTimeout(r, 10 + Math.random() * 10));
             }
           }
         }
