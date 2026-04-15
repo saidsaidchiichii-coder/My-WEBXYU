@@ -175,12 +175,16 @@ const AI = {
     const card = document.createElement("div");
     card.className = "image-card";
     
+    const timestamp = Date.now();
+    const imgId = `img-${timestamp}`;
+    const containerId = `img-container-${timestamp}`;
+    
     card.innerHTML = `
         <div class="image-header">
             <p>AI Generated Masterpiece</p>
         </div>
-        <div class="image-container skeleton">
-            <img src="${url}" class="generated-img" alt="AI Artwork" style="opacity: 0; transition: opacity 0.8s ease;">
+        <div class="image-container skeleton" id="${containerId}">
+            <img id="${imgId}" class="generated-img" alt="AI Artwork" style="opacity: 0; transition: opacity 0.8s ease; width: 100%; height: auto; display: block;">
         </div>
         <div class="image-actions">
             <button class="action-btn" onclick="window.open('${url}', '_blank')">
@@ -195,17 +199,28 @@ const AI = {
         </div>
     `;
     
-    const img = card.querySelector('.generated-img');
-    const container = card.querySelector('.image-container');
+    wrapper.appendChild(card);
+    this.messagesBox.appendChild(wrapper);
     
-    img.onload = () => {
+    // Set image source after DOM insertion
+    const img = document.getElementById(imgId);
+    const container = document.getElementById(containerId);
+    
+    if (img && container) {
+      img.onload = () => {
         img.style.opacity = '1';
         container.classList.remove('skeleton');
         this.scroll();
-    };
-
-    wrapper.appendChild(card);
-    this.messagesBox.appendChild(wrapper);
+      };
+      
+      img.onerror = () => {
+        console.error('Image failed to load:', url);
+        container.innerHTML = '<p style="color: var(--text-muted); padding: 2rem; text-align: center;">Image failed to load. Please try again.</p>';
+      };
+      
+      // Set src to trigger loading
+      img.src = url;
+    }
     
     if (window.lucide) {
         window.lucide.createIcons();
