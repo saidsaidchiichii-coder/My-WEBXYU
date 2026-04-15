@@ -1,6 +1,7 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
+  isLoading: false,
 
   /* =========================
      🎨 SYNTAX HIGHLIGHT
@@ -13,16 +14,21 @@ const AI = {
       .replace(/(\/\/.*)/g, '<span class="cmt">$1</span>')
       .replace(/(["'`].*?["'`])/g, '<span class="str">$1</span>')
       .replace(/\b(\d+)\b/g, '<span class="num">$1</span>')
-      .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g, '<span class="kw">$1</span>')
+      .replace(
+        /\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g,
+        '<span class="kw">$1</span>'
+      )
       .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>(');
   },
 
   init(box, api) {
     this.messagesBox = document.getElementById(box);
     this.API_URL = api;
-    this.isLoading = false;
   },
 
+  /* =========================
+     👤 USER MESSAGE
+  ========================= */
   user(text) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper";
@@ -37,24 +43,23 @@ const AI = {
   },
 
   /* =========================
-     🧠 THINKING
+     🧠 LOADING
   ========================= */
   thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
 
-    const thinkingDiv = document.createElement("div");
-    thinkingDiv.className = "thinking-container";
-    thinkingDiv.innerHTML = `
-      <div class="loader-dots">
-        <span></span><span></span><span></span>
-      </div>
+    const el = document.createElement("div");
+    el.className = "thinking-container";
+    el.innerHTML = `
+      <div class="loader-dots"><span></span><span></span><span></span></div>
       <span class="thinking-text">Thinking...</span>
     `;
 
-    wrapper.appendChild(thinkingDiv);
+    wrapper.appendChild(el);
     this.messagesBox.appendChild(wrapper);
     this.scroll();
+
     return wrapper;
   },
 
@@ -66,8 +71,8 @@ const AI = {
     wrapper.className = "msg-wrapper ai";
 
     const img = document.createElement("img");
-    img.src = url;
     img.className = "ai-image";
+    img.src = url;
 
     wrapper.appendChild(img);
     this.messagesBox.appendChild(wrapper);
@@ -75,13 +80,13 @@ const AI = {
   },
 
   /* =========================
-     📩 ASK (ROUTER CHAT / IMAGE)
+     📩 MAIN ASK FLOW
   ========================= */
   async ask(message) {
     if (this.isLoading) return;
     this.isLoading = true;
 
-    const load = this.thinking();
+    const loader = this.thinking();
 
     try {
       const res = await fetch(this.API_URL, {
@@ -91,30 +96,52 @@ const AI = {
       });
 
       const data = await res.json();
-      load.remove();
+      loader.remove();
 
+      // =========================
+      // 🖼️ IMAGE FLOW SUPPORT
+      // =========================
       if (data.type === "image") {
-        this.renderImage(data.url);
-      } else {
-        let reply = data.reply || "No response";
-        this.streamRender(reply);
+        const url =
+          data.url ||
+          (data.images && data.images[0]) ||
+          null;
+
+        if (url) {
+          this.renderImage(url);
+        } else {
+          this.renderText("Image generation failed (no URL returned).");
+        }
+        return;
       }
 
-    } catch (e) {
-      load.remove();
+      // =========================
+      // 💬 TEXT FLOW
+      // =========================
+      this.streamRender(data.reply || "No response");
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "msg-wrapper ai";
-
-      const err = document.createElement("div");
-      err.className = "msg ai";
-      err.textContent = "System Error: API Connection Failed.";
-
-      wrapper.appendChild(err);
-      this.messagesBox.appendChild(wrapper);
+    } catch (err) {
+      loader.remove();
+      this.renderText("System Error: API Connection Failed.");
     }
 
     this.isLoading = false;
+  },
+
+  /* =========================
+     💬 TEXT RENDER HELPER
+  ========================= */
+  renderText(text) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
+
+    const div = document.createElement("div");
+    div.className = "msg ai";
+    div.textContent = text;
+
+    wrapper.appendChild(div);
+    this.messagesBox.appendChild(wrapper);
+    this.scroll();
   },
 
   /* =========================
@@ -126,6 +153,7 @@ const AI = {
 
     const container = document.createElement("div");
     container.className = "msg ai";
+
     wrapper.appendChild(container);
     this.messagesBox.appendChild(wrapper);
 
@@ -142,11 +170,11 @@ const AI = {
         header.className = "code-header";
         header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
 
-        const copyBtn = header.querySelector(".copy-btn");
-        copyBtn.onclick = () => {
+        const btn = header.querySelector(".copy-btn");
+        btn.onclick = () => {
           navigator.clipboard.writeText(part.trim());
-          copyBtn.textContent = "Copied!";
-          setTimeout(() => copyBtn.textContent = "Copy", 1500);
+          btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = "Copy"), 1500);
         };
 
         const pre = document.createElement("pre");
@@ -157,6 +185,7 @@ const AI = {
         codeBox.appendChild(header);
         codeBox.appendChild(pre);
         container.appendChild(codeBox);
+
       } else {
         const textDiv = document.createElement("div");
         container.appendChild(textDiv);
@@ -164,18 +193,17 @@ const AI = {
         const paragraphs = part.split("\n");
 
         for (const para of paragraphs) {
-          if (para.trim()) {
-            const p = document.createElement("p");
-            p.style.marginBottom = "0.5rem";
-            textDiv.appendChild(p);
+          if (!para.trim()) continue;
 
-            const words = para.trim().split(" ");
+          const p = document.createElement("p");
+          p.style.marginBottom = "0.5rem";
+          textDiv.appendChild(p);
 
-            for (const word of words) {
-              p.textContent += word + " ";
-              this.scroll();
-              await new Promise(r => setTimeout(r, 10));
-            }
+          const words = para.split(" ");
+          for (const w of words) {
+            p.textContent += w + " ";
+            await new Promise(r => setTimeout(r, 8));
+            this.scroll();
           }
         }
       }
@@ -184,6 +212,9 @@ const AI = {
     }
   },
 
+  /* =========================
+     📜 SCROLL
+  ========================= */
   scroll() {
     this.messagesBox.scrollTo({
       top: this.messagesBox.scrollHeight,
