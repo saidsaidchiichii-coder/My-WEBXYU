@@ -36,9 +36,7 @@ const AI = {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         if (btn.innerText.includes('Imagine') && mode === 'image') {
             btn.classList.add('active');
-        } else if (!btn.innerText.includes('Imagine') && mode === 'chat') {
-            // This is a bit simplified, but works for the current UI
-        } else {
+        } else if (btn.innerText.includes('Imagine') && mode === 'chat') {
             btn.classList.remove('active');
         }
     });
@@ -107,7 +105,7 @@ const AI = {
       
       const err = document.createElement("div");
       err.className = "msg ai";
-      err.textContent = "System Error: API Connection Failed.";
+      err.textContent = "System Error: API Connection Failed. Check if the server is running.";
       
       wrapper.appendChild(err);
       this.messagesBox.appendChild(wrapper);
@@ -122,31 +120,54 @@ const AI = {
     container.className = "msg ai";
     
     const p = document.createElement("p");
-    p.textContent = text.split('![Generated Image]')[0].trim();
+    p.innerHTML = `<strong>Refined Prompt:</strong> ${text}`;
+    p.style.marginBottom = "15px";
+    
+    const imgContainer = document.createElement("div");
+    imgContainer.style.position = "relative";
+    imgContainer.style.display = "inline-block";
+    imgContainer.style.maxWidth = "100%";
     
     const img = document.createElement("img");
     img.src = url;
     img.alt = "Generated AI Image";
+    img.style.width = "100%";
+    img.style.borderRadius = "12px";
+    img.style.border = "1px solid var(--border-color)";
     
     const downloadBtn = document.createElement("button");
     downloadBtn.className = "copy-btn";
     downloadBtn.style.marginTop = "10px";
-    downloadBtn.textContent = "Download Image";
-    downloadBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'generated-image.png';
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+    downloadBtn.innerHTML = '<i data-lucide="download" style="width:14px; height:14px; margin-right:5px;"></i> Download Image';
+    downloadBtn.onclick = async () => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = 'generated-image.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            window.open(url, '_blank');
+        }
     };
 
     container.appendChild(p);
-    container.appendChild(img);
+    imgContainer.appendChild(img);
+    container.appendChild(imgContainer);
     container.appendChild(downloadBtn);
     wrapper.appendChild(container);
     this.messagesBox.appendChild(wrapper);
+    
+    // Re-run Lucide to render the download icon
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+    
     this.scroll();
   },
 
@@ -219,9 +240,11 @@ const AI = {
 
   scroll() {
     const box = this.messagesBox;
-    box.scrollTo({
-        top: box.scrollHeight,
-        behavior: 'smooth'
-    });
+    if (box) {
+        box.scrollTo({
+            top: box.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
   }
 };
