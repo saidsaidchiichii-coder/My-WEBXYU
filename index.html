@@ -3,181 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>AI Image Generator & Chat</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-
-    <!-- NAVIGATION -->
-    <header class="top-nav">
-        <div class="nav-left">
-            <div class="logo-container" onclick="location.reload()">
-                <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
-                    <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
-                    <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
-                    <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
-                    <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
-                    <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
-                </svg>
-            </div>
-        </div>
-        
-        <div class="nav-right">
-            <button class="nav-btn" id="imagineBtn" onclick="toggleImagineMode()">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
                 <i data-lucide="sparkles"></i>
-                <span>Imagine</span>
-            </button>
-            <button class="nav-btn" id="settingsTrigger">
-                <i data-lucide="settings"></i>
-            </button>
-            <button class="btn-signin">Sign in</button>
-            <button class="btn-signup">Sign up</button>
-        </div>
-    </header>
-
-    <main class="container">
-        <!-- HOME VIEW -->
-        <section id="home" class="home-view">
-            <div class="hero-section">
-                <div class="hero-logo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
-                        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
-                        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
-                        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
-                        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
-                        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
-                    </svg>
-                    <h1 id="heroTitle">Grok</h1>
-                </div>
+                <span>AI Studio</span>
             </div>
-            
-            <div class="search-container">
-                <div class="search-box">
-                    <div class="input-area">
-                        <button class="input-icon">
-                            <i data-lucide="paperclip"></i>
-                        </button>
-                        <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'home')"></textarea>
-                        <div class="input-controls">
-                            <div class="mode-selector">
-                                <span>Auto</span>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                            <button class="control-btn">
-                                <i data-lucide="mic"></i>
-                            </button>
-                            <button class="control-btn send-btn" onclick="startChat('home')">
-                                <i data-lucide="arrow-up"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="search-hint">
-                    <i data-lucide="info"></i>
-                    <span>Press Enter to send, Shift + Enter for new line</span>
-                </div>
+            <div class="nav-links">
+                <button class="nav-btn active" onclick="AI.setMode('chat')">
+                    <i data-lucide="message-square"></i> Chat
+                </button>
+                <button class="nav-btn" onclick="AI.setMode('image')">
+                    <i data-lucide="image"></i> Imagine
+                </button>
             </div>
-        </section>
+        </nav>
 
-        <!-- CHAT VIEW -->
-        <section id="chat" class="chat-view hidden">
-            <div id="messagesList" class="messages-list"></div>
-            
-            <div class="chat-input-container">
-                <div class="search-box">
-                    <div class="input-area">
-                        <button class="input-icon">
-                            <i data-lucide="plus"></i>
-                        </button>
-                        <textarea id="chatInput" placeholder="How can I help you today?" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'chat')"></textarea>
-                        <div class="input-controls">
-                            <button class="control-btn">
-                                <i data-lucide="mic"></i>
-                            </button>
-                            <button class="control-btn send-btn" onclick="startChat('chat')">
-                                <i data-lucide="arrow-up"></i>
-                            </button>
-                        </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div id="messages" class="messages-container">
+                <!-- Welcome Message -->
+                <div class="msg-wrapper ai">
+                    <div class="msg ai">
+                        <h1>Welcome to AI Studio</h1>
+                        <p>How can I help you today? You can switch between Chat and Image generation modes using the sidebar.</p>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
 
+            <!-- Input Area -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="How can I help you today?" onkeypress="if(event.key === 'Enter') AI.handleSend()">
+                    <button class="send-btn" onclick="AI.handleSend()">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
     <script src="ControleAi.js"></script>
+    <script src="chat.js"></script>
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-
-        // Initialize AI
-        AI.init("messagesList");
-
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight) + 'px';
-        }
-
-        function handleKeydown(event, source) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                startChat(source);
-            }
-        }
-
-        function toggleImagineMode() {
-            const isImageMode = AI.currentMode === 'image';
-            const newMode = isImageMode ? 'chat' : 'image';
-            
-            AI.setMode(newMode);
-            
-            // Update UI elements
-            const heroTitle = document.getElementById('heroTitle');
-            const imagineBtn = document.getElementById('imagineBtn');
-            const homeInput = document.getElementById('homeInput');
-            const chatInput = document.getElementById('chatInput');
-            
-            if (newMode === 'image') {
-                heroTitle.textContent = "Imagine";
-                imagineBtn.classList.add('active');
-                homeInput.placeholder = "What image do you want to create?";
-                chatInput.placeholder = "What image do you want to create?";
-            } else {
-                heroTitle.textContent = "Grok";
-                imagineBtn.classList.remove('active');
-                homeInput.placeholder = "How can I help you today?";
-                chatInput.placeholder = "How can I help you today?";
-            }
-        }
-
-        function startChat(source) {
-            const inputId = source === 'home' ? 'homeInput' : 'chatInput';
-            const input = document.getElementById(inputId);
-            const text = input.value.trim();
-
-            if (!text) return;
-
-            // Switch to chat view if in home
-            if (source === 'home') {
-                document.getElementById('home').classList.add('hidden');
-                document.getElementById('chat').classList.remove('hidden');
-            }
-
-            // Reset input
-            input.value = '';
-            input.style.height = 'auto';
-
-            // Process AI
-            AI.user(text);
-            AI.ask(text);
-        }
+        // Initialize AI and Lucide
+        document.addEventListener('DOMContentLoaded', () => {
+            AI.init('messages');
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
