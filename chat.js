@@ -25,13 +25,25 @@ const ChatManager = {
     loadHistory() {
         const stored = localStorage.getItem('ai_studio_history');
         if (stored) {
-            this.history = JSON.parse(stored);
+            try {
+                this.history = JSON.parse(stored);
+            } catch (e) {
+                console.error('Failed to load history:', e);
+                this.history = [];
+            }
         }
     },
 
     clearHistory() {
         this.history = [];
         this.updateLocalStorage();
+    },
+
+    getHistory(type = null) {
+        if (type) {
+            return this.history.filter(item => item.type === type);
+        }
+        return this.history;
     }
 };
 
