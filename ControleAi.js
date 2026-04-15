@@ -184,30 +184,63 @@ const AI = {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
     
-    const container = document.createElement("div");
-    container.className = "msg ai";
+    const card = document.createElement("div");
+    card.className = "image-card";
     
-    const p = document.createElement("p");
-    p.innerHTML = `<strong>Prompt:</strong> ${text}`;
+    card.innerHTML = `
+        <div class="image-header">
+            <p>Generated Artwork</p>
+        </div>
+        <div class="image-container skeleton">
+            <img src="${url}" class="generated-img" alt="AI Generated Artwork" style="opacity: 0; transition: opacity 0.5s ease;">
+        </div>
+        <div class="image-actions">
+            <button class="action-btn" onclick="window.open('${url}', '_blank')">
+                <i data-lucide="maximize-2"></i> View Fullscreen
+            </button>
+            <button class="action-btn primary" onclick="AI.downloadImage('${url}')">
+                <i data-lucide="download"></i> Download
+            </button>
+            <button class="action-btn" onclick="navigator.clipboard.writeText('${text}')">
+                <i data-lucide="copy"></i> Copy Prompt
+            </button>
+        </div>
+    `;
     
-    const img = document.createElement("img");
-    img.src = url;
-    img.className = "generated-img";
-    img.alt = "Generated AI Image";
-    img.onload = () => this.scroll(); // Scroll again once image loads
+    const img = card.querySelector('.generated-img');
+    const container = card.querySelector('.image-container');
     
-    const downloadBtn = document.createElement("button");
-    downloadBtn.className = "copy-btn";
-    downloadBtn.style.marginTop = "1rem";
-    downloadBtn.innerHTML = 'Download Image';
-    downloadBtn.onclick = () => window.open(url, '_blank');
+    img.onload = () => {
+        img.style.opacity = '1';
+        container.classList.remove('skeleton');
+        this.scroll();
+    };
 
-    container.appendChild(p);
-    container.appendChild(img);
-    container.appendChild(downloadBtn);
-    wrapper.appendChild(container);
+    wrapper.appendChild(card);
     this.messagesBox.appendChild(wrapper);
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+    
     this.scroll();
+  },
+
+  async downloadImage(url) {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `ai-studio-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+        window.open(url, '_blank');
+    }
   },
 
   async streamRender(fullText, save = true) {
