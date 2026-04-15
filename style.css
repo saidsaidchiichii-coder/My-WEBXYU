@@ -3,11 +3,13 @@
     --sidebar-bg: #11151c;
     --card-bg: #1a1f26;
     --accent-blue: #3b82f6;
+    --accent-neon: #00d9ff;
     --text-main: #e2e8f0;
     --text-muted: #94a3b8;
     --border-color: #2d3748;
     --user-msg: #3b82f6;
     --ai-msg: #1a1f26;
+    --success-green: #10b981;
 }
 
 * {
@@ -17,10 +19,14 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-main);
-    height: 100vh;
     display: flex;
     overflow: hidden;
 }
@@ -31,7 +37,9 @@ body {
     height: 100%;
 }
 
-/* Sidebar Design - Dark & Minimal */
+/* ========================
+   SIDEBAR - Grok Style
+   ======================== */
 .sidebar {
     width: 240px;
     background-color: var(--sidebar-bg);
@@ -40,6 +48,7 @@ body {
     flex-direction: column;
     padding: 1.5rem 1rem;
     flex-shrink: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 217, 255, 0.1);
 }
 
 .logo {
@@ -49,8 +58,19 @@ body {
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 2.5rem;
-    color: var(--accent-blue);
+    color: var(--accent-neon);
     padding-left: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.logo i {
+    animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(0, 217, 255, 0.5)); }
+    50% { filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.8)); }
 }
 
 .nav-links {
@@ -65,32 +85,40 @@ body {
     gap: 0.75rem;
     padding: 0.8rem 1rem;
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     color: var(--text-muted);
     cursor: pointer;
     border-radius: 0.75rem;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-size: 0.95rem;
     text-align: left;
 }
 
 .nav-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-main);
+    background-color: rgba(0, 217, 255, 0.05);
+    color: var(--accent-neon);
+    border-color: rgba(0, 217, 255, 0.2);
 }
 
 .nav-btn.active {
-    background-color: var(--accent-blue);
-    color: white;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(0, 217, 255, 0.1));
+    color: var(--accent-neon);
+    border-color: var(--accent-neon);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
 }
 
-/* Main Content Area */
+/* ========================
+   MAIN CONTENT AREA
+   ======================== */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     background-color: var(--bg-dark);
     position: relative;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 217, 255, 0.03) 0%, transparent 50%);
 }
 
 .messages-container {
@@ -105,11 +133,25 @@ body {
     width: 100%;
 }
 
-/* Message Bubbles - Groq Style */
+/* ========================
+   MESSAGE BUBBLES
+   ======================== */
 .msg-wrapper {
     display: flex;
     width: 100%;
     margin-bottom: 0.5rem;
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .msg-wrapper.ai { justify-content: flex-start; }
@@ -122,20 +164,25 @@ body {
     line-height: 1.6;
     font-size: 1rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .msg.ai {
-    background-color: var(--ai-msg);
+    background: linear-gradient(135deg, var(--ai-msg) 0%, rgba(26, 31, 38, 0.8) 100%);
     color: var(--text-main);
     border: 1px solid var(--border-color);
 }
 
 .msg.user {
-    background-color: var(--user-msg);
+    background: linear-gradient(135deg, var(--user-msg) 0%, rgba(59, 130, 246, 0.8) 100%);
     color: white;
+    border: 1px solid rgba(59, 130, 246, 0.5);
 }
 
-/* Input Area - Clean & Bottom Floating */
+/* ========================
+   INPUT AREA
+   ======================== */
 .input-container {
     padding: 1.5rem 2rem 2.5rem;
     max-width: 900px;
@@ -146,15 +193,17 @@ body {
 .input-wrapper {
     display: flex;
     align-items: center;
-    background-color: #1e252e;
+    background: linear-gradient(135deg, #1e252e 0%, #161b22 100%);
     border: 1px solid var(--border-color);
     border-radius: 1rem;
     padding: 0.5rem 1rem;
-    transition: border-color 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .input-wrapper:focus-within {
-    border-color: var(--accent-blue);
+    border-color: var(--accent-neon);
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
 }
 
 .input-wrapper input {
@@ -167,23 +216,37 @@ body {
     font-size: 1rem;
 }
 
+.input-wrapper input::placeholder {
+    color: var(--text-muted);
+}
+
 .send-btn {
-    background: var(--accent-blue);
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-neon) 100%);
     border: none;
     color: white;
     width: 40px;
     height: 40px;
-    border-radius: 0.75rem;
+    border-radius: 0.6rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.1s;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
 }
 
-.send-btn:active { transform: scale(0.95); }
+.send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 217, 255, 0.4);
+}
 
-/* Thinking Animation */
+.send-btn:active {
+    transform: scale(0.95);
+}
+
+/* ========================
+   THINKING ANIMATION
+   ======================== */
 .thinking-container {
     display: flex;
     align-items: center;
@@ -192,13 +255,20 @@ body {
     font-size: 0.9rem;
 }
 
-.loader-dots { display: flex; gap: 4px; }
+.loader-dots {
+    display: flex;
+    gap: 4px;
+}
+
 .loader-dots span {
-    width: 6px; height: 6px;
-    background-color: var(--text-muted);
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent-neon);
     border-radius: 50%;
     animation: bounce 1.4s infinite ease-in-out both;
+    box-shadow: 0 0 4px rgba(0, 217, 255, 0.6);
 }
+
 .loader-dots span:nth-child(1) { animation-delay: -0.32s; }
 .loader-dots span:nth-child(2) { animation-delay: -0.16s; }
 
@@ -207,42 +277,67 @@ body {
     40% { transform: scale(1); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 10px; }
+/* ========================
+   SCROLLBAR
+   ======================== */
+::-webkit-scrollbar {
+    width: 6px;
+}
 
-/* Professional Image Card - Groq Style */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-neon);
+}
+
+/* ========================
+   IMAGE CARD - Premium Grok Style
+   ======================== */
 .image-card {
     width: 100%;
-    background: #161b22;
+    background: linear-gradient(135deg, #161b22 0%, #0d1117 100%);
     border: 1px solid var(--border-color);
     border-radius: 1.25rem;
     overflow: hidden;
     margin-top: 1.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease;
+    box-shadow: 0 10px 25px -5px rgba(0, 217, 255, 0.2);
+    transition: all 0.3s ease;
     animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .image-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 15px 35px -5px rgba(0, 217, 255, 0.3);
+    border-color: var(--accent-neon);
 }
 
 .image-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.02);
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.05) 0%, rgba(59, 130, 246, 0.03) 100%);
 }
 
 .image-header p {
     font-size: 0.85rem;
-    color: var(--text-muted);
+    color: var(--accent-neon);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -269,7 +364,7 @@ body {
     display: flex;
     gap: 0.75rem;
     padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.03) 0%, rgba(59, 130, 246, 0.02) 100%);
     border-top: 1px solid var(--border-color);
 }
 
@@ -287,12 +382,13 @@ body {
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 500;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .action-btn:hover {
     background: #30363d;
-    border-color: var(--text-muted);
+    border-color: var(--accent-neon);
+    color: var(--accent-neon);
 }
 
 .action-btn i {
@@ -301,16 +397,19 @@ body {
 }
 
 .action-btn.primary {
-    background: var(--accent-blue);
-    border-color: var(--accent-blue);
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-neon) 100%);
+    border-color: var(--accent-neon);
     color: white;
 }
 
 .action-btn.primary:hover {
-    filter: brightness(1.1);
+    filter: brightness(1.15);
+    box-shadow: 0 0 12px rgba(0, 217, 255, 0.4);
 }
 
-/* Skeleton Loading Effect */
+/* ========================
+   SKELETON LOADING
+   ======================== */
 .skeleton {
     background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%);
     background-size: 200% 100%;
@@ -322,7 +421,9 @@ body {
     to { background-position: -200% 0; }
 }
 
-/* Code Box Styles */
+/* ========================
+   CODE BOX
+   ======================== */
 .code-box {
     background: #0d1117;
     border-radius: 0.5rem;
@@ -330,6 +431,7 @@ body {
     border: 1px solid var(--border-color);
     overflow: hidden;
 }
+
 .code-header {
     background: #161b22;
     padding: 0.5rem 1rem;
@@ -337,7 +439,9 @@ body {
     justify-content: space-between;
     font-size: 0.8rem;
     color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
 }
+
 .copy-btn {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -346,13 +450,64 @@ body {
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.75rem;
+    transition: all 0.2s ease;
 }
-.copy-btn:hover { background: #21262d; color: white; }
-pre { padding: 1rem; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.9rem; }
 
-/* Responsive */
+.copy-btn:hover {
+    background: #21262d;
+    color: var(--accent-neon);
+    border-color: var(--accent-neon);
+}
+
+pre {
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+code {
+    color: var(--text-main);
+}
+
+.cmt { color: #6a737d; }
+.str { color: #85e89d; }
+.num { color: #79b8ff; }
+.kw { color: #f97583; font-weight: bold; }
+.fn { color: #b392f0; }
+
+/* ========================
+   RESPONSIVE DESIGN
+   ======================== */
 @media (max-width: 768px) {
-    .sidebar { width: 60px; padding: 1rem 0.5rem; }
-    .logo span, .nav-btn span { display: none; }
-    .msg { max-width: 95%; }
+    .sidebar {
+        width: 60px;
+        padding: 1rem 0.5rem;
+    }
+
+    .logo span,
+    .nav-btn span {
+        display: none;
+    }
+
+    .logo {
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .nav-btn {
+        justify-content: center;
+    }
+
+    .msg {
+        max-width: 95%;
+    }
+
+    .messages-container {
+        padding: 1rem;
+    }
+
+    .input-container {
+        padding: 1rem;
+    }
 }
