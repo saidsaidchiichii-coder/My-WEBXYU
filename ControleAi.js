@@ -24,19 +24,22 @@ const AI = {
 
   setMode(mode) {
     this.currentMode = mode;
-    const homeInput = document.getElementById('homeInput');
     const chatInput = document.getElementById('chatInput');
     
     const placeholder = mode === 'image' ? "What image do you want to create?" : "How can I help you today?";
     
-    if (homeInput) homeInput.placeholder = placeholder;
     if (chatInput) chatInput.placeholder = placeholder;
     
     // Update active state on buttons
     document.querySelectorAll('.nav-btn').forEach(btn => {
-        if (btn.innerText.includes('Imagine') && mode === 'image') {
+        const isImageBtn = btn.innerText.includes('Imagine');
+        const isChatBtn = btn.innerText.includes('Chat');
+
+        if (mode === 'image' && isImageBtn) {
             btn.classList.add('active');
-        } else if (btn.innerText.includes('Imagine') && mode === 'chat') {
+        } else if (mode === 'chat' && isChatBtn) {
+            btn.classList.add('active');
+        } else {
             btn.classList.remove('active');
         }
     });
@@ -44,7 +47,7 @@ const AI = {
 
   user(text) {
     const wrapper = document.createElement("div");
-    wrapper.className = "msg-wrapper";
+    wrapper.className = "msg-wrapper user";
     
     const div = document.createElement("div");
     div.className = "msg user";
@@ -75,6 +78,16 @@ const AI = {
     this.messagesBox.appendChild(wrapper);
     this.scroll();
     return wrapper;
+  },
+
+  handleSend() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (text) {
+        this.user(text);
+        input.value = '';
+        this.ask(text);
+    }
   },
 
   async ask(message) {
@@ -138,7 +151,7 @@ const AI = {
     const downloadBtn = document.createElement("button");
     downloadBtn.className = "copy-btn";
     downloadBtn.style.marginTop = "10px";
-    downloadBtn.innerHTML = '<i data-lucide="download" style="width:14px; height:14px; margin-right:5px;"></i> Download Image';
+    downloadBtn.innerHTML = 'Download Image';
     downloadBtn.onclick = async () => {
         try {
             const response = await fetch(url);
@@ -162,11 +175,6 @@ const AI = {
     container.appendChild(downloadBtn);
     wrapper.appendChild(container);
     this.messagesBox.appendChild(wrapper);
-    
-    // Re-run Lucide to render the download icon
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
     
     this.scroll();
   },
