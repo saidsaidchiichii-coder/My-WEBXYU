@@ -151,7 +151,7 @@ const AI = {
           // DALL-E 3 failed, use Pollinations AI as fallback
           const seed = Math.floor(Math.random() * 1000000);
           const fallbackImageUrl = `https://pollinations.ai/p/${encodeURIComponent(data.reply || message)}?width=1024&height=1024&seed=${seed}&nologo=true`;
-          this.aiMessage("DALL-E 3 failed to generate an image. Here's an image from Pollinations AI based on the refined prompt:");
+          this.aiMessage("Generating image with Pollinations AI...");
           this.renderImage(data.reply || message, fallbackImageUrl);
         }
       } else if (data.reply) {
@@ -175,52 +175,54 @@ const AI = {
     const card = document.createElement("div");
     card.className = "image-card";
     
-    const timestamp = Date.now();
-    const imgId = `img-${timestamp}`;
-    const containerId = `img-container-${timestamp}`;
+    // Create image HTML directly without innerHTML to avoid issues
+    const header = document.createElement("div");
+    header.className = "image-header";
+    header.innerHTML = "<p>AI Generated Masterpiece</p>";
     
-    card.innerHTML = `
-        <div class="image-header">
-            <p>AI Generated Masterpiece</p>
-        </div>
-        <div class="image-container skeleton" id="${containerId}">
-            <img id="${imgId}" class="generated-img" alt="AI Artwork" style="opacity: 0; transition: opacity 0.8s ease; width: 100%; height: auto; display: block;">
-        </div>
-        <div class="image-actions">
-            <button class="action-btn" onclick="window.open('${url}', '_blank')">
-                <i data-lucide="maximize-2"></i> View Full
-            </button>
-            <button class="action-btn primary" onclick="AI.downloadImage('${url}')">
-                <i data-lucide="download"></i> Save Image
-            </button>
-            <button class="action-btn" onclick="navigator.clipboard.writeText('${text}')">
-                <i data-lucide="copy"></i> Copy Prompt
-            </button>
-        </div>
+    const imageContainer = document.createElement("div");
+    imageContainer.className = "image-container skeleton";
+    
+    const img = document.createElement("img");
+    img.className = "generated-img";
+    img.alt = "AI Artwork";
+    img.style.cssText = "opacity: 0; transition: opacity 0.8s ease; width: 100%; height: auto; display: block;";
+    img.src = url;
+    
+    imageContainer.appendChild(img);
+    
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "image-actions";
+    actionsDiv.innerHTML = `
+        <button class="action-btn" onclick="window.open('${url}', '_blank')">
+            <i data-lucide="maximize-2"></i> View Full
+        </button>
+        <button class="action-btn primary" onclick="AI.downloadImage('${url}')">
+            <i data-lucide="download"></i> Save Image
+        </button>
+        <button class="action-btn" onclick="navigator.clipboard.writeText('${text}')">
+            <i data-lucide="copy"></i> Copy Prompt
+        </button>
     `;
     
+    card.appendChild(header);
+    card.appendChild(imageContainer);
+    card.appendChild(actionsDiv);
     wrapper.appendChild(card);
     this.messagesBox.appendChild(wrapper);
     
-    // Set image source after DOM insertion
-    const img = document.getElementById(imgId);
-    const container = document.getElementById(containerId);
+    // Handle image loading
+    img.onload = () => {
+      img.style.opacity = '1';
+      imageContainer.classList.remove('skeleton');
+      this.scroll();
+    };
     
-    if (img && container) {
-      img.onload = () => {
-        img.style.opacity = '1';
-        container.classList.remove('skeleton');
-        this.scroll();
-      };
-      
-      img.onerror = () => {
-        console.error('Image failed to load:', url);
-        container.innerHTML = '<p style="color: var(--text-muted); padding: 2rem; text-align: center;">Image failed to load. Please try again.</p>';
-      };
-      
-      // Set src to trigger loading
-      img.src = url;
-    }
+    img.onerror = () => {
+      console.error('Image failed to load from:', url);
+      imageContainer.innerHTML = '<p style="color: var(--text-muted); padding: 2rem; text-align: center;">Image generation in progress or temporarily unavailable. Please try again.</p>';
+      imageContainer.classList.remove('skeleton');
+    };
     
     if (window.lucide) {
         window.lucide.createIcons();
