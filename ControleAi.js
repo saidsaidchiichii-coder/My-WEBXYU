@@ -3,7 +3,6 @@ const AI = {
   API_URL: '/api/chat',
   currentMode: 'chat', // 'chat' or 'image'
   
-  // Storage for conversations to separate Chat and Imagine
   conversations: {
     chat: [],
     image: []
@@ -34,24 +33,18 @@ const AI = {
       ? "Welcome to Image Studio. Describe the image you want to create, and I'll generate it for you."
       : "Welcome to AI Chat. How can I help you today?";
     
-    this.aiMessage(welcomeText, false); // false = don't save to conversation array yet
+    this.aiMessage(welcomeText, false);
   },
 
   setMode(mode) {
     if (this.currentMode === mode) return;
 
-    // Save current messages to the correct conversation array before switching
-    // (In a real app, we'd store the DOM elements or data. For simplicity, we clear and reload)
     this.currentMode = mode;
-    
-    // Clear the message box
     this.messagesBox.innerHTML = '';
     
-    // Update UI elements
     const chatInput = document.getElementById('chatInput');
     chatInput.placeholder = mode === 'image' ? "What image do you want to create?" : "How can I help you today?";
     
-    // Update active button state
     document.querySelectorAll('.nav-btn').forEach(btn => {
         const isImageBtn = btn.innerText.toLowerCase().includes('imagine');
         const isChatBtn = btn.innerText.toLowerCase().includes('chat');
@@ -63,7 +56,6 @@ const AI = {
         }
     });
 
-    // Load existing conversation for this mode or show initial message
     if (this.conversations[mode].length === 0) {
         this.loadInitialMessage();
     } else {
@@ -142,8 +134,8 @@ const AI = {
     const load = this.thinking();
 
     try {
-      // CRITICAL: Ensure we send the currentMode to the backend
-      const res = await fetch(this.API_URL, {
+      // CRITICAL: We MUST send the mode to the backend so it knows whether to chat or generate an image
+      const response = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -152,20 +144,20 @@ const AI = {
         })
       });
 
-      const data = await res.json();
+      const data = await response.json();
       load.remove();
       
-      let reply = data?.reply || "I'm sorry, I couldn't process that.";
-
       if (this.currentMode === 'image' && data.image_url) {
-          this.renderImage(reply, data.image_url);
+          this.renderImage(data.reply || "Image generated successfully!", data.image_url);
+      } else if (data.reply) {
+          this.streamRender(data.reply);
       } else {
-          this.streamRender(reply);
+          this.aiMessage("The AI returned an empty response. Please check your API configuration.");
       }
 
     } catch (e) {
       load.remove();
-      this.aiMessage("System Error: API Connection Failed. Please ensure the backend server is running and handles the 'mode' parameter correctly.");
+      this.aiMessage("System Error: Could not connect to the backend server. Make sure your app.py is running.");
     }
   },
 
@@ -217,7 +209,6 @@ const AI = {
       const part = parts[i];
       
       if (i % 2 === 1) {
-        // Code Block
         const codeBox = document.createElement("div");
         codeBox.className = "code-box";
         codeBox.innerHTML = `
@@ -229,7 +220,6 @@ const AI = {
         `;
         container.appendChild(codeBox);
       } else {
-        // Text
         const textDiv = document.createElement("div");
         container.appendChild(textDiv);
         const paragraphs = part.split("\n");
