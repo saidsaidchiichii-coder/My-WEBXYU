@@ -1,25 +1,28 @@
 :root {
-    --bg-color: #0f172a;
-    --sidebar-bg: #1e293b;
-    --accent-color: #3b82f6;
-    --text-color: #f1f5f9;
-    --border-color: #334155;
-    --user-msg-bg: #3b82f6;
-    --ai-msg-bg: #334155;
+    --bg-dark: #0b0e14;
+    --sidebar-bg: #11151c;
+    --card-bg: #1a1f26;
+    --accent-blue: #3b82f6;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border-color: #2d3748;
+    --user-msg: #3b82f6;
+    --ai-msg: #1a1f26;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: var(--bg-dark);
+    color: var(--text-main);
     height: 100vh;
     display: flex;
+    overflow: hidden;
 }
 
 .app-container {
@@ -28,24 +31,26 @@ body {
     height: 100%;
 }
 
-/* Sidebar Styles */
+/* Sidebar Design - Dark & Minimal */
 .sidebar {
-    width: 260px;
+    width: 240px;
     background-color: var(--sidebar-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
+    flex-shrink: 0;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 2rem;
-    color: var(--accent-color);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    color: var(--accent-blue);
+    padding-left: 0.5rem;
 }
 
 .nav-links {
@@ -58,30 +63,34 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: none;
+    padding: 0.8rem 1rem;
+    background: transparent;
     border: none;
-    color: #94a3b8;
+    color: var(--text-muted);
     cursor: pointer;
-    border-radius: 0.5rem;
-    transition: all 0.2s;
-    font-size: 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+    text-align: left;
 }
 
-.nav-btn:hover, .nav-btn.active {
-    background-color: var(--accent-color);
+.nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.nav-btn.active {
+    background-color: var(--accent-blue);
     color: white;
 }
 
-/* Main Content Styles */
+/* Main Content Area */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
+    background-color: var(--bg-dark);
     position: relative;
-    max-width: 900px;
-    margin: 0 auto;
-    width: 100%;
 }
 
 .messages-container {
@@ -91,88 +100,66 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-}
-
-/* Message Bubbles */
-.msg-wrapper {
-    display: flex;
+    max-width: 900px;
+    margin: 0 auto;
     width: 100%;
 }
 
-.msg-wrapper.ai {
-    justify-content: flex-start;
+/* Message Bubbles - Groq Style */
+.msg-wrapper {
+    display: flex;
+    width: 100%;
+    margin-bottom: 0.5rem;
 }
 
-.msg-wrapper.user {
-    justify-content: flex-end;
-}
+.msg-wrapper.ai { justify-content: flex-start; }
+.msg-wrapper.user { justify-content: flex-end; }
 
 .msg {
-    max-width: 80%;
-    padding: 1rem 1.25rem;
-    border-radius: 1rem;
+    max-width: 85%;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1.25rem;
     line-height: 1.6;
+    font-size: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .msg.ai {
-    background-color: var(--ai-msg-bg);
-    border-bottom-left-radius: 0;
+    background-color: var(--ai-msg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
 }
 
 .msg.user {
-    background-color: var(--user-msg-bg);
-    border-bottom-right-radius: 0;
+    background-color: var(--user-msg);
+    color: white;
 }
 
-/* Thinking Indicator */
-.thinking-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background-color: var(--ai-msg-bg);
-    border-radius: 1rem;
-}
-
-.loader-dots {
-    display: flex;
-    gap: 4px;
-}
-
-.loader-dots span {
-    width: 8px;
-    height: 8px;
-    background-color: #94a3b8;
-    border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
-
-.loader-dots span:nth-child(1) { animation-delay: -0.32s; }
-.loader-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
-}
-
-/* Input Area Styles */
+/* Input Area - Clean & Bottom Floating */
 .input-container {
-    padding: 2rem;
-    background-color: var(--bg-color);
+    padding: 1.5rem 2rem 2.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .input-wrapper {
     display: flex;
-    gap: 1rem;
-    background-color: var(--sidebar-bg);
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
+    align-items: center;
+    background-color: #1e252e;
     border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    transition: border-color 0.2s;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--accent-blue);
 }
 
 .input-wrapper input {
     flex: 1;
-    background: none;
+    background: transparent;
     border: none;
     color: white;
     padding: 0.75rem;
@@ -181,58 +168,89 @@ body {
 }
 
 .send-btn {
-    background: var(--accent-color);
+    background: var(--accent-blue);
     border: none;
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 0.75rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.1s;
 }
 
-/* Code Boxes */
+.send-btn:active { transform: scale(0.95); }
+
+/* Thinking Animation */
+.thinking-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.loader-dots { display: flex; gap: 4px; }
+.loader-dots span {
+    width: 6px; height: 6px;
+    background-color: var(--text-muted);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.loader-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loader-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 10px; }
+
+/* Image Styling */
+.generated-img {
+    width: 100%;
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+/* Code Box Styles */
 .code-box {
-    background: #000;
-    border-radius: 8px;
-    margin: 10px 0;
+    background: #0d1117;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    border: 1px solid var(--border-color);
     overflow: hidden;
 }
-
 .code-header {
-    background: #333;
-    padding: 5px 15px;
+    background: #161b22;
+    padding: 0.5rem 1rem;
     display: flex;
     justify-content: space-between;
-    align-items: center;
     font-size: 0.8rem;
+    color: var(--text-muted);
 }
-
-.code-box pre {
-    padding: 15px;
-    overflow-x: auto;
-}
-
 .copy-btn {
-    background: #444;
-    border: none;
-    color: #ccc;
-    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 2px 8px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 0.75rem;
 }
-
-/* Syntax Highlighting */
-.cmt { color: #6a9955; }
-.str { color: #ce9178; }
-.num { color: #b5cea8; }
-.kw { color: #569cd6; }
-.fn { color: #dcdcaa; }
+.copy-btn:hover { background: #21262d; color: white; }
+pre { padding: 1rem; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.9rem; }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .sidebar { width: 70px; padding: 1rem 0.5rem; }
+    .sidebar { width: 60px; padding: 1rem 0.5rem; }
     .logo span, .nav-btn span { display: none; }
     .msg { max-width: 95%; }
 }
