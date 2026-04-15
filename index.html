@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok</title>
+    <title>Grok AI Image Gen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
         </div>
         
         <div class="nav-right">
-            <button class="nav-btn">
+            <button class="nav-btn" id="imagineBtn">
                 <i data-lucide="sparkles"></i>
                 <span>Imagine</span>
             </button>
@@ -55,7 +55,7 @@
                         <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
                         <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
                     </svg>
-                    <h1>Grok</h1>
+                    <h1 id="heroTitle">Grok</h1>
                 </div>
             </div>
             
@@ -68,21 +68,21 @@
                         <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'home')"></textarea>
                         <div class="input-controls">
                             <div class="mode-selector">
-                                <span>Auto</span>
+                                <span id="currentMode">Auto</span>
                                 <i data-lucide="chevron-down"></i>
                             </div>
                             <button class="control-btn">
                                 <i data-lucide="mic"></i>
                             </button>
-                            <button class="control-btn send-btn" onclick="startChat()">
+                            <button class="control-btn send-btn" id="homeSendBtn">
                                 <i data-lucide="arrow-up"></i>
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="search-hint">
-                    <i data-lucide="sparkles"></i>
-                    <span>New · Hold Ctrl+D to dictate</span>
+                    <i data-lucide="zap"></i>
+                    <span>Press Enter to send</span>
                 </div>
             </div>
         </section>
@@ -90,23 +90,16 @@
         <!-- CHAT VIEW -->
         <section id="chat" class="chat-view hidden">
             <div id="messages" class="messages-list"></div>
-
+            
             <div class="chat-input-container">
                 <div class="search-box">
                     <div class="input-area">
                         <button class="input-icon">
-                            <i data-lucide="paperclip"></i>
+                            <i data-lucide="plus"></i>
                         </button>
-                        <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'chat')"></textarea>
+                        <textarea id="chatInput" placeholder="Reply to Grok..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'chat')"></textarea>
                         <div class="input-controls">
-                            <div class="mode-selector">
-                                <span>Auto</span>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                            <button class="control-btn">
-                                <i data-lucide="mic"></i>
-                            </button>
-                            <button class="control-btn send-btn" onclick="send()">
+                            <button class="control-btn send-btn" id="chatSendBtn">
                                 <i data-lucide="arrow-up"></i>
                             </button>
                         </div>
@@ -119,46 +112,53 @@
     <script src="ControleAi.js"></script>
     <script>
         lucide.createIcons();
-        AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-        const homeView = document.getElementById("home");
-        const chatView = document.getElementById("chat");
+        let currentMode = 'chat'; // 'chat' or 'imagine'
 
         function autoResize(textarea) {
             textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+            textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        function handleKeydown(event, type) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                if (type === 'home') startChat();
-                else send();
+        function handleKeydown(e, type) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                startChat(type);
             }
         }
 
-        function startChat() {
-            const input = document.getElementById("homeInput");
-            const text = input.value.trim();
-            if (!text) return;
+        function startChat(type) {
+            const input = type === 'home' ? document.getElementById('homeInput') : document.getElementById('chatInput');
+            const message = input.value.trim();
             
-            homeView.classList.add("hidden");
-            chatView.classList.remove("hidden");
-            AI.user(text);
-            input.value = "";
+            if (!message) return;
+
+            if (type === 'home') {
+                document.getElementById('home').classList.add('hidden');
+                document.getElementById('chat').classList.remove('hidden');
+            }
+
+            AI.user(message);
+            input.value = '';
             input.style.height = 'auto';
-            AI.ask(text);
+            
+            AI.ask(message, currentMode);
         }
 
-        function send() {
-            const input = document.getElementById("chatInput");
-            const text = input.value.trim();
-            if (!text) return;
-            AI.user(text);
-            input.value = "";
-            input.style.height = 'auto';
-            AI.ask(text);
-        }
+        document.getElementById('homeSendBtn').onclick = () => startChat('home');
+        document.getElementById('chatSendBtn').onclick = () => startChat('chat');
+
+        document.getElementById('imagineBtn').onclick = () => {
+            currentMode = 'imagine';
+            document.getElementById('heroTitle').textContent = 'Imagine';
+            document.getElementById('homeInput').placeholder = 'What image do you want to create?';
+            document.getElementById('currentMode').textContent = 'Imagine';
+            document.getElementById('home').classList.remove('hidden');
+            document.getElementById('chat').classList.add('hidden');
+            document.getElementById('messages').innerHTML = '';
+        };
+
+        AI.init('messages', '/api/chat');
     </script>
 </body>
 </html>
