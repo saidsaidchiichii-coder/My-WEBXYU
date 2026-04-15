@@ -42,8 +42,7 @@ def chat():
             if groq_client:
                 try:
                     system_prompt = (
-                        "You are a professional prompt engineer. Expand this into a detailed "
-                        "100-word image prompt for DALL-E 3: "
+                        "You are a professional prompt engineer for DALL-E 3. Your task is to expand the user's request into a detailed, 100-word image generation prompt. Focus solely on describing the image content. Do not include any conversational text, explanations, or apologies. Just the prompt: "
                     )
                     groq_response = groq_client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
