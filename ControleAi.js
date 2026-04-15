@@ -143,11 +143,19 @@ const AI = {
       const data = await response.json();
       load.remove();
       
-      if (this.currentMode === 'image' && data.image_url) {
-        // Image mode: render the generated image
-        this.renderImage(data.reply, data.image_url);
+      if (this.currentMode === 'image') {
+        if (data.image_url) {
+          // DALL-E 3 generated image successfully
+          this.renderImage(data.reply, data.image_url);
+        } else {
+          // DALL-E 3 failed, use Pollinations AI as fallback
+          const seed = Math.floor(Math.random() * 1000000);
+          const fallbackImageUrl = `https://pollinations.ai/p/${encodeURIComponent(data.reply || message)}?width=1024&height=1024&seed=${seed}&nologo=true`;
+          this.aiMessage("DALL-E 3 failed to generate an image. Here's an image from Pollinations AI based on the refined prompt:");
+          this.renderImage(data.reply || message, fallbackImageUrl);
+        }
       } else if (data.reply) {
-        // Chat mode or fallback
+        // Chat mode
         this.streamRender(data.reply);
       } else {
         this.aiMessage("The AI returned an empty response.");
