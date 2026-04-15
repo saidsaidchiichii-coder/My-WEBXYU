@@ -14,8 +14,11 @@ CORS(app)
 
 # Initialize API Clients
 # Ensure GROQ_API_KEY and OPENAI_API_KEY are set in the environment
-groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 @app.route('/')
 def index():
@@ -31,10 +34,13 @@ def chat():
     user_message = data.get('message', '')
     mode = data.get('mode', 'chat') # 'chat' or 'image'
 
+    if not GROQ_API_KEY or not OPENAI_API_KEY:
+        return jsonify({"reply": "Error: API keys are missing. Please set GROQ_API_KEY and OPENAI_API_KEY environment variables."}), 500
+
     try:
         if mode == 'image':
             # 1. Use Groq to refine the prompt
-            refine_prompt = f"Act as a professional prompt engineer. Expand the following simple image request into a 100-word highly detailed, artistic, and descriptive prompt for DALL-E 3. Focus on lighting, style, composition, and mood. Request: {user_message}"
+            refine_prompt = f"Act as a professional prompt engineer. Expand the following simple image request into a highly detailed, artistic, and descriptive prompt for DALL-E 3. Focus on lighting, style, composition, and mood. The description should be about 100 words. Request: {user_message}"
             
             completion = groq_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -55,7 +61,7 @@ def chat():
             image_url = response.data[0].url
             # Return both the refined prompt and the image URL
             return jsonify({
-                "reply": f"**Refined Prompt:** {refined_prompt}\n\n![Generated Image]({image_url})",
+                "reply": refined_prompt,
                 "image_url": image_url
             })
         else:
@@ -69,7 +75,7 @@ def chat():
 
     except Exception as e:
         print(f"Error: {str(e)}")
-        return jsonify({"reply": f"Error: {str(e)}"}), 500
+        return jsonify({"reply": f"Error during generation: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
