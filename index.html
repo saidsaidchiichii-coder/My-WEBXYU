@@ -141,13 +141,19 @@
             // Update UI elements
             const heroTitle = document.getElementById('heroTitle');
             const imagineBtn = document.getElementById('imagineBtn');
+            const homeInput = document.getElementById('homeInput');
+            const chatInput = document.getElementById('chatInput');
             
             if (newMode === 'image') {
                 heroTitle.textContent = "Imagine";
                 imagineBtn.classList.add('active');
+                homeInput.placeholder = "What image do you want to create?";
+                chatInput.placeholder = "What image do you want to create?";
             } else {
                 heroTitle.textContent = "Grok";
                 imagineBtn.classList.remove('active');
+                homeInput.placeholder = "How can I help you today?";
+                chatInput.placeholder = "How can I help you today?";
             }
         }
 
