@@ -133,19 +133,6 @@ const AI = {
   async ask(message) {
     const load = this.thinking();
 
-    // IMMEDIATE ACTION FOR IMAGINE MODE
-    if (this.currentMode === 'image') {
-        load.remove();
-        // Construct the real Pollinations URL immediately
-        const seed = Math.floor(Math.random() * 1000000);
-        const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(message)}?width=1024&height=1024&seed=${seed}&nologo=true`;
-        
-        // Render the image card directly!
-        this.renderImage(message, imageUrl);
-        return;
-    }
-
-    // CHAT MODE LOGIC
     try {
       const response = await fetch(this.API_URL, {
         method: "POST",
@@ -156,10 +143,14 @@ const AI = {
       const data = await response.json();
       load.remove();
       
-      if (data.reply) {
-          this.streamRender(data.reply);
+      if (this.currentMode === 'image' && data.image_url) {
+        // Image mode: render the generated image
+        this.renderImage(data.reply, data.image_url);
+      } else if (data.reply) {
+        // Chat mode or fallback
+        this.streamRender(data.reply);
       } else {
-          this.aiMessage("The AI returned an empty response.");
+        this.aiMessage("The AI returned an empty response.");
       }
     } catch (e) {
       load.remove();
