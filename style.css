@@ -212,12 +212,114 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 10px; }
 
-/* Image Styling */
+/* Professional Image Card - Groq Style */
+.image-card {
+    width: 100%;
+    background: #161b22;
+    border: 1px solid var(--border-color);
+    border-radius: 1.25rem;
+    overflow: hidden;
+    margin-top: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+}
+
+.image-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.image-header p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.image-container {
+    position: relative;
+    width: 100%;
+    background: #0d1117;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
 .generated-img {
     width: 100%;
-    border-radius: 0.75rem;
-    margin-top: 1rem;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.image-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid var(--border-color);
+}
+
+.action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: #21262d;
     border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: 0.6rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #30363d;
+    border-color: var(--text-muted);
+}
+
+.action-btn i {
+    width: 16px;
+    height: 16px;
+}
+
+.action-btn.primary {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    filter: brightness(1.1);
+}
+
+/* Skeleton Loading Effect */
+.skeleton {
+    background: linear-gradient(90deg, #161b22 25%, #21262d 50%, #161b22 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
 }
 
 /* Code Box Styles */
