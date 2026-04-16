@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ILYASS AI</title>
+    <title>AI Control Dashboard - 3 Agents System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -14,8 +14,8 @@
 
     <!-- NAVIGATION -->
     <header class="top-nav">
-        <div class="nav-left">
-            <div class="logo-container" onclick="location.reload( )">
+        <div class="nav-right">
+            <div class="logo-container" onclick="location.reload()">
                 <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
@@ -25,140 +25,115 @@
                     <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
                     <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
                 </svg>
+                <span class="logo-text">AI CONTROL DASHBOARD</span>
             </div>
         </div>
         
-        <div class="nav-right">
+        <div class="nav-left">
             <button class="nav-btn">
                 <i data-lucide="sparkles"></i>
-                <span>Imagine</span>
+                <span>الوضع الذكي</span>
             </button>
             <button class="nav-btn" id="settingsTrigger">
                 <i data-lucide="settings"></i>
             </button>
-            <button class="btn-signin">Sign in</button>
-            <button class="btn-signup">Sign up</button>
+            <button class="btn-signin">تسجيل الدخول</button>
+            <button class="btn-signup">ابدأ مجاناً</button>
         </div>
     </header>
 
-    <main class="container">
-        <!-- HOME VIEW -->
-        <section id="home" class="home-view">
-            <div class="hero-section">
-                <div class="hero-logo">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
-                        <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
-                        <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
-                        <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
-                        <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
-                        <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
-                    </svg>
-                    <h1>ILYASS AI</h1>
-                </div>
-            </div>
-            
-            <div class="search-container">
-                <div class="search-box">
-                    <div class="input-area">
-                        <button class="input-icon">
-                            <i data-lucide="paperclip"></i>
-                        </button>
-                        <textarea id="homeInput" placeholder="How can I help you today?" rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'home')"></textarea>
-                        <div class="input-controls">
-                            <div class="mode-selector">
-                                <span>Auto</span>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                            <button class="control-btn">
-                                <i data-lucide="mic"></i>
-                            </button>
-                            <button class="control-btn send-btn" onclick="startChat()">
-                                <i data-lucide="arrow-up"></i>
-                            </button>
-                        </div>
+    <main class="dashboard-container">
+        <!-- AI 1 Panel - Builder -->
+        <section class="ai-panel" id="panel-builder">
+            <div class="panel-header">
+                <div class="agent-info">
+                    <div class="agent-icon builder"><i data-lucide="hammer"></i></div>
+                    <div class="agent-details">
+                        <h3>AI 1 - Builder</h3>
+                        <span>المطور والمنفذ</span>
                     </div>
                 </div>
-                <div class="search-hint">
-                    <i data-lucide="sparkles"></i>
-                    <span>New · Hold Ctrl+D to dictate</span>
+                <button class="panel-action" onclick="clearChat('builder')"><i data-lucide="trash-2"></i></button>
+            </div>
+            <div class="messages-area" id="messages-builder">
+                <div class="msg-wrapper ai">
+                    <div class="msg ai">مرحباً! أنا Builder، مسؤول عن البرمجة والتنفيذ. كيف يمكنني مساعدتك في بناء مشروعك اليوم؟</div>
+                </div>
+            </div>
+            <div class="input-container">
+                <div class="search-box">
+                    <div class="input-area">
+                        <textarea id="input-builder" placeholder="اسأل Builder..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'builder')"></textarea>
+                        <button class="send-btn" onclick="sendMessage('builder')">
+                            <i data-lucide="arrow-up"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- CHAT VIEW -->
-        <section id="chat" class="chat-view hidden">
-            <div id="messages" class="messages-list"></div>
-
-            <div class="chat-input-container">
+        <!-- AI 2 Panel - Analyst -->
+        <section class="ai-panel" id="panel-analyst">
+            <div class="panel-header">
+                <div class="agent-info">
+                    <div class="agent-icon analyst"><i data-lucide="brain"></i></div>
+                    <div class="agent-details">
+                        <h3>AI 2 - Analyst</h3>
+                        <span>المحلل والمخطط</span>
+                    </div>
+                </div>
+                <button class="panel-action" onclick="clearChat('analyst')"><i data-lucide="trash-2"></i></button>
+            </div>
+            <div class="messages-area" id="messages-analyst">
+                <div class="msg-wrapper ai">
+                    <div class="msg ai">أهلاً بك، أنا Analyst. أقوم بتحليل الأفكار واقتراح التحسينات لضمان أفضل أداء وأمان. ما الذي تود تحليله؟</div>
+                </div>
+            </div>
+            <div class="input-container">
                 <div class="search-box">
                     <div class="input-area">
-                        <button class="input-icon">
-                            <i data-lucide="paperclip"></i>
+                        <textarea id="input-analyst" placeholder="اسأل Analyst..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'analyst')"></textarea>
+                        <button class="send-btn" onclick="sendMessage('analyst')">
+                            <i data-lucide="arrow-up"></i>
                         </button>
-                        <textarea id="chatInput" placeholder="Send a message..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'chat')"></textarea>
-                        <div class="input-controls">
-                            <div class="mode-selector">
-                                <span>Auto</span>
-                                <i data-lucide="chevron-down"></i>
-                            </div>
-                            <button class="control-btn">
-                                <i data-lucide="mic"></i>
-                            </button>
-                            <button class="control-btn send-btn" onclick="send()">
-                                <i data-lucide="arrow-up"></i>
-                            </button>
-                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI 3 Panel - Tester -->
+        <section class="ai-panel" id="panel-tester">
+            <div class="panel-header">
+                <div class="agent-info">
+                    <div class="agent-icon tester"><i data-lucide="test-tube"></i></div>
+                    <div class="agent-details">
+                        <h3>AI 3 - Tester</h3>
+                        <span>المختبر والمساعد</span>
+                    </div>
+                </div>
+                <button class="panel-action" onclick="clearChat('tester')"><i data-lucide="trash-2"></i></button>
+            </div>
+            <div class="messages-area" id="messages-tester">
+                <div class="msg-wrapper ai">
+                    <div class="msg ai">مرحباً، أنا Tester. وظيفتي مراجعة الكود، البحث عن الأخطاء، وتقديم المساعدة العامة. كيف أساعدك؟</div>
+                </div>
+            </div>
+            <div class="input-container">
+                <div class="search-box">
+                    <div class="input-area">
+                        <textarea id="input-tester" placeholder="اسأل Tester..." rows="1" oninput="autoResize(this)" onkeydown="handleKeydown(event, 'tester')"></textarea>
+                        <button class="send-btn" onclick="sendMessage('tester')">
+                            <i data-lucide="arrow-up"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <script src="ControleAi.js"></script>
+    <script src="script.js"></script>
     <script>
         lucide.createIcons();
-        AI.init("messages", "https://my-webxyu.vercel.app/api/chat" );
-
-        const homeView = document.getElementById("home");
-        const chatView = document.getElementById("chat");
-
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
-        }
-
-        function handleKeydown(event, type) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                if (type === 'home') startChat();
-                else send();
-            }
-        }
-
-        function startChat() {
-            const input = document.getElementById("homeInput");
-            const text = input.value.trim();
-            if (!text) return;
-            
-            homeView.classList.add("hidden");
-            chatView.classList.remove("hidden");
-            AI.user(text);
-            input.value = "";
-            input.style.height = 'auto';
-            AI.ask(text);
-        }
-
-        function send() {
-            const input = document.getElementById("chatInput");
-            const text = input.value.trim();
-            if (!text) return;
-            AI.user(text);
-            input.value = "";
-            input.style.height = 'auto';
-            AI.ask(text);
-        }
     </script>
 </body>
 </html>
