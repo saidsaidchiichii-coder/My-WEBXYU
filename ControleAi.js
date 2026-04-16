@@ -1,11 +1,11 @@
-export const AIController = {
-  messagesBox: null as HTMLElement | null,
-  API_URL: null as string | null,
+const AI = {
+  messagesBox: null,
+  API_URL: null,
 
   /* =========================
      🎨 SYNTAX HIGHLIGHT
   ========================= */
-  highlight(code: string): string {
+  highlight(code) {
     return code
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -17,12 +17,12 @@ export const AIController = {
       .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>(');
   },
 
-  init(box: string, api: string) {
+  init(box, api) {
     this.messagesBox = document.getElementById(box);
     this.API_URL = api;
   },
 
-  user(text: string) {
+  user(text) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper";
     
@@ -31,14 +31,14 @@ export const AIController = {
     div.textContent = text;
     
     wrapper.appendChild(div);
-    this.messagesBox?.appendChild(wrapper);
+    this.messagesBox.appendChild(wrapper);
     this.scroll();
   },
 
   /* =========================
      🧠 ADVANCED THINKING EFFECT
   ========================= */
-  thinking(): HTMLElement {
+  thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
     
@@ -52,16 +52,16 @@ export const AIController = {
     `;
     
     wrapper.appendChild(thinkingDiv);
-    this.messagesBox?.appendChild(wrapper);
+    this.messagesBox.appendChild(wrapper);
     this.scroll();
     return wrapper;
   },
 
-  async ask(message: string) {
+  async ask(message) {
     const load = this.thinking();
 
     try {
-      const res = await fetch(this.API_URL!, {
+      const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message })
@@ -84,21 +84,21 @@ export const AIController = {
       err.textContent = "System Error: API Connection Failed.";
       
       wrapper.appendChild(err);
-      this.messagesBox?.appendChild(wrapper);
+      this.messagesBox.appendChild(wrapper);
     }
   },
 
   /* =========================
      🌊 PIXEL-PERFECT STREAMING
   ========================= */
-  async streamRender(fullText: string) {
+  async streamRender(fullText) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
     
     const container = document.createElement("div");
     container.className = "msg ai";
     wrapper.appendChild(container);
-    this.messagesBox?.appendChild(wrapper);
+    this.messagesBox.appendChild(wrapper);
     
     const parts = fullText.split("```");
     
@@ -114,7 +114,7 @@ export const AIController = {
         header.className = "code-header";
         header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
         
-        const copyBtn = header.querySelector(".copy-btn") as HTMLButtonElement;
+        const copyBtn = header.querySelector(".copy-btn");
         copyBtn.onclick = () => {
           navigator.clipboard.writeText(part.trim());
           copyBtn.textContent = "Copied!";
@@ -157,11 +157,9 @@ export const AIController = {
 
   scroll() {
     const box = this.messagesBox;
-    if (box) {
-      box.scrollTo({
-          top: box.scrollHeight,
-          behavior: 'smooth'
-      });
-    }
+    box.scrollTo({
+        top: box.scrollHeight,
+        behavior: 'smooth'
+    });
   }
 };
