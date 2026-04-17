@@ -2,9 +2,6 @@ const AI = {
   messagesBox: null,
   API_URL: null,
 
-  /* =========================
-     🎨 SYNTAX HIGHLIGHT
-  ========================= */
   highlight(code) {
     return code
       .replace(/&/g, "&amp;")
@@ -35,9 +32,6 @@ const AI = {
     this.scroll();
   },
 
-  /* =========================
-     🧠 ADVANCED THINKING EFFECT
-  ========================= */
   thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
@@ -61,17 +55,26 @@ const AI = {
     const load = this.thinking();
 
     try {
+      const token = localStorage.getItem("token");
+
       const res = await fetch(this.API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
         body: JSON.stringify({ message })
       });
 
       const data = await res.json();
       load.remove();
       
-      let reply = data?.reply || "I'm sorry, I couldn't process that.";
+      if (data.error) {
+        alert("You must login first");
+        return;
+      }
 
+      let reply = data?.reply || "I'm sorry, I couldn't process that.";
       this.streamRender(reply);
 
     } catch (e) {
@@ -88,9 +91,6 @@ const AI = {
     }
   },
 
-  /* =========================
-     🌊 PIXEL-PERFECT STREAMING
-  ========================= */
   async streamRender(fullText) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
@@ -105,7 +105,6 @@ const AI = {
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
       
-      // CODE BLOCK
       if (i % 2 === 1) {
         const codeBox = document.createElement("div");
         codeBox.className = "code-box";
@@ -129,9 +128,7 @@ const AI = {
         codeBox.appendChild(header);
         codeBox.appendChild(pre);
         container.appendChild(codeBox);
-      } 
-      // TEXT WITH NATURAL TYPING
-      else {
+      } else {
         const textDiv = document.createElement("div");
         container.appendChild(textDiv);
         
