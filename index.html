@@ -33,11 +33,17 @@
                 <i data-lucide="sparkles"></i>
                 <span>Imagine</span>
             </button>
-            <button class="nav-btn" id="settingsTrigger">
-                <i data-lucide="settings"></i>
-            </button>
-            <button class="btn-signin">Sign in</button>
-            <button class="btn-signup">Sign up</button>
+            
+            <!-- Auth Buttons -->
+            <div id="authButtons">
+                <button class="btn-signin" onclick="openAuth('login')">Sign in</button>
+                <button class="btn-signup" onclick="openAuth('signup')">Sign up</button>
+            </div>
+
+            <!-- User Profile Button (Hidden by default) -->
+            <div id="userProfileBtn" class="hidden" onclick="showDashboard()">
+                <div class="user-avatar">U</div>
+            </div>
         </div>
     </header>
 
@@ -114,7 +120,82 @@
                 </div>
             </div>
         </section>
+
+        <!-- DASHBOARD VIEW -->
+        <section id="dashboard" class="dashboard-view hidden">
+            <div class="dashboard-container">
+                <div class="profile-header">
+                    <div class="avatar-container">
+                        <div id="dashAvatar" class="user-avatar">U</div>
+                        <div class="avatar-edit"><i data-lucide="camera"></i></div>
+                    </div>
+                    <div class="profile-info">
+                        <h3 id="dashUsername">User Name</h3>
+                        <p id="dashEmail">user@example.com</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-item">
+                        <label>Username</label>
+                        <input type="text" id="editUsername" class="settings-input">
+                    </div>
+                    <div class="settings-item">
+                        <label>Email</label>
+                        <input type="email" id="editEmail" class="settings-input">
+                    </div>
+                    <div class="settings-item">
+                        <label>New Password</label>
+                        <input type="password" id="editPassword" class="settings-input" placeholder="Leave blank to keep current">
+                    </div>
+                </div>
+
+                <div class="dashboard-actions">
+                    <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+                    <button class="btn-logout" onclick="AI.logout()">Log out</button>
+                </div>
+                
+                <button class="nav-btn" style="margin-top: 20px; width: 100%; justify-content: center;" onclick="hideDashboard()">
+                    <i data-lucide="arrow-left"></i> Back to Chat
+                </button>
+            </div>
+        </section>
     </main>
+
+    <!-- AUTH MODAL -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-modal">
+            <button class="auth-close" onclick="closeAuth()"><i data-lucide="x"></i></button>
+            <h2 id="authTitle">Welcome back</h2>
+            
+            <div class="auth-form">
+                <div id="usernameGroup" class="input-group hidden">
+                    <label>Username</label>
+                    <input type="text" id="authUsername" class="auth-input" placeholder="Enter your username">
+                </div>
+                <div class="input-group">
+                    <label>Email address</label>
+                    <input type="email" id="authEmail" class="auth-input" placeholder="Enter your email">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" class="auth-input" placeholder="Enter your password">
+                </div>
+                
+                <div id="agreeGroup" class="checkbox-group hidden">
+                    <input type="checkbox" id="authAgree">
+                    <label for="authAgree">I agree to the terms and conditions</label>
+                </div>
+
+                <button class="auth-submit" onclick="submitAuth()">Continue</button>
+            </div>
+
+            <div class="auth-switch">
+                <span id="switchText">Don't have an account?</span>
+                <span id="switchAction" onclick="toggleAuthMode()">Sign up</span>
+            </div>
+        </div>
+    </div>
 
     <script src="ControleAi.js"></script>
     <script>
@@ -123,6 +204,10 @@
 
         const homeView = document.getElementById("home");
         const chatView = document.getElementById("chat");
+        const dashboardView = document.getElementById("dashboard");
+        const authOverlay = document.getElementById("authOverlay");
+        
+        let currentAuthMode = 'login';
 
         function autoResize(textarea) {
             textarea.style.height = 'auto';
@@ -142,8 +227,14 @@
             const text = input.value.trim();
             if (!text) return;
             
+            if (!AI.currentUser) {
+                openAuth('login');
+                return;
+            }
+
             homeView.classList.add("hidden");
             chatView.classList.remove("hidden");
+            dashboardView.classList.add("hidden");
             AI.user(text);
             input.value = "";
             input.style.height = 'auto';
@@ -158,6 +249,109 @@
             input.value = "";
             input.style.height = 'auto';
             AI.ask(text);
+        }
+
+        // Auth UI Functions
+        function openAuth(mode) {
+            currentAuthMode = mode;
+            authOverlay.style.display = 'flex';
+            updateAuthUI();
+        }
+
+        function closeAuth() {
+            authOverlay.style.display = 'none';
+        }
+
+        function toggleAuthMode() {
+            currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            const title = document.getElementById("authTitle");
+            const usernameGroup = document.getElementById("usernameGroup");
+            const agreeGroup = document.getElementById("agreeGroup");
+            const switchText = document.getElementById("switchText");
+            const switchAction = document.getElementById("switchAction");
+
+            if (currentAuthMode === 'login') {
+                title.innerText = "Welcome back";
+                usernameGroup.classList.add("hidden");
+                agreeGroup.classList.add("hidden");
+                switchText.innerText = "Don't have an account?";
+                switchAction.innerText = "Sign up";
+            } else {
+                title.innerText = "Create your account";
+                usernameGroup.classList.remove("hidden");
+                agreeGroup.classList.remove("hidden");
+                switchText.innerText = "Already have an account?";
+                switchAction.innerText = "Log in";
+            }
+        }
+
+        async function submitAuth() {
+            const email = document.getElementById("authEmail").value;
+            const password = document.getElementById("authPassword").value;
+            
+            if (currentAuthMode === 'login') {
+                const res = await AI.login(email, password);
+                if (res.success) {
+                    closeAuth();
+                } else {
+                    alert(res.error);
+                }
+            } else {
+                const username = document.getElementById("authUsername").value;
+                const agree = document.getElementById("authAgree").checked;
+                
+                if (!agree) {
+                    alert("Please agree to the terms");
+                    return;
+                }
+                
+                const res = await AI.signup(username, email, password);
+                if (res.success) {
+                    closeAuth();
+                } else {
+                    alert(res.error);
+                }
+            }
+        }
+
+        // Dashboard UI Functions
+        function showDashboard() {
+            if (!AI.currentUser) return;
+            
+            homeView.classList.add("hidden");
+            chatView.classList.add("hidden");
+            dashboardView.classList.remove("hidden");
+            
+            // Fill data
+            document.getElementById("dashUsername").innerText = AI.currentUser.username;
+            document.getElementById("dashEmail").innerText = AI.currentUser.email;
+            document.getElementById("dashAvatar").innerText = AI.currentUser.username[0].toUpperCase();
+            
+            document.getElementById("editUsername").value = AI.currentUser.username;
+            document.getElementById("editEmail").value = AI.currentUser.email;
+            document.getElementById("editPassword").value = "";
+        }
+
+        function hideDashboard() {
+            dashboardView.classList.add("hidden");
+            if (document.getElementById("messages").children.length > 0) {
+                chatView.classList.remove("hidden");
+            } else {
+                homeView.classList.remove("hidden");
+            }
+        }
+
+        function saveProfile() {
+            const username = document.getElementById("editUsername").value;
+            const email = document.getElementById("editEmail").value;
+            const password = document.getElementById("editPassword").value;
+            
+            AI.saveProfile({ username, email });
+            showDashboard(); // Refresh UI
         }
     </script>
 </body>
