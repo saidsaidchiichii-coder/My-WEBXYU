@@ -1,6 +1,7 @@
 const AI = {
   messagesBox: null,
   API_URL: null,
+  currentUser: null,
 
   highlight(code) {
     return code
@@ -17,7 +18,127 @@ const AI = {
   init(box, api) {
     this.messagesBox = document.getElementById(box);
     this.API_URL = api;
+    this.checkAuth();
   },
+
+  // ==================== AUTH LOGIC ====================
+  
+  async checkAuth() {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    
+    if (token && userData) {
+      this.currentUser = JSON.parse(userData);
+      this.updateUIForAuth(true);
+    } else {
+      this.updateUIForAuth(false);
+    }
+  },
+
+  updateUIForAuth(isLoggedIn) {
+    const authButtons = document.getElementById("authButtons");
+    const userProfileBtn = document.getElementById("userProfileBtn");
+    
+    if (isLoggedIn) {
+      authButtons.classList.add("hidden");
+      userProfileBtn.classList.remove("hidden");
+      const avatar = userProfileBtn.querySelector(".user-avatar");
+      if (avatar && this.currentUser) {
+        avatar.textContent = this.currentUser.username ? this.currentUser.username[0].toUpperCase() : "U";
+      }
+    } else {
+      authButtons.classList.remove("hidden");
+      userProfileBtn.classList.add("hidden");
+    }
+  },
+
+  async login(email, password) {
+    try {
+      const res = await fetch("https://my-webxyu.vercel.app/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, pass: password })
+      });
+      
+      const data = await res.json();
+      
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        // Mock user data since API might not return full user object
+        const user = {
+          email: email,
+          username: email.split('@')[0],
+          avatar: null
+        };
+        localStorage.setItem("user", JSON.stringify(user));
+        this.currentUser = user;
+        this.updateUIForAuth(true);
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || "Invalid email or password" };
+      }
+    } catch (e) {
+      return { success: false, error: "Connection failed" };
+    }
+  },
+
+  async signup(username, email, password) {
+    try {
+      const res = await fetch("https://my-webxyu.vercel.app/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, pass: password })
+      });
+      
+      const data = await res.json();
+      
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        const user = {
+          username: username,
+          email: email,
+          avatar: null
+        };
+        localStorage.setItem("user", JSON.stringify(user));
+        this.currentUser = user;
+        this.updateUIForAuth(true);
+        
+        // Send data to Gmail as requested
+        this.reportToAdmin(user);
+        
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || "Registration failed" };
+      }
+    } catch (e) {
+      return { success: false, error: "Connection failed" };
+    }
+  },
+
+  logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    this.currentUser = null;
+    this.updateUIForAuth(false);
+    window.location.reload();
+  },
+
+  async reportToAdmin(userData) {
+    // This is a mock for sending data to gmail as requested
+    // In a real app, this would be a backend call
+    console.log("Reporting new user to: saidsaidchiichii@gmail.com", userData);
+  },
+
+  // ==================== DASHBOARD LOGIC ====================
+
+  saveProfile(newData) {
+    this.currentUser = { ...this.currentUser, ...newData };
+    localStorage.setItem("user", JSON.stringify(this.currentUser));
+    this.updateUIForAuth(true);
+    alert("Profile updated successfully!");
+  },
+
+  // ==================== CHAT LOGIC ====================
 
   user(text) {
     const wrapper = document.createElement("div");
@@ -52,6 +173,11 @@ const AI = {
   },
 
   async ask(message) {
+    if (!this.currentUser) {
+      window.openAuth('login');
+      return;
+    }
+
     const load = this.thinking();
 
     try {
@@ -70,7 +196,8 @@ const AI = {
       load.remove();
       
       if (data.error) {
-        alert("You must login first");
+        alert("Session expired. Please login again.");
+        this.logout();
         return;
       }
 
@@ -154,9 +281,11 @@ const AI = {
 
   scroll() {
     const box = this.messagesBox;
-    box.scrollTo({
-        top: box.scrollHeight,
-        behavior: 'smooth'
-    });
+    if (box) {
+      box.scrollTo({
+          top: box.scrollHeight,
+          behavior: 'smooth'
+      });
+    }
   }
 };
