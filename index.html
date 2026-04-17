@@ -1,126 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grok</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
 
+<!-- NAV -->
 <header class="top-nav">
-  <div class="logo-container" onclick="location.reload()">Grok</div>
+    <div class="nav-left">
+        <div class="logo-container" onclick="location.reload()">
+            <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+        </div>
+    </div>
 
-  <div class="nav-right">
-    <button class="btn-signin" onclick="openAuth('login')">Sign in</button>
-    <button class="btn-signup" onclick="openAuth('register')">Sign up</button>
-  </div>
+    <div class="nav-right">
+        <button class="btn-signin" onclick="openAuth('login')">Sign in</button>
+        <button class="btn-signup" onclick="openAuth('register')">Sign up</button>
+    </div>
 </header>
 
-<main class="container">
-  <section id="home" class="home-view">
-    <h1 class="title">Grok</h1>
+<!-- APP -->
+<div class="container">
 
-    <textarea id="homeInput" placeholder="Ask anything..."></textarea>
-    <button onclick="startChat()">Send</button>
-  </section>
+    <!-- HOME -->
+    <section id="home" class="home-view">
+        <h1>AI Chat</h1>
 
-  <section id="chat" class="chat-view hidden">
-    <div id="messages"></div>
-  </section>
-</main>
+        <div class="search-box">
+            <textarea id="homeInput" placeholder="Ask something..."></textarea>
+            <button onclick="startChat()">Send</button>
+        </div>
+    </section>
+
+    <!-- CHAT -->
+    <section id="chat" class="chat-view hidden">
+        <div id="messages" class="messages-list"></div>
+
+        <div class="search-box">
+            <textarea id="chatInput" placeholder="Message..."></textarea>
+            <button onclick="send()">Send</button>
+        </div>
+    </section>
+
+</div>
 
 <!-- ================= AUTH MODAL ================= -->
 <div id="authModal" class="auth-modal hidden">
-  <div class="auth-card">
+    <div class="auth-card">
 
-    <h2 id="authTitle">Create account</h2>
+        <h2 id="authTitle">Sign up</h2>
 
-    <input id="username" placeholder="Username">
-    <input id="email" placeholder="Email">
-    <input id="password" type="password" placeholder="Password">
-    <input id="confirmPassword" type="password" placeholder="Confirm password">
+        <input id="authUsername" placeholder="Username">
+        <input id="authEmail" placeholder="Email">
+        <input id="authPassword" type="password" placeholder="Password">
+        <input id="authConfirm" type="password" placeholder="Confirm password">
 
-    <label class="agree">
-      <input type="checkbox" id="agree">
-      I agree to terms
-    </label>
+        <label>
+            <input type="checkbox" id="authAgree">
+            I agree
+        </label>
 
-    <button class="auth-btn" onclick="submitAuth()">Continue</button>
+        <button onclick="submitAuth()">Continue</button>
 
-    <p class="switch">
-      Already have account?
-      <span onclick="toggleAuth()">Login</span>
-    </p>
+        <p onclick="toggleAuthMode()">Switch mode</p>
 
-  </div>
+        <button onclick="closeAuth()">Close</button>
+    </div>
 </div>
 
 <script src="ControleAi.js"></script>
 
 <script>
-lucide.createIcons();
-AI.init("messages", "http://localhost:3000/api/chat");
+    const AI = {
+        messagesBox: document.getElementById("messages"),
 
-let mode = "register";
+        user(text) {
+            const div = document.createElement("div");
+            div.textContent = text;
+            div.className = "msg user";
+            this.messagesBox.appendChild(div);
+        },
 
-function openAuth(m) {
-  mode = m;
-  document.getElementById("authModal").classList.remove("hidden");
-  updateUI();
-}
+        async ask(text) {
+            const res = await fetch("https://my-webxyu.vercel.app/api/chat", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({message:text})
+            });
 
-function toggleAuth() {
-  mode = mode === "login" ? "register" : "login";
-  updateUI();
-}
+            const data = await res.json();
 
-function updateUI() {
-  document.getElementById("authTitle").textContent =
-    mode === "login" ? "Welcome back" : "Create account";
+            const div = document.createElement("div");
+            div.textContent = data.reply;
+            div.className = "msg ai";
+            this.messagesBox.appendChild(div);
+        }
+    };
 
-  document.getElementById("username").style.display =
-    mode === "login" ? "none" : "block";
+    function startChat(){
+        const input = document.getElementById("homeInput");
+        const text = input.value;
+        if(!text) return;
 
-  document.getElementById("confirmPassword").style.display =
-    mode === "login" ? "none" : "block";
+        document.getElementById("home").classList.add("hidden");
+        document.getElementById("chat").classList.remove("hidden");
 
-  document.querySelector(".agree").style.display =
-    mode === "login" ? "none" : "flex";
-}
+        AI.user(text);
+        AI.ask(text);
+    }
 
-async function submitAuth() {
-  const email = emailEl.value;
-  const password = passwordEl.value;
+    function send(){
+        const input = document.getElementById("chatInput");
+        const text = input.value;
+        if(!text) return;
 
-  if (mode === "register") {
-    const username = usernameEl.value;
-    const confirm = confirmPassword.value;
-    const agree = document.getElementById("agree").checked;
+        AI.user(text);
+        AI.ask(text);
+    }
 
-    if (!agree) return alert("You must agree");
-    if (password !== confirm) return alert("Passwords not match");
-  }
+    let mode = "register";
 
-  const res = await fetch("http://localhost:3000/" + mode, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ email, password })
-  });
+    function openAuth(m){
+        mode = m;
+        document.getElementById("authModal").classList.remove("hidden");
+        updateAuth();
+    }
 
-  const data = await res.json();
+    function closeAuth(){
+        document.getElementById("authModal").classList.add("hidden");
+    }
 
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-    authModal.classList.add("hidden");
-  } else {
-    alert("Error");
-  }
-}
+    function toggleAuthMode(){
+        mode = mode === "login" ? "register" : "login";
+        updateAuth();
+    }
+
+    function updateAuth(){
+        document.getElementById("authTitle").textContent =
+            mode === "login" ? "Login" : "Register";
+
+        document.getElementById("authUsername").style.display =
+            mode === "login" ? "none" : "block";
+
+        document.getElementById("authConfirm").style.display =
+            mode === "login" ? "none" : "block";
+    }
+
+    async function submitAuth(){
+        const email = document.getElementById("authEmail").value;
+        const pass = document.getElementById("authPassword").value;
+
+        const res = await fetch("https://my-webxyu.vercel.app/" + mode, {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({email,pass})
+        });
+
+        const data = await res.json();
+
+        if(data.token){
+            localStorage.setItem("token",data.token);
+            closeAuth();
+        }
+    }
 </script>
 
 </body>
