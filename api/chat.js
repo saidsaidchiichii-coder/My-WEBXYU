@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API working ✔️"
+      message: "HF API working ✔️"
     });
   }
 
@@ -27,32 +27,31 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // NORMALIZE INPUT
+    // NORMALIZE
     // =========================
     message = message.toLowerCase().replace(/\s+/g, " ").trim();
 
     // =========================
-    // ROUTER DETECTION
+    // ROUTER (IMAGE DETECT)
     // =========================
     const isImage =
-      message.startsWith("image:") ||
-      message.startsWith("image :") ||
-      message.startsWith("image ");
+      message.startsWith("image") ||
+      message.includes("generate image") ||
+      message.includes("create image") ||
+      message.includes("make image");
 
     // =========================
-    // 🎨 IMAGE ROUTE (HF)
+    // 🎨 IMAGE (HUGGINGFACE)
     // =========================
     if (isImage) {
 
       let prompt = message
-        .replace(/^image\s*:\s*/i, "")
-        .replace(/^image\s+/i, "")
+        .replace(/image|generate|create|make/gi, "")
         .trim();
 
-      // safety fallback
-      if (!prompt) prompt = "cat";
+      if (!prompt) prompt = "a cat";
 
-      const response = await fetch(
+      const hf = await fetch(
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
         {
           method: "POST",
@@ -68,68 +67,61 @@ export default async function handler(req, res) {
         }
       );
 
-      const contentType = response.headers.get("content-type") || "";
+      const contentType = hf.headers.get("content-type") || "";
 
-      if (!response.ok || !contentType.includes("image")) {
-        const err = await response.text();
+      if (!hf.ok || !contentType.includes("image")) {
+        const err = await hf.text();
         return res.status(500).json({
-          error: "Image generation failed",
+          error: "HF image failed",
           details: err
         });
       }
 
-      const buffer = await response.arrayBuffer();
+      const buffer = await hf.arrayBuffer();
       const base64 = Buffer.from(buffer).toString("base64");
 
       return res.status(200).json({
+        type: "image",
         reply: `data:image/png;base64,${base64}`
       });
     }
 
     // =========================
-    // 🤖 TEXT ROUTE (GROQ)
+    // 🤖 TEXT (HF TEXT MODEL)
     // =========================
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+    const textRes = await fetch(
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content: `
-You are a helpful AI assistant.
-- Answer clearly and directly.
-- No ASCII art unless asked.
-- No image generation in text mode.
-              `
-            },
-            {
-              role: "user",
-              content: message
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 1024
+          inputs: message,
+          parameters: {
+            max_new_tokens: 300,
+            temperature: 0.7
+          }
         })
       }
     );
 
-    const data = await response.json();
+    const data = await textRes.json();
 
-    if (!response.ok) {
+    if (!textRes.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error"
+        error: "HF text failed",
+        details: data
       });
     }
 
+    const reply =
+      Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
+
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response"
+      type: "text",
+      reply: reply || "No response"
     });
 
   } catch (err) {
