@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Groq API working ✔️ Use POST"
+      message: "API working ✔️ Use POST"
     });
   }
 
@@ -24,7 +24,51 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ API CALL
+    /* =========================
+       🎯 DETECT MODE
+    ========================= */
+
+    const isImage = message.toLowerCase().startsWith("image:");
+
+    /* =========================
+       🎨 IMAGE (HUGGING FACE)
+    ========================= */
+    if (isImage) {
+
+      const prompt = message.replace(/^image:/i, "").trim();
+
+      const response = await fetch(
+        "https://router.huggingface.co/v1/images/generations",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "black-forest-labs/FLUX.1-dev",
+            prompt: prompt
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return res.status(500).json({
+          error: data.error || "HF Image error"
+        });
+      }
+
+      return res.status(200).json({
+        reply: `![image](${data.data?.[0]?.url})`
+      });
+    }
+
+    /* =========================
+       🤖 TEXT (GROQ)
+    ========================= */
+
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -53,14 +97,12 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
         error: data.error?.message || "Groq API error"
       });
     }
 
-    // ✅ success
     return res.status(200).json({
       reply: data.choices?.[0]?.message?.content || "No response"
     });
