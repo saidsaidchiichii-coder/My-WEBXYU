@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const isImage = message.toLowerCase().startsWith("image:");
 
     // =========================
-    // 🎨 IMAGE (HUGGING FACE)
+    // 🎨 IMAGE (HUGGING FACE FIXED)
     // =========================
     if (isImage) {
 
@@ -41,21 +41,38 @@ export default async function handler(req, res) {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${process.env.HF_TOKEN}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept": "image/png"
           },
           body: JSON.stringify({
-            inputs: prompt
+            inputs: prompt,
+            options: {
+              wait_for_model: true
+            }
           })
         }
       );
 
-      if (!response.ok) {
-        const err = await response.text();
+      const contentType = response.headers.get("content-type") || "";
+
+      // ❌ ERROR RESPONSE (JSON from HF)
+      if (!response.ok || !contentType.includes("image")) {
+        const errText = await response.text();
+
+        let parsed;
+        try {
+          parsed = JSON.parse(errText);
+        } catch {
+          parsed = { error: errText };
+        }
+
         return res.status(500).json({
-          error: err || "HF Image error"
+          error: parsed?.error || "HF Image generation failed",
+          details: parsed
         });
       }
 
+      // ✅ IMAGE BUFFER
       const buffer = await response.arrayBuffer();
       const base64 = Buffer.from(buffer).toString("base64");
 
