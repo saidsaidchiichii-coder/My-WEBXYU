@@ -3,9 +3,6 @@ export default async function handler(req, res) {
   const debug = [];
   const log = (step, data) => debug.push({ step, data });
 
-  // =========================
-  // GET TEST
-  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -23,7 +20,7 @@ export default async function handler(req, res) {
   try {
 
     // =========================
-    // SAFE BODY PARSE
+    // BODY PARSE
     // =========================
     let body;
 
@@ -52,21 +49,34 @@ export default async function handler(req, res) {
 
     log("message", message);
 
-    const isImage = message.toLowerCase().startsWith("image:");
+    // =========================
+    // SMART ROUTER (NEW FIX)
+    // =========================
+    const lower = message.toLowerCase();
+
+    const isImage =
+      lower.startsWith("image:") ||
+      lower.includes("generate image") ||
+      lower.includes("create image") ||
+      lower.includes("image of");
+
+    log("isImage", isImage);
 
     // =========================
-    // IMAGE GENERATION (HF SAFE)
+    // IMAGE (HUGGINGFACE)
     // =========================
     if (isImage) {
 
-      const prompt = message.replace(/^image:/i, "").trim();
+      const prompt = message
+        .replace(/^image:/i, "")
+        .trim();
+
       log("image_prompt", prompt);
 
       const modelURL =
         "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1";
 
       let response = null;
-      let lastErrorText = "";
 
       for (let i = 0; i < 3; i++) {
 
@@ -81,45 +91,27 @@ export default async function handler(req, res) {
 
         log("hf_status_try_" + i, response.status);
 
-        const contentType = response.headers.get("content-type") || "";
+        const textCheck = await response.text().catch(() => "");
 
-        // success image
-        if (response.ok && contentType.includes("image")) {
-          break;
-        }
+        if (response.ok && !textCheck.includes("loading")) break;
 
-        // try read error
-        const text = await response.text();
-        lastErrorText = text;
-
-        // if not loading -> stop immediately
-        if (!text.includes("loading")) {
-          return res.status(500).json({
-            error: "HF error",
-            detail: text,
-            debug
-          });
-        }
-
-        // wait before retry
         await new Promise(r => setTimeout(r, 3000));
       }
 
       if (!response) {
         return res.status(500).json({
-          error: "No response from HF",
+          error: "HF failed",
           debug
         });
       }
 
       const contentType = response.headers.get("content-type") || "";
-      log("content_type", contentType);
 
-      if (!response.ok || !contentType.includes("image")) {
-        const text = await response.text().catch(() => lastErrorText);
+      if (!contentType.includes("image")) {
+        const text = await response.text();
 
         return res.status(500).json({
-          error: "Model did not return image",
+          error: "Not image response",
           detail: text,
           debug
         });
@@ -134,7 +126,7 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // TEXT (GROQ SAFE)
+    // TEXT (GROQ)
     // =========================
     const groqRes = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -156,17 +148,7 @@ export default async function handler(req, res) {
       }
     );
 
-    let data;
-    try {
-      data = await groqRes.json();
-    } catch (e) {
-      const text = await groqRes.text();
-      return res.status(500).json({
-        error: "Invalid Groq response",
-        detail: text,
-        debug
-      });
-    }
+    const data = await groqRes.json();
 
     log("groq_status", groqRes.status);
 
