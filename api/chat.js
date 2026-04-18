@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API working ✔️ Use POST"
+      message: "API working ✔️"
     });
   }
 
@@ -20,20 +20,37 @@ export default async function handler(req, res) {
       ? JSON.parse(req.body)
       : req.body;
 
-    const message = body?.message;
+    let message = body?.message || "";
 
-    if (!message) {
+    if (!message.trim()) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    const isImage = message.toLowerCase().startsWith("image:");
+    // =========================
+    // NORMALIZE INPUT
+    // =========================
+    message = message.toLowerCase().replace(/\s+/g, " ").trim();
 
     // =========================
-    // 🎨 IMAGE (HUGGING FACE FIXED)
+    // ROUTER DETECTION
+    // =========================
+    const isImage =
+      message.startsWith("image:") ||
+      message.startsWith("image :") ||
+      message.startsWith("image ");
+
+    // =========================
+    // 🎨 IMAGE ROUTE (HF)
     // =========================
     if (isImage) {
 
-      const prompt = message.replace(/^image:/i, "").trim();
+      let prompt = message
+        .replace(/^image\s*:\s*/i, "")
+        .replace(/^image\s+/i, "")
+        .trim();
+
+      // safety fallback
+      if (!prompt) prompt = "cat";
 
       const response = await fetch(
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
@@ -46,33 +63,21 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             inputs: prompt,
-            options: {
-              wait_for_model: true
-            }
+            options: { wait_for_model: true }
           })
         }
       );
 
       const contentType = response.headers.get("content-type") || "";
 
-      // ❌ ERROR RESPONSE (JSON from HF)
       if (!response.ok || !contentType.includes("image")) {
-        const errText = await response.text();
-
-        let parsed;
-        try {
-          parsed = JSON.parse(errText);
-        } catch {
-          parsed = { error: errText };
-        }
-
+        const err = await response.text();
         return res.status(500).json({
-          error: parsed?.error || "HF Image generation failed",
-          details: parsed
+          error: "Image generation failed",
+          details: err
         });
       }
 
-      // ✅ IMAGE BUFFER
       const buffer = await response.arrayBuffer();
       const base64 = Buffer.from(buffer).toString("base64");
 
@@ -82,7 +87,7 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // 🤖 TEXT (GROQ)
+    // 🤖 TEXT ROUTE (GROQ)
     // =========================
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -97,7 +102,12 @@ export default async function handler(req, res) {
           messages: [
             {
               role: "system",
-              content: "You are a helpful assistant."
+              content: `
+You are a helpful AI assistant.
+- Answer clearly and directly.
+- No ASCII art unless asked.
+- No image generation in text mode.
+              `
             },
             {
               role: "user",
