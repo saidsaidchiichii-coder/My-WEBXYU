@@ -1,12 +1,11 @@
 export default async function handler(req, res) {
 
   const debug = [];
+  const log = (step, data) => debug.push({ step, data });
 
-  function log(step, data) {
-    debug.push({ step, data });
-  }
-
-  // GET test
+  // =========================
+  // GET TEST
+  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -23,23 +22,21 @@ export default async function handler(req, res) {
 
   try {
 
-    /* =========================
-       PARSE BODY SAFELY
-    ========================= */
-
+    // =========================
+    // SAFE BODY PARSE
+    // =========================
     let body;
+
     try {
       body = typeof req.body === "string"
         ? JSON.parse(req.body)
         : req.body;
 
-      log("body_parsed", body);
+      log("body", body);
 
     } catch (e) {
-      log("body_error", e.message);
-
       return res.status(400).json({
-        error: "Invalid JSON body",
+        error: "Invalid JSON",
         debug
       });
     }
@@ -53,87 +50,79 @@ export default async function handler(req, res) {
       });
     }
 
-    log("message_received", message);
+    log("message", message);
 
     const isImage = message.toLowerCase().startsWith("image:");
 
-    /* =========================
-       🎨 IMAGE (HF DEBUG MODE)
-    ========================= */
-
+    // =========================
+    // IMAGE GENERATION (HF SAFE)
+    // =========================
     if (isImage) {
 
       const prompt = message.replace(/^image:/i, "").trim();
-
       log("image_prompt", prompt);
 
-      const response = await fetch(
-        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-        {
+      const modelURL =
+        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1";
+
+      let response;
+
+      // retry system (important for HF)
+      for (let i = 0; i < 3; i++) {
+
+        response = await fetch(modelURL, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${process.env.HF_TOKEN}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            inputs: prompt
-          })
-        }
-      );
-
-      log("hf_status", response.status);
-
-      const contentType = response.headers.get("content-type");
-      log("hf_content_type", contentType);
-
-      // ❌ MODEL LOADING
-      if (response.status === 503) {
-        return res.status(503).json({
-          error: "Model is loading (HF 503)",
-          debug
+          body: JSON.stringify({ inputs: prompt })
         });
-      }
 
-      // ❌ HF JSON ERROR
-      if (contentType && contentType.includes("application/json")) {
-        const err = await response.json();
+        log("hf_status_try_" + i, response.status);
 
-        log("hf_json_error", err);
+        if (response.ok) break;
 
-        return res.status(500).json({
-          error: err.error || "HF JSON error",
-          debug
-        });
-      }
-
-      // ❌ NON-OK
-      if (!response.ok) {
         const text = await response.text();
 
-        log("hf_raw_error", text);
+        // model loading case
+        if (!text.includes("loading")) {
+          return res.status(500).json({
+            error: "HF error",
+            detail: text,
+            debug
+          });
+        }
+
+        await new Promise(r => setTimeout(r, 3000));
+      }
+
+      const contentType = response.headers.get("content-type");
+      log("content_type", contentType);
+
+      // ❌ NOT IMAGE RESPONSE
+      if (!contentType || !contentType.includes("image")) {
+        const text = await response.text();
 
         return res.status(500).json({
-          error: "HF request failed",
+          error: "Model did not return image",
+          detail: text,
           debug
         });
       }
 
       // ✅ IMAGE SUCCESS
       const buffer = await response.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-
-      log("image_generated", "success");
 
       return res.status(200).json({
-        reply: `data:image/png;base64,${base64}`,
+        reply: `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`,
         debug
       });
     }
 
-    /* =========================
-       🤖 GROQ (DEBUG MODE)
-    ========================= */
-
+    // =========================
+    // TEXT (GROQ SAFE)
+    // =========================
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -154,31 +143,23 @@ export default async function handler(req, res) {
       }
     );
 
-    log("groq_status", response.status);
-
     const data = await response.json();
 
-    if (!response.ok) {
-      log("groq_error", data);
+    log("groq_status", response.status);
 
+    if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error",
+        error: data?.error?.message || "Groq error",
         debug
       });
     }
 
-    const reply = data.choices?.[0]?.message?.content;
-
-    log("groq_success", true);
-
     return res.status(200).json({
-      reply: reply || "No response",
+      reply: data?.choices?.[0]?.message?.content || "No response",
       debug
     });
 
   } catch (err) {
-
-    log("server_crash", err.message);
 
     return res.status(500).json({
       error: "Server crash",
