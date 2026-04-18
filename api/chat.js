@@ -3,10 +3,14 @@ export default async function handler(req, res) {
   const debug = [];
   const log = (step, data) => debug.push({ step, data });
 
+  // =========================
+  // GET TEST
+  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API working ✔️ Use POST"
+      message: "API working ✔️",
+      test: "send POST { message: 'image: a cat in space' }"
     });
   }
 
@@ -20,23 +24,11 @@ export default async function handler(req, res) {
   try {
 
     // =========================
-    // BODY PARSE
+    // BODY
     // =========================
-    let body;
-
-    try {
-      body = typeof req.body === "string"
-        ? JSON.parse(req.body)
-        : req.body;
-
-      log("body", body);
-
-    } catch (e) {
-      return res.status(400).json({
-        error: "Invalid JSON",
-        debug
-      });
-    }
+    let body = typeof req.body === "string"
+      ? JSON.parse(req.body)
+      : req.body;
 
     const message = body?.message;
 
@@ -50,7 +42,7 @@ export default async function handler(req, res) {
     log("message", message);
 
     // =========================
-    // SMART ROUTER (NEW FIX)
+    // ROUTER
     // =========================
     const lower = message.toLowerCase();
 
@@ -63,53 +55,80 @@ export default async function handler(req, res) {
     log("isImage", isImage);
 
     // =========================
-    // IMAGE (HUGGINGFACE)
+    // HF TEST FUNCTION (IMPORTANT)
     // =========================
-    if (isImage) {
-
-      const prompt = message
-        .replace(/^image:/i, "")
-        .trim();
-
-      log("image_prompt", prompt);
-
-      const modelURL =
-        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1";
-
-      let response = null;
-
-      for (let i = 0; i < 3; i++) {
-
-        response = await fetch(modelURL, {
+    async function testHF(prompt) {
+      const res = await fetch(
+        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+        {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${process.env.HF_TOKEN}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ inputs: prompt })
-        });
+        }
+      );
 
-        log("hf_status_try_" + i, response.status);
+      const type = res.headers.get("content-type");
+      const text = await res.clone().text();
 
-        const textCheck = await response.text().catch(() => "");
+      return {
+        status: res.status,
+        type,
+        preview: text.slice(0, 200)
+      };
+    }
 
-        if (response.ok && !textCheck.includes("loading")) break;
+    // =========================
+    // IMAGE
+    // =========================
+    if (isImage) {
 
-        await new Promise(r => setTimeout(r, 3000));
-      }
+      const prompt = message.replace(/^image:/i, "").trim();
 
-      if (!response) {
-        return res.status(500).json({
-          error: "HF failed",
+      if (!prompt) {
+        return res.status(400).json({
+          error: "Empty image prompt",
           debug
         });
       }
 
+      log("prompt", prompt);
+
+      // 🔥 TEST HF FIRST (IMPORTANT)
+      const hfTest = await testHF(prompt);
+      log("hf_test", hfTest);
+
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ inputs: prompt })
+        }
+      );
+
       const contentType = response.headers.get("content-type") || "";
 
+      log("content_type", contentType);
+
+      // ❌ ERROR CASE
+      if (!response.ok) {
+        const text = await response.text();
+        return res.status(500).json({
+          error: "HF failed",
+          detail: text,
+          debug
+        });
+      }
+
+      // ❌ NOT IMAGE
       if (!contentType.includes("image")) {
         const text = await response.text();
-
         return res.status(500).json({
           error: "Not image response",
           detail: text,
@@ -126,24 +145,21 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // TEXT (GROQ)
+    // GROQ TEST (TEXT)
     // =========================
     const groqRes = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
           messages: [
-            { role: "system", content: "You are a helpful assistant." },
             { role: "user", content: message }
-          ],
-          temperature: 0.7,
-          max_tokens: 1024
+          ]
         })
       }
     );
@@ -154,13 +170,14 @@ export default async function handler(req, res) {
 
     if (!groqRes.ok) {
       return res.status(500).json({
-        error: data?.error?.message || "Groq error",
+        error: "Groq failed",
+        detail: data,
         debug
       });
     }
 
     return res.status(200).json({
-      reply: data?.choices?.[0]?.message?.content || "No response",
+      reply: data?.choices?.[0]?.message?.content,
       debug
     });
 
