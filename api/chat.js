@@ -65,9 +65,9 @@ export default async function handler(req, res) {
       const modelURL =
         "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1";
 
-      let response;
+      let response = null;
+      let lastErrorText = "";
 
-      // retry system (important for HF)
       for (let i = 0; i < 3; i++) {
 
         response = await fetch(modelURL, {
@@ -81,11 +81,18 @@ export default async function handler(req, res) {
 
         log("hf_status_try_" + i, response.status);
 
-        if (response.ok) break;
+        const contentType = response.headers.get("content-type") || "";
 
+        // success image
+        if (response.ok && contentType.includes("image")) {
+          break;
+        }
+
+        // try read error
         const text = await response.text();
+        lastErrorText = text;
 
-        // model loading case
+        // if not loading -> stop immediately
         if (!text.includes("loading")) {
           return res.status(500).json({
             error: "HF error",
@@ -94,15 +101,22 @@ export default async function handler(req, res) {
           });
         }
 
+        // wait before retry
         await new Promise(r => setTimeout(r, 3000));
       }
 
-      const contentType = response.headers.get("content-type");
+      if (!response) {
+        return res.status(500).json({
+          error: "No response from HF",
+          debug
+        });
+      }
+
+      const contentType = response.headers.get("content-type") || "";
       log("content_type", contentType);
 
-      // ❌ NOT IMAGE RESPONSE
-      if (!contentType || !contentType.includes("image")) {
-        const text = await response.text();
+      if (!response.ok || !contentType.includes("image")) {
+        const text = await response.text().catch(() => lastErrorText);
 
         return res.status(500).json({
           error: "Model did not return image",
@@ -111,7 +125,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // ✅ IMAGE SUCCESS
       const buffer = await response.arrayBuffer();
 
       return res.status(200).json({
@@ -123,7 +136,7 @@ export default async function handler(req, res) {
     // =========================
     // TEXT (GROQ SAFE)
     // =========================
-    const response = await fetch(
+    const groqRes = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
@@ -143,11 +156,21 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await groqRes.json();
+    } catch (e) {
+      const text = await groqRes.text();
+      return res.status(500).json({
+        error: "Invalid Groq response",
+        detail: text,
+        debug
+      });
+    }
 
-    log("groq_status", response.status);
+    log("groq_status", groqRes.status);
 
-    if (!response.ok) {
+    if (!groqRes.ok) {
       return res.status(500).json({
         error: data?.error?.message || "Groq error",
         debug
@@ -160,7 +183,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-
     return res.status(500).json({
       error: "Server crash",
       message: err.message,
