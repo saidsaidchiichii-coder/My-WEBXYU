@@ -1,6 +1,8 @@
 export default async function handler(req, res) {
 
-  // GET test
+  // =========================
+  // GET TEST
+  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -24,21 +26,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    /* =========================
-       🎯 DETECT MODE
-    ========================= */
-
     const isImage = message.toLowerCase().startsWith("image:");
 
-    /* =========================
-       🎨 IMAGE (HUGGING FACE)
-    ========================= */
+    // =========================
+    // 🎨 IMAGE (HUGGING FACE)
+    // =========================
     if (isImage) {
 
       const prompt = message.replace(/^image:/i, "").trim();
 
       const response = await fetch(
-        "https://router.huggingface.co/v1/images/generations",
+        "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
         {
           method: "POST",
           headers: {
@@ -46,29 +44,29 @@ export default async function handler(req, res) {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "black-forest-labs/FLUX.1-dev",
-            prompt: prompt
+            inputs: prompt
           })
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const err = await response.text();
         return res.status(500).json({
-          error: data.error || "HF Image error"
+          error: err || "HF Image error"
         });
       }
 
+      const buffer = await response.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+
       return res.status(200).json({
-        reply: `![image](${data.data?.[0]?.url})`
+        reply: `data:image/png;base64,${base64}`
       });
     }
 
-    /* =========================
-       🤖 TEXT (GROQ)
-    ========================= */
-
+    // =========================
+    // 🤖 TEXT (GROQ)
+    // =========================
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
