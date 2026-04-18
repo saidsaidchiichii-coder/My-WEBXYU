@@ -1,8 +1,5 @@
 export default async function handler(req, res) {
 
-  // =========================
-  // GET TEST
-  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -27,29 +24,36 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // NORMALIZE
+    // NORMALIZE INPUT
     // =========================
-    message = message.toLowerCase().replace(/\s+/g, " ").trim();
+    const cleaned = message
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
 
     // =========================
-    // ROUTER (IMAGE DETECT)
+    // 🎯 INTENT DETECTOR
     // =========================
-    const isImage =
-      message.startsWith("image") ||
-      message.includes("generate image") ||
-      message.includes("create image") ||
-      message.includes("make image");
+    let score = 0;
+
+    if (cleaned.includes("image")) score += 2;
+    if (cleaned.includes("create")) score += 1;
+    if (cleaned.includes("generate")) score += 1;
+    if (cleaned.includes("make")) score += 1;
+    if (cleaned.includes("draw")) score += 1;
+
+    const isImage = score >= 2;
 
     // =========================
-    // 🎨 IMAGE (HUGGINGFACE)
+    // 🎨 IMAGE ROUTE (HF)
     // =========================
     if (isImage) {
 
-      let prompt = message
-        .replace(/image|generate|create|make/gi, "")
+      let prompt = cleaned
+        .replace(/image|create|generate|make|draw|a|an|of/gi, "")
         .trim();
 
-      if (!prompt) prompt = "a cat";
+      if (!prompt) prompt = "a cute cat";
 
       const hf = await fetch(
         "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev",
@@ -62,7 +66,9 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             inputs: prompt,
-            options: { wait_for_model: true }
+            options: {
+              wait_for_model: true
+            }
           })
         }
       );
@@ -72,7 +78,7 @@ export default async function handler(req, res) {
       if (!hf.ok || !contentType.includes("image")) {
         const err = await hf.text();
         return res.status(500).json({
-          error: "HF image failed",
+          error: "HF image generation failed",
           details: err
         });
       }
@@ -87,7 +93,7 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // 🤖 TEXT (HF TEXT MODEL)
+    // 🤖 TEXT ROUTE (HF MISTRAL)
     // =========================
     const textRes = await fetch(
       "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
@@ -111,13 +117,14 @@ export default async function handler(req, res) {
 
     if (!textRes.ok) {
       return res.status(500).json({
-        error: "HF text failed",
+        error: "HF text model failed",
         details: data
       });
     }
 
-    const reply =
-      Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
+    const reply = Array.isArray(data)
+      ? data[0]?.generated_text
+      : data?.generated_text;
 
     return res.status(200).json({
       type: "text",
