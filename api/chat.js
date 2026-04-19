@@ -1,191 +1,122 @@
+import { sanitizeInput } from "../utils/security.js";
+import { SYSTEM_PROMPTS } from "../config/prompts.js";
+
 export default async function handler(req, res) {
 
-  const debug = [];
-  const log = (step, data) => debug.push({ step, data });
-
-  // =========================
-  // GET TEST
-  // =========================
-  if (req.method === "GET") {
-    return res.status(200).json({
-      ok: true,
-      message: "API working ✔️",
-      test: "send POST { message: 'image: a cat in space' }"
-    });
-  }
-
   if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Only POST allowed",
-      debug
-    });
+    return res.status(405).json({ error: "Only POST allowed" });
   }
 
   try {
 
-    // =========================
-    // BODY
-    // =========================
-    let body = typeof req.body === "string"
+    const body = typeof req.body === "string"
       ? JSON.parse(req.body)
       : req.body;
 
-    const message = body?.message;
+    let { message, history = [], mode = "default" } = body;
 
     if (!message) {
-      return res.status(400).json({
-        error: "Message required",
-        debug
-      });
+      return res.status(400).json({ error: "Message required" });
     }
 
-    log("message", message);
-
-    // =========================
-    // ROUTER
-    // =========================
-    const lower = message.toLowerCase();
+    // ======================
+    // SECURITY
+    // ======================
+    message = sanitizeInput(message);
 
     const isImage =
-      lower.startsWith("image:") ||
-      lower.includes("generate image") ||
-      lower.includes("create image") ||
-      lower.includes("image of");
+      message.toLowerCase().startsWith("image:");
 
-    log("isImage", isImage);
-
-    // =========================
-    // HF TEST FUNCTION (IMPORTANT)
-    // =========================
-    async function testHF(prompt) {
-      const res = await fetch(
-        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${process.env.HF_TOKEN}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ inputs: prompt })
-        }
-      );
-
-      const type = res.headers.get("content-type");
-      const text = await res.clone().text();
-
-      return {
-        status: res.status,
-        type,
-        preview: text.slice(0, 200)
-      };
-    }
-
-    // =========================
-    // IMAGE
-    // =========================
+    // ======================
+    // IMAGE MODE
+    // ======================
     if (isImage) {
 
       const prompt = message.replace(/^image:/i, "").trim();
 
       if (!prompt) {
-        return res.status(400).json({
-          error: "Empty image prompt",
-          debug
-        });
+        return res.status(400).json({ error: "Empty prompt" });
       }
 
-      log("prompt", prompt);
-
-      // 🔥 TEST HF FIRST (IMPORTANT)
-      const hfTest = await testHF(prompt);
-      log("hf_test", hfTest);
-
-      const response = await fetch(
+      const hf = await fetch(
         "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+            Authorization: `Bearer ${process.env.HF_TOKEN}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ inputs: prompt })
         }
       );
 
-      const contentType = response.headers.get("content-type") || "";
-
-      log("content_type", contentType);
-
-      // ❌ ERROR CASE
-      if (!response.ok) {
-        const text = await response.text();
-        return res.status(500).json({
-          error: "HF failed",
-          detail: text,
-          debug
-        });
+      if (!hf.ok) {
+        const err = await hf.text();
+        return res.status(500).json({ error: err });
       }
 
-      // ❌ NOT IMAGE
-      if (!contentType.includes("image")) {
-        const text = await response.text();
-        return res.status(500).json({
-          error: "Not image response",
-          detail: text,
-          debug
-        });
-      }
-
-      const buffer = await response.arrayBuffer();
+      const buffer = await hf.arrayBuffer();
 
       return res.status(200).json({
-        reply: `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`,
-        debug
+        type: "image",
+        reply: `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`
       });
     }
 
-    // =========================
-    // GROQ TEST (TEXT)
-    // =========================
-    const groqRes = await fetch(
+    // ======================
+    // SYSTEM PROMPT
+    // ======================
+    const systemPrompt =
+      SYSTEM_PROMPTS?.[mode] || SYSTEM_PROMPTS.default;
+
+    // ======================
+    // BUILD MESSAGES (MEMORY)
+    // ======================
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...history.slice(-10), // last 10 messages memory
+      { role: "user", content: message }
+    ];
+
+    // ======================
+    // GROQ REQUEST
+    // ======================
+    const groq = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "user", content: message }
-          ]
+          messages
         })
       }
     );
 
-    const data = await groqRes.json();
+    const data = await groq.json();
 
-    log("groq_status", groqRes.status);
-
-    if (!groqRes.ok) {
+    if (!groq.ok) {
       return res.status(500).json({
         error: "Groq failed",
-        detail: data,
-        debug
+        detail: data
       });
     }
 
+    const reply = data?.choices?.[0]?.message?.content;
+
     return res.status(200).json({
-      reply: data?.choices?.[0]?.message?.content,
-      debug
+      type: "text",
+      reply,
+      usage: data?.usage || null
     });
 
   } catch (err) {
     return res.status(500).json({
-      error: "Server crash",
-      message: err.message,
-      debug
+      error: "Server error",
+      message: err.message
     });
   }
 }
