@@ -1,7 +1,12 @@
-import { sanitizeInput } from "../utils/security.js";
-import { SYSTEM_PROMPTS } from "../config/prompts.js";
-
 export default async function handler(req, res) {
+
+  // GET test
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      message: "Groq API working ✔️ Use POST"
+    });
+  }
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Only POST allowed" });
@@ -13,110 +18,56 @@ export default async function handler(req, res) {
       ? JSON.parse(req.body)
       : req.body;
 
-    let { message, history = [], mode = "default" } = body;
+    const message = body?.message;
 
     if (!message) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // ======================
-    // SECURITY
-    // ======================
-    message = sanitizeInput(message);
-
-    const isImage =
-      message.toLowerCase().startsWith("image:");
-
-    // ======================
-    // IMAGE MODE
-    // ======================
-    if (isImage) {
-
-      const prompt = message.replace(/^image:/i, "").trim();
-
-      if (!prompt) {
-        return res.status(400).json({ error: "Empty prompt" });
-      }
-
-      const hf = await fetch(
-        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.HF_TOKEN}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ inputs: prompt })
-        }
-      );
-
-      if (!hf.ok) {
-        const err = await hf.text();
-        return res.status(500).json({ error: err });
-      }
-
-      const buffer = await hf.arrayBuffer();
-
-      return res.status(200).json({
-        type: "image",
-        reply: `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`
-      });
-    }
-
-    // ======================
-    // SYSTEM PROMPT
-    // ======================
-    const systemPrompt =
-      SYSTEM_PROMPTS?.[mode] || SYSTEM_PROMPTS.default;
-
-    // ======================
-    // BUILD MESSAGES (MEMORY)
-    // ======================
-    const messages = [
-      { role: "system", content: systemPrompt },
-      ...history.slice(-10), // last 10 messages memory
-      { role: "user", content: message }
-    ];
-
-    // ======================
-    // GROQ REQUEST
-    // ======================
-    const groq = await fetch(
+    // 🤖 GROQ API CALL
+    const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          messages
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 1024
         })
       }
     );
 
-    const data = await groq.json();
+    const data = await response.json();
 
-    if (!groq.ok) {
+    // ❌ handle errors
+    if (!response.ok) {
       return res.status(500).json({
-        error: "Groq failed",
-        detail: data
+        error: data.error?.message || "Groq API error"
       });
     }
 
-    const reply = data?.choices?.[0]?.message?.content;
-
+    // ✅ success
     return res.status(200).json({
-      type: "text",
-      reply,
-      usage: data?.usage || null
+      reply: data.choices?.[0]?.message?.content || "No response"
     });
 
   } catch (err) {
     return res.status(500).json({
-      error: "Server error",
-      message: err.message
+      error: err.message || "Server error"
     });
   }
 }
