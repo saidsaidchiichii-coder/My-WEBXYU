@@ -1,103 +1,173 @@
-export default async function handler(req, res) {
-  try {
+const AI = {
+  messagesBox: null,
+  API_URL: null,
 
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Only POST allowed" });
-    }
+  init(box, api) {
+    this.messagesBox = document.getElementById(box);
+    this.API_URL = api;
 
-    const body = typeof req.body === "string"
-      ? JSON.parse(req.body)
-      : req.body;
+    // memory init
+    window.chatHistory = window.chatHistory || [];
+  },
 
-    let { message, history = [] } = body;
+  user(text) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper";
 
-    if (!message) {
-      return res.status(400).json({ error: "Message required" });
-    }
+    const div = document.createElement("div");
+    div.className = "msg user";
+    div.textContent = text;
 
-    const lower = message.toLowerCase();
+    wrapper.appendChild(div);
+    this.messagesBox.appendChild(wrapper);
 
-    const isImage =
-      lower.startsWith("image:");
+    this.scroll();
+  },
 
-    // ======================
-    // IMAGE MODE
-    // ======================
-    if (isImage) {
+  thinking() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
 
-      const prompt = message.replace(/^image:/i, "").trim();
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.className = "thinking-container";
 
-      if (!prompt) {
-        return res.status(400).json({ error: "Empty prompt" });
-      }
+    thinkingDiv.innerHTML = `
+      <div class="loader-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span class="thinking-text">Thinking...</span>
+    `;
 
-      const hf = await fetch(
-        "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.HF_TOKEN}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ inputs: prompt })
-        }
+    wrapper.appendChild(thinkingDiv);
+    this.messagesBox.appendChild(wrapper);
+
+    this.scroll();
+    return wrapper;
+  },
+
+  async ask(message) {
+    const load = this.thinking();
+
+    try {
+      const res = await fetch(this.API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          history: window.chatHistory
+        })
+      });
+
+      const data = await res.json();
+
+      load.remove();
+
+      const reply = data?.reply || "No response";
+
+      // ======================
+      // MEMORY STORE
+      // ======================
+      window.chatHistory.push(
+        { role: "user", content: message },
+        { role: "assistant", content: reply }
       );
 
-      if (!hf.ok) {
-        const err = await hf.text();
-        return res.status(500).json({ error: err });
+      this.streamRender(reply);
+
+    } catch (err) {
+      load.remove();
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "msg-wrapper ai";
+
+      const div = document.createElement("div");
+      div.className = "msg ai";
+      div.textContent = "Error: API not reachable";
+
+      wrapper.appendChild(div);
+      this.messagesBox.appendChild(wrapper);
+    }
+  },
+
+  async streamRender(text) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
+
+    const container = document.createElement("div");
+    container.className = "msg ai";
+
+    wrapper.appendChild(container);
+    this.messagesBox.appendChild(wrapper);
+
+    this.scroll();
+
+    const parts = text.split("```");
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+
+      // CODE BLOCK
+      if (i % 2 === 1) {
+        const codeBox = document.createElement("div");
+        codeBox.className = "code-box";
+
+        const header = document.createElement("div");
+        header.className = "code-header";
+        header.innerHTML = `
+          <span class="code-lang">code</span>
+          <button class="copy-btn">Copy</button>
+        `;
+
+        const btn = header.querySelector(".copy-btn");
+        btn.onclick = () => {
+          navigator.clipboard.writeText(part.trim());
+          btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = "Copy"), 1200);
+        };
+
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+
+        code.textContent = part.trim();
+
+        pre.appendChild(code);
+        codeBox.appendChild(header);
+        codeBox.appendChild(pre);
+        container.appendChild(codeBox);
       }
 
-      const buffer = await hf.arrayBuffer();
+      // TEXT BLOCK
+      else {
+        const textDiv = document.createElement("div");
+        container.appendChild(textDiv);
 
-      return res.status(200).json({
-        type: "image",
-        reply: `data:image/png;base64,${Buffer.from(buffer).toString("base64")}`
-      });
-    }
+        const lines = part.split("\n");
 
-    // ======================
-    // TEXT MODE (GROQ + MEMORY)
-    // ======================
-    const messages = [
-      { role: "system", content: "You are a helpful AI assistant." },
-      ...history.slice(-10),
-      { role: "user", content: message }
-    ];
+        for (const line of lines) {
+          if (!line.trim()) continue;
 
-    const groq = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages
-        })
+          const p = document.createElement("p");
+          p.style.marginBottom = "6px";
+          textDiv.appendChild(p);
+
+          const words = line.split(" ");
+
+          for (const w of words) {
+            p.textContent += w + " ";
+            this.scroll();
+            await new Promise(r => setTimeout(r, 10));
+          }
+        }
       }
-    );
 
-    const data = await groq.json();
-
-    if (!groq.ok) {
-      return res.status(500).json({
-        error: "Groq failed",
-        detail: data
-      });
+      this.scroll();
     }
+  },
 
-    return res.status(200).json({
-      type: "text",
-      reply: data?.choices?.[0]?.message?.content
-    });
-
-  } catch (err) {
-    return res.status(500).json({
-      error: "Server crash",
-      message: err.message
+  scroll() {
+    this.messagesBox.scrollTo({
+      top: this.messagesBox.scrollHeight,
+      behavior: "smooth"
     });
   }
-}
+};
