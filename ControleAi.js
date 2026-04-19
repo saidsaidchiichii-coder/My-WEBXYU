@@ -2,12 +2,24 @@ const AI = {
   messagesBox: null,
   API_URL: null,
 
+  /* =========================
+     🎨 SYNTAX HIGHLIGHT
+  ========================= */
+  highlight(code) {
+    return code
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/(\/\/.*)/g, '<span class="cmt">$1</span>')
+      .replace(/(["'`].*?["'`])/g, '<span class="str">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="num">$1</span>')
+      .replace(/\b(int|bool|return|if|else|for|while|function|const|let|var|class|new|async|await|try|catch|fetch|throw)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g, '<span class="fn">$1</span>(');
+  },
+
   init(box, api) {
     this.messagesBox = document.getElementById(box);
     this.API_URL = api;
-
-    // memory init
-    window.chatHistory = window.chatHistory || [];
   },
 
   user(text) {
@@ -20,17 +32,18 @@ const AI = {
 
     wrapper.appendChild(div);
     this.messagesBox.appendChild(wrapper);
-
     this.scroll();
   },
 
+  /* =========================
+     🧠 THINKING
+  ========================= */
   thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
 
     const thinkingDiv = document.createElement("div");
     thinkingDiv.className = "thinking-container";
-
     thinkingDiv.innerHTML = `
       <div class="loader-dots">
         <span></span><span></span><span></span>
@@ -40,11 +53,13 @@ const AI = {
 
     wrapper.appendChild(thinkingDiv);
     this.messagesBox.appendChild(wrapper);
-
     this.scroll();
     return wrapper;
   },
 
+  /* =========================
+     🚀 MAIN ASK (API + IMAGE SUPPORT)
+  ========================= */
   async ask(message) {
     const load = this.thinking();
 
@@ -52,83 +67,97 @@ const AI = {
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message,
-          history: window.chatHistory
-        })
+        body: JSON.stringify({ message })
       });
 
       const data = await res.json();
-
       load.remove();
 
-      const reply = data?.reply || "No response";
+      if (!data) throw new Error("No response");
 
-      // ======================
-      // MEMORY STORE
-      // ======================
-      window.chatHistory.push(
-        { role: "user", content: message },
-        { role: "assistant", content: reply }
-      );
+      // =========================
+      // IMAGE RESPONSE
+      // =========================
+      if (data.reply && data.reply.startsWith("data:image")) {
+        this.renderImage(data.reply);
+        return;
+      }
 
+      // =========================
+      // TEXT RESPONSE
+      // =========================
+      let reply = data.reply || "No response";
       this.streamRender(reply);
 
-    } catch (err) {
+    } catch (e) {
       load.remove();
 
       const wrapper = document.createElement("div");
       wrapper.className = "msg-wrapper ai";
 
-      const div = document.createElement("div");
-      div.className = "msg ai";
-      div.textContent = "Error: API not reachable";
+      const err = document.createElement("div");
+      err.className = "msg ai";
+      err.textContent = "System Error: API not reachable";
 
-      wrapper.appendChild(div);
+      wrapper.appendChild(err);
       this.messagesBox.appendChild(wrapper);
     }
   },
 
-  async streamRender(text) {
+  /* =========================
+     🖼 IMAGE RENDER (HF)
+  ========================= */
+  renderImage(base64) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg-wrapper ai";
+
+    const img = document.createElement("img");
+    img.src = base64;
+    img.style.maxWidth = "100%";
+    img.style.borderRadius = "12px";
+    img.style.marginTop = "8px";
+
+    wrapper.appendChild(img);
+    this.messagesBox.appendChild(wrapper);
+    this.scroll();
+  },
+
+  /* =========================
+     🌊 STREAM RENDER
+  ========================= */
+  async streamRender(fullText) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
 
     const container = document.createElement("div");
     container.className = "msg ai";
-
     wrapper.appendChild(container);
     this.messagesBox.appendChild(wrapper);
 
-    this.scroll();
-
-    const parts = text.split("```");
+    const parts = fullText.split("```");
 
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
 
-      // CODE BLOCK
+      // CODE
       if (i % 2 === 1) {
         const codeBox = document.createElement("div");
         codeBox.className = "code-box";
 
         const header = document.createElement("div");
         header.className = "code-header";
-        header.innerHTML = `
-          <span class="code-lang">code</span>
-          <button class="copy-btn">Copy</button>
-        `;
+        header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
 
-        const btn = header.querySelector(".copy-btn");
-        btn.onclick = () => {
+        const copyBtn = header.querySelector(".copy-btn");
+        copyBtn.onclick = () => {
           navigator.clipboard.writeText(part.trim());
-          btn.textContent = "Copied!";
-          setTimeout(() => (btn.textContent = "Copy"), 1200);
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => copyBtn.textContent = "Copy", 1500);
         };
 
         const pre = document.createElement("pre");
         const code = document.createElement("code");
-
-        code.textContent = part.trim();
+        code.innerHTML = this.highlight(part.trim());
 
         pre.appendChild(code);
         codeBox.appendChild(header);
@@ -136,26 +165,25 @@ const AI = {
         container.appendChild(codeBox);
       }
 
-      // TEXT BLOCK
+      // TEXT
       else {
         const textDiv = document.createElement("div");
         container.appendChild(textDiv);
 
-        const lines = part.split("\n");
+        const paragraphs = part.split("\n");
 
-        for (const line of lines) {
-          if (!line.trim()) continue;
+        for (const para of paragraphs) {
+          if (para.trim()) {
+            const p = document.createElement("p");
+            p.style.marginBottom = "0.5rem";
+            textDiv.appendChild(p);
 
-          const p = document.createElement("p");
-          p.style.marginBottom = "6px";
-          textDiv.appendChild(p);
-
-          const words = line.split(" ");
-
-          for (const w of words) {
-            p.textContent += w + " ";
-            this.scroll();
-            await new Promise(r => setTimeout(r, 10));
+            const words = para.split(" ");
+            for (const w of words) {
+              p.textContent += w + " ";
+              this.scroll();
+              await new Promise(r => setTimeout(r, 10));
+            }
           }
         }
       }
