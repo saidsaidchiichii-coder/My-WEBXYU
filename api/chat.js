@@ -1,12 +1,9 @@
 export default async function handler(req, res) {
 
-  // =========================
-  // GET TEST
-  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API working ✔️ (Groq + Pixazo)"
+      message: "API working ✔️ (DEBUG MODE ON)"
     });
   }
 
@@ -26,86 +23,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // =========================
-    // 🧠 IMAGE DETECTION (FIXED)
-    // =========================
-    const isImageRequest = (msg) => {
-      const m = msg.toLowerCase();
-
-      return (
-        m.includes("image") ||
-        m.includes("picture") ||
-        m.includes("photo") ||
-        m.includes("draw") ||
-        m.includes("logo") ||
-        m.includes("generate") ||
-        m.includes("create")
-      );
-    };
+    console.log("🟢 USER MESSAGE:", message);
 
     // =========================
-    // 🖼️ PIXAZO IMAGE (SAFE + DEBUG)
+    // ROUTER (AI DECISION)
     // =========================
-    async function generateImage(prompt) {
-      try {
-        const response = await fetch("https://api.pixazo.ai/v1/generate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
-          },
-          body: JSON.stringify({ prompt })
-        });
-
-        const data = await response.json();
-
-        console.log("PIXAZO RESPONSE:", data);
-
-        if (!response.ok) {
-          console.log("PIXAZO ERROR:", data);
-          return null;
-        }
-
-        const image =
-          data.image_url ||
-          data.url ||
-          data.data?.url ||
-          data.result?.[0]?.url ||
-          null;
-
-        return image;
-
-      } catch (err) {
-        console.log("PIXAZO CRASH:", err);
-        return null;
-      }
-    }
-
-    // =========================
-    // 🔀 ROUTING
-    // =========================
-    if (isImageRequest(message)) {
-
-      const image = await generateImage(message);
-
-      if (!image) {
-        return res.status(200).json({
-          reply: "Image generation failed",
-          type: "text"
-        });
-      }
-
-      return res.status(200).json({
-        reply: image,
-        type: "image"
-      });
-    }
-
-    // =========================
-    // 🤖 GROQ AI (UNCHANGED CORE)
-    // =========================
-
-    const response = await fetch(
+    const responseRouter = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
@@ -118,12 +41,116 @@ export default async function handler(req, res) {
           messages: [
             {
               role: "system",
-              content: "You are a helpful assistant."
+              content: `
+Return ONLY JSON:
+{
+  "type": "image" or "text",
+  "prompt": "clean image prompt if image else empty"
+}
+If user wants anything visual → image
+Else → text
+              `
             },
-            {
-              role: "user",
-              content: message
-            }
+            { role: "user", content: message }
+          ],
+          temperature: 0,
+          max_tokens: 100
+        })
+      }
+    );
+
+    const routerData = await responseRouter.json();
+
+    console.log("🧠 ROUTER RAW:", routerData);
+
+    let routeText =
+      routerData?.choices?.[0]?.message?.content || "{}";
+
+    console.log("🧠 ROUTER TEXT:", routeText);
+
+    let route;
+
+    try {
+      route = JSON.parse(routeText);
+    } catch (e) {
+      console.log("❌ ROUTER JSON PARSE ERROR:", e);
+      route = { type: "text" };
+    }
+
+    console.log("🚦 FINAL ROUTE:", route);
+
+    // =========================
+    // PIXAZO IMAGE GENERATION
+    // =========================
+    async function generateImage(prompt) {
+      console.log("🖼️ PIXAZO PROMPT:", prompt);
+
+      const response = await fetch("https://api.pixazo.ai/v1/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
+        },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await response.json();
+
+      console.log("🖼️ PIXAZO STATUS:", response.status);
+      console.log("🖼️ PIXAZO RESPONSE:", JSON.stringify(data, null, 2));
+
+      if (!response.ok) {
+        console.log("❌ PIXAZO ERROR RESPONSE:", data);
+        return null;
+      }
+
+      return (
+        data.image_url ||
+        data.url ||
+        data.data?.url ||
+        data.result?.[0]?.url ||
+        null
+      );
+    }
+
+    // =========================
+    // IMAGE FLOW
+    // =========================
+    if (route.type === "image") {
+
+      const image = await generateImage(route.prompt || message);
+
+      console.log("🖼️ FINAL IMAGE RESULT:", image);
+
+      if (!image) {
+        return res.status(200).json({
+          reply: "Image generation failed (check logs)",
+          type: "text"
+        });
+      }
+
+      return res.status(200).json({
+        reply: image,
+        type: "image"
+      });
+    }
+
+    // =========================
+    // TEXT FLOW (GROQ)
+    // =========================
+    const textResponse = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: message }
           ],
           temperature: 0.7,
           max_tokens: 1024
@@ -131,28 +158,22 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
+    const textData = await textResponse.json();
 
-    if (!response.ok) {
-      return res.status(500).json({
-        error: data?.error?.message || "Groq API error"
-      });
-    }
-
-    const reply =
-      data?.choices?.[0]?.message?.content?.trim() ||
-      "No response";
+    console.log("💬 GROQ RESPONSE:", textData);
 
     return res.status(200).json({
-      reply,
+      reply:
+        textData?.choices?.[0]?.message?.content ||
+        "No response",
       type: "text"
     });
 
   } catch (err) {
-    console.log("SERVER ERROR:", err);
+    console.log("🔥 SERVER CRASH:", err);
 
     return res.status(500).json({
-      error: "Server crashed"
+      error: err.message || "Server error"
     });
   }
 }
