@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Groq API working ✔️ Use POST"
+      message: "API working ✔️ (Groq + Pixazo enabled)"
     });
   }
 
@@ -24,7 +24,65 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ API CALL
+    // =========================
+    // 🧠 IMAGE DETECTION
+    // =========================
+    const isImageRequest = (msg) => {
+      const m = msg.toLowerCase();
+      return (
+        m.includes("image") ||
+        m.includes("generate") ||
+        m.includes("logo") ||
+        m.includes("draw") ||
+        m.includes("picture")
+      );
+    };
+
+    // =========================
+    // 🖼️ PIXAZO IMAGE GENERATION
+    // =========================
+    async function generateImage(prompt) {
+      const response = await fetch(
+        "https://api.pixazo.ai/v1/generate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
+          },
+          body: JSON.stringify({
+            prompt
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Pixazo error");
+      }
+
+      return data.image_url || data.data?.url;
+    }
+
+    // =========================
+    // 🧠 ROUTING LOGIC
+    // =========================
+
+    if (isImageRequest(message)) {
+
+      const image = await generateImage(message);
+
+      return res.status(200).json({
+        reply: image,
+        type: "image"
+      });
+    }
+
+    // =========================
+    // 🤖 GROQ API (UNCHANGED LOGIC)
+    // =========================
+
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -53,16 +111,15 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
         error: data.error?.message || "Groq API error"
       });
     }
 
-    // ✅ success
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response"
+      reply: data.choices?.[0]?.message?.content || "No response",
+      type: "text"
     });
 
   } catch (err) {
