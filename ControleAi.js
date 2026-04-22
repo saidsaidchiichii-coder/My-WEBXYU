@@ -3,9 +3,6 @@ const AI = {
   API_URL: null,
   currentMode: 'auto',
 
-  /* =========================
-     🎨 SYNTAX HIGHLIGHT
-  ========================= */
   highlight(code) {
     return code
       .replace(/&/g, "&amp;")
@@ -23,7 +20,6 @@ const AI = {
     this.API_URL = api;
   },
 
-  /* ========================= */
   user(text) {
     const w = document.createElement("div");
     w.className = "msg-wrapper";
@@ -54,40 +50,15 @@ const AI = {
     return w;
   },
 
-  /* =========================
-     MODE DETECTION (API SIDE HELP)
-  ========================= */
-  detectMode(message) {
-    if (this.currentMode !== 'auto') return this.currentMode;
-
-    const m = message.toLowerCase();
-
-    if (m.includes("image:") || m.includes("create image")) return "thinking";
-    if (m.length > 120 || /explain|analyze|compare|why|how/i.test(m)) return "thinking";
-
-    return "fast";
-  },
-
-  /* =========================
-     🚀 MAIN API CALL (MERGED)
-  ========================= */
   async ask(message) {
     const load = this.thinking();
 
     try {
-      const mode = this.detectMode(message);
-
-      // 📦 FINAL PAYLOAD (MATCH YOUR API)
-      const payload = {
-        message,
-        mode,
-        timestamp: Date.now()
-      };
 
       const res = await fetch(this.API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ message })
       });
 
       const data = await res.json();
@@ -95,8 +66,8 @@ const AI = {
 
       if (!data) throw new Error("No response");
 
-      // 🖼 IMAGE RESPONSE
-      if (data.reply?.startsWith("data:image")) {
+      // 🖼 IMAGE RESPONSE (FIXED)
+      if (data.type === "image") {
         this.renderImage(data.reply);
         return;
       }
@@ -112,20 +83,19 @@ const AI = {
 
       const d = document.createElement("div");
       d.className = "msg ai";
-      d.textContent = "API Error: Not reachable";
+      d.textContent = "API Error";
 
       w.appendChild(d);
       this.messagesBox.appendChild(w);
     }
   },
 
-  /* ========================= */
-  renderImage(base64) {
+  renderImage(url) {
     const w = document.createElement("div");
     w.className = "msg-wrapper ai";
 
     const img = document.createElement("img");
-    img.src = base64;
+    img.src = url;
     img.style.maxWidth = "100%";
     img.style.borderRadius = "12px";
 
@@ -134,9 +104,6 @@ const AI = {
     this.scroll();
   },
 
-  /* =========================
-     🌊 STREAM RENDER
-  ========================= */
   async streamRender(text) {
     const w = document.createElement("div");
     w.className = "msg-wrapper ai";
@@ -147,57 +114,14 @@ const AI = {
     w.appendChild(c);
     this.messagesBox.appendChild(w);
 
-    const parts = text.split("```");
+    const t = document.createElement("div");
+    c.appendChild(t);
 
-    for (let i = 0; i < parts.length; i++) {
-      const p = parts[i];
-
-      if (i % 2 === 1) {
-        const box = document.createElement("div");
-        box.className = "code-box";
-
-        const header = document.createElement("div");
-        header.className = "code-header";
-        header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
-
-        const btn = header.querySelector("button");
-        btn.onclick = () => {
-          navigator.clipboard.writeText(p);
-          btn.textContent = "Copied!";
-          setTimeout(() => btn.textContent = "Copy", 1200);
-        };
-
-        const pre = document.createElement("pre");
-        const code = document.createElement("code");
-        code.innerHTML = this.highlight(p);
-
-        pre.appendChild(code);
-        box.appendChild(header);
-        box.appendChild(pre);
-        c.appendChild(box);
-      } else {
-        const t = document.createElement("div");
-        c.appendChild(t);
-
-        const lines = p.split("\n");
-
-        for (const l of lines) {
-          if (!l.trim()) continue;
-
-          const ptag = document.createElement("p");
-          ptag.style.marginBottom = "6px";
-          t.appendChild(ptag);
-
-          for (const word of l.split(" ")) {
-            ptag.textContent += word + " ";
-            this.scroll();
-            await new Promise(r => setTimeout(r, 10));
-          }
-        }
-      }
+    for (const word of text.split(" ")) {
+      t.textContent += word + " ";
+      this.scroll();
+      await new Promise(r => setTimeout(r, 10));
     }
-
-    this.scroll();
   },
 
   scroll() {
