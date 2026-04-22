@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API working ✔️ (Groq + Image enabled)"
+      message: "API working ✔️ (STABLE ROUTER MODE)"
     });
   }
 
@@ -26,8 +26,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
+    console.log("🟢 USER:", message);
+
     // =========================
-    // IMAGE DETECTION (simple + stable)
+    // SIMPLE STABLE ROUTER (NO AI)
     // =========================
     const isImageRequest = (msg) => {
       const m = msg.toLowerCase();
@@ -41,32 +43,29 @@ export default async function handler(req, res) {
       );
     };
 
+    const route = {
+      type: isImageRequest(message) ? "image" : "text",
+      prompt: message
+    };
+
+    console.log("🚦 ROUTE:", route);
+
     // =========================
-    // PIXAZO IMAGE GENERATION (FIXED)
+    // PIXAZO IMAGE API
     // =========================
     async function generateImage(prompt) {
       console.log("🖼️ PROMPT:", prompt);
 
-      const response = await fetch(
-        "https://api.pixazo.ai/v1/generate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
-          },
-          body: JSON.stringify({ prompt })
-        }
-      );
+      const response = await fetch("https://api.pixazo.ai/v1/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
+        },
+        body: JSON.stringify({ prompt })
+      });
 
-      let data;
-
-      try {
-        data = await response.json();
-      } catch (e) {
-        console.log("❌ JSON parse error:", e);
-        return null;
-      }
+      const data = await response.json();
 
       console.log("🖼️ PIXAZO RESPONSE:", JSON.stringify(data, null, 2));
 
@@ -75,7 +74,6 @@ export default async function handler(req, res) {
         return null;
       }
 
-      // 🔥 flexible parsing (important fix)
       return (
         data.image_url ||
         data.url ||
@@ -88,15 +86,17 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // ROUTING
+    // IMAGE FLOW
     // =========================
-    if (isImageRequest(message)) {
+    if (route.type === "image") {
 
-      const image = await generateImage(message);
+      const image = await generateImage(route.prompt);
+
+      console.log("🖼️ FINAL IMAGE:", image);
 
       if (!image) {
         return res.status(200).json({
-          reply: "Image generation failed (check API response)",
+          reply: "Image generation failed (API returned empty result)",
           type: "error"
         });
       }
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // GROQ TEXT CHAT
+    // GROQ TEXT FLOW
     // =========================
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -138,19 +138,15 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      return res.status(500).json({
-        error: data.error?.message || "Groq API error"
-      });
-    }
+    console.log("💬 GROQ:", data);
 
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response",
+      reply: data?.choices?.[0]?.message?.content || "No response",
       type: "text"
     });
 
   } catch (err) {
-    console.log("❌ SERVER ERROR:", err);
+    console.log("🔥 SERVER ERROR:", err);
 
     return res.status(500).json({
       error: err.message || "Server error"
