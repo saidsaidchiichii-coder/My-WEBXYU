@@ -27,22 +27,24 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // 🧠 IMAGE DETECTION
+    // 🧠 IMAGE DETECTION (FIXED)
     // =========================
     const isImageRequest = (msg) => {
       const m = msg.toLowerCase();
+
       return (
-        m.includes("generate") ||
-        m.includes("create image") ||
+        m.includes("image") ||
+        m.includes("picture") ||
+        m.includes("photo") ||
         m.includes("draw") ||
         m.includes("logo") ||
-        m.includes("picture") ||
-        m.includes("image of")
+        m.includes("generate") ||
+        m.includes("create")
       );
     };
 
     // =========================
-    // 🖼️ PIXAZO FUNCTION (SAFE)
+    // 🖼️ PIXAZO IMAGE (SAFE + DEBUG)
     // =========================
     async function generateImage(prompt) {
       try {
@@ -57,21 +59,24 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
+        console.log("PIXAZO RESPONSE:", data);
+
         if (!response.ok) {
-          console.log("Pixazo error:", data);
+          console.log("PIXAZO ERROR:", data);
           return null;
         }
 
-        return (
+        const image =
           data.image_url ||
           data.url ||
           data.data?.url ||
           data.result?.[0]?.url ||
-          null
-        );
+          null;
+
+        return image;
 
       } catch (err) {
-        console.log("Pixazo crash:", err);
+        console.log("PIXAZO CRASH:", err);
         return null;
       }
     }
@@ -97,7 +102,7 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // 🤖 GROQ AI (STABLE)
+    // 🤖 GROQ AI (UNCHANGED CORE)
     // =========================
 
     const response = await fetch(
