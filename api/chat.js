@@ -1,3 +1,4 @@
+
 const ipHits = new Map();
 
 /* =========================
@@ -22,24 +23,14 @@ function rateLimit(ip) {
    🧠 PROMPT CLEANER
 ========================= */
 function cleanPrompt(msg = "") {
-  const text = msg.trim();
-
-  return text.length > 0
-    ? text
-    : "a highly detailed artistic illustration";
+  const text = (msg || "").trim();
+  return text.length > 0 ? text : "a highly detailed artistic illustration";
 }
 
 /* =========================
-   🖼️ PIXAZO GENERATOR ONLY
+   🖼️ PIXAZO GENERATOR (EXACT ERROR VERSION)
 ========================= */
 async function generateImage(prompt) {
-  console.log("\n================ PIXAZO ================");
-  console.log("PROMPT:", prompt);
-
-  if (!process.env.PIXAZO_API_KEY) {
-    return { error: "Missing PIXAZO_API_KEY" };
-  }
-
   try {
     const response = await fetch("https://api.pixazo.ai/v1/generate", {
       method: "POST",
@@ -50,7 +41,8 @@ async function generateImage(prompt) {
       body: JSON.stringify({
         prompt,
         width: 1024,
-        height: 1024
+        height: 1024,
+        steps: 30
       })
     });
 
@@ -63,17 +55,62 @@ async function generateImage(prompt) {
     try {
       data = JSON.parse(raw);
     } catch {
-      return { error: "Invalid JSON response", raw };
+      return {
+        ok: false,
+        error: "INVALID_JSON_FROM_API",
+        raw
+      };
     }
 
-    if (!response.ok) {
+    /* =========================
+       🔥 EXACT ERROR HANDLING
+    ========================= */
+
+    if (response.status === 401) {
       return {
-        error: "Pixazo API failed",
+        ok: false,
+        error: "INVALID_API_KEY",
+        hint: "Check PIXAZO_API_KEY in environment variables"
+      };
+    }
+
+    if (response.status === 402) {
+      return {
+        ok: false,
+        error: "NO_CREDITS",
+        hint: "Your Pixazo account has no credits left"
+      };
+    }
+
+    if (response.status === 403) {
+      return {
+        ok: false,
+        error: "FORBIDDEN",
+        hint: "API key not allowed"
+      };
+    }
+
+    if (response.status >= 500) {
+      return {
+        ok: false,
+        error: "PIXAZO_SERVER_ERROR",
         status: response.status,
         details: data
       };
     }
 
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: "REQUEST_FAILED",
+        status: response.status,
+        details: data
+      };
+    }
+
+    /* =========================
+       IMAGE EXTRACTION
+    ========================= */
     const image =
       data?.image_url ||
       data?.url ||
@@ -83,23 +120,33 @@ async function generateImage(prompt) {
       null;
 
     if (!image) {
-      return { error: "No image returned", data };
+      return {
+        ok: false,
+        error: "NO_IMAGE_RETURNED",
+        details: data
+      };
     }
 
-    return { image };
+    return {
+      ok: true,
+      image
+    };
 
   } catch (err) {
     return {
-      error: err.message,
+      ok: false,
+      error: "SERVER_CRASH",
+      message: err.message,
       stack: err.stack
     };
   }
 }
 
 /* =========================
-   🚀 MAIN HANDLER (IMAGE ONLY)
+   🚀 MAIN HANDLER
 ========================= */
 export default async function handler(req, res) {
+
   console.log("\n================ REQUEST ================");
 
   const ip =
@@ -108,18 +155,22 @@ export default async function handler(req, res) {
     "unknown";
 
   if (!rateLimit(ip)) {
-    return res.status(429).json({ error: "Too many requests" });
+    return res.status(429).json({
+      error: "TOO_MANY_REQUESTS"
+    });
   }
 
   if (req.method === "GET") {
     return res.json({
       ok: true,
-      message: "PIXAZO IMAGE API ONLY ✔️"
+      message: "PIXAZO IMAGE API WORKING ✔️"
     });
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
+    return res.status(405).json({
+      error: "ONLY_POST_ALLOWED"
+    });
   }
 
   try {
@@ -138,18 +189,21 @@ export default async function handler(req, res) {
     const result = await generateImage(prompt);
 
     /* =========================
-       ERROR RETURN
+       ERROR RESPONSE (CLEAR)
     ========================= */
-    if (result.error) {
+    if (!result.ok) {
       return res.status(200).json({
         type: "error",
-        reply: "IMAGE GENERATION FAILED",
-        debug: result
+        reply: "IMAGE_GENERATION_FAILED",
+        error: result.error,
+        hint: result.hint || null,
+        details: result.details || null,
+        raw: result.raw || null
       });
     }
 
     /* =========================
-       SUCCESS
+       SUCCESS RESPONSE
     ========================= */
     return res.status(200).json({
       type: "image",
@@ -158,7 +212,8 @@ export default async function handler(req, res) {
 
   } catch (err) {
     return res.status(500).json({
-      error: err.message,
+      error: "GLOBAL_CRASH",
+      message: err.message,
       stack: err.stack
     });
   }
