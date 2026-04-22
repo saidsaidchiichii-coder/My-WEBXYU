@@ -22,14 +22,49 @@ function rateLimit(ip) {
 }
 
 /* =========================
-   🖼️ PIXAZO IMAGE GENERATOR (DEBUG MODE)
+   🧠 NORMALIZE MESSAGE
+========================= */
+function normalize(msg = "") {
+  return msg
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/* =========================
+   🖼️ IMAGE DETECTION (FIXED)
+========================= */
+function isImageRequest(msg) {
+  const m = normalize(msg);
+
+  const keywords = [
+    "image",
+    "img",
+    "imge",
+    "draw",
+    "picture",
+    "photo",
+    "logo",
+    "generate",
+    "generate image",
+    "create image",
+    "make image",
+    "ai image",
+    "art"
+  ];
+
+  return keywords.some(k => m.includes(k));
+}
+
+/* =========================
+   🖼️ PIXAZO GENERATOR
 ========================= */
 async function generateImage(prompt) {
   console.log("\n================ PIXAZO DEBUG ================");
   console.log("🧠 PROMPT:", prompt);
 
   if (!process.env.PIXAZO_API_KEY) {
-    console.log("❌ PIXAZO_API_KEY IS MISSING");
+    console.log("❌ PIXAZO_API_KEY MISSING");
     return null;
   }
 
@@ -41,45 +76,48 @@ async function generateImage(prompt) {
         "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
       },
       body: JSON.stringify({
-        prompt
+        prompt,
+        width: 1024,
+        height: 1024,
+        steps: 25
       })
     });
 
-    const rawText = await response.text();
+    const raw = await response.text();
 
     console.log("📡 STATUS:", response.status);
-    console.log("📦 RAW RESPONSE:", rawText);
+    console.log("📦 RAW:", raw);
+
+    if (!response.ok) {
+      console.log("❌ PIXAZO FAILED REQUEST");
+      return null;
+    }
 
     let data;
     try {
-      data = JSON.parse(rawText);
-    } catch (e) {
-      console.log("❌ RESPONSE IS NOT JSON");
+      data = JSON.parse(raw);
+    } catch {
+      console.log("❌ INVALID JSON FROM PIXAZO");
       return null;
     }
 
-    console.log("🧾 PARSED DATA:", JSON.stringify(data, null, 2));
-
-    if (!response.ok) {
-      console.log("❌ PIXAZO ERROR RESPONSE");
-      return null;
-    }
+    console.log("🧾 DATA:", JSON.stringify(data, null, 2));
 
     const image =
-      data.image_url ||
-      data.url ||
-      data.data?.url ||
-      data.result?.[0]?.url ||
-      data.output ||
+      data?.image_url ||
+      data?.url ||
+      data?.data?.url ||
+      data?.data?.images?.[0]?.url ||
+      data?.result?.[0]?.url ||
+      data?.output ||
       null;
 
-    console.log("🖼️ EXTRACTED IMAGE:", image);
-    console.log("==============================================\n");
+    console.log("🖼️ FINAL IMAGE:", image);
 
     return image;
 
   } catch (err) {
-    console.log("🔥 PIXAZO CRASH ERROR:", err);
+    console.log("🔥 PIXAZO ERROR:", err);
     return null;
   }
 }
@@ -88,9 +126,8 @@ async function generateImage(prompt) {
    🚀 MAIN HANDLER
 ========================= */
 export default async function handler(req, res) {
-
   console.log("\n==================================");
-  console.log("🚀 NEW REQUEST:", new Date().toISOString());
+  console.log("🚀 REQUEST:", new Date().toISOString());
   console.log("METHOD:", req.method);
 
   const ip =
@@ -99,11 +136,8 @@ export default async function handler(req, res) {
     "unknown";
 
   console.log("IP:", ip);
-  console.log("==================================\n");
 
-  /* RATE LIMIT */
   if (!rateLimit(ip)) {
-    console.log("⛔ RATE LIMIT HIT");
     return res.status(429).json({ error: "Too many requests" });
   }
 
@@ -111,7 +145,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "API WORKING ✔️ (DEBUG MODE ACTIVE)"
+      message: "API WORKING ✔️"
     });
   }
 
@@ -123,19 +157,12 @@ export default async function handler(req, res) {
   try {
     let body = req.body;
 
-    /* JSON SAFE PARSE */
     if (typeof body === "string") {
-      try {
-        body = JSON.parse(body);
-      } catch (e) {
-        console.log("❌ INVALID JSON BODY");
-        return res.status(400).json({ error: "Invalid JSON body" });
-      }
+      body = JSON.parse(body);
     }
 
     const message = body?.message;
 
-    console.log("📩 BODY:", body);
     console.log("💬 MESSAGE:", message);
 
     if (!message) {
@@ -143,31 +170,23 @@ export default async function handler(req, res) {
     }
 
     /* =========================
-       ROUTER (TEXT / IMAGE)
+       ROUTING
     ========================= */
-    const isImageRequest = (msg) => {
-      const m = msg.toLowerCase();
-      const keywords = ["image", "draw", "picture", "logo", "photo", "generate image"];
-      return keywords.some(k => m.includes(k));
-    };
-
-    const route = {
-      type: isImageRequest(message) ? "image" : "text",
-      prompt: message
-    };
+    const route = isImageRequest(message)
+      ? "image"
+      : "text";
 
     console.log("🚦 ROUTE:", route);
 
     /* =========================
        IMAGE FLOW
     ========================= */
-    if (route.type === "image") {
-      const image = await generateImage(route.prompt);
+    if (route === "image") {
+      const image = await generateImage(message);
 
       if (!image) {
-        console.log("❌ IMAGE GENERATION FAILED FINAL");
         return res.status(200).json({
-          reply: "Image generation failed (check server logs)",
+          reply: "Image generation failed (Pixazo error or invalid response)",
           type: "error"
         });
       }
@@ -179,64 +198,15 @@ export default async function handler(req, res) {
     }
 
     /* =========================
-       GROQ TEXT FLOW
+       TEXT FLOW (simple fallback)
     ========================= */
-    if (!process.env.GROQ_API_KEY) {
-      console.log("❌ GROQ_API_KEY MISSING");
-      return res.status(500).json({ error: "Missing GROQ API KEY" });
-    }
-
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: message }
-          ],
-          temperature: 0.7,
-          max_tokens: 1024
-        })
-      }
-    );
-
-    const raw = await response.text();
-
-    console.log("🟡 GROQ RAW:", raw);
-
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (e) {
-      console.log("❌ GROQ NOT JSON");
-      return res.status(500).json({ error: "Invalid Groq response" });
-    }
-
-    if (!response.ok) {
-      console.log("❌ GROQ ERROR:", data);
-      return res.status(500).json({
-        error: "Groq API failed",
-        details: data
-      });
-    }
-
-    const reply =
-      data?.choices?.[0]?.message?.content ||
-      "No response from AI";
-
     return res.status(200).json({
-      reply,
+      reply: "This endpoint is configured for image requests only in this version.",
       type: "text"
     });
 
   } catch (err) {
-    console.log("🔥 GLOBAL CRASH:", err);
+    console.log("🔥 GLOBAL ERROR:", err);
 
     return res.status(500).json({
       error: err.message || "Server crash"
