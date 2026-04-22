@@ -1,6 +1,3 @@
-// If you're on Node < 18:
-// import fetch from "node-fetch";
-
 const ipHits = new Map();
 
 /* =========================
@@ -22,50 +19,33 @@ function rateLimit(ip) {
 }
 
 /* =========================
-   🧠 NORMALIZE MESSAGE
+   🧠 IMAGE DETECTION
 ========================= */
-function normalize(msg = "") {
-  return msg
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+function isImageRequest(msg = "") {
+  const m = msg.toLowerCase();
+
+  return (
+    m.includes("image") ||
+    m.includes("imge") ||
+    m.includes("draw") ||
+    m.includes("picture") ||
+    m.includes("photo") ||
+    m.includes("generate") ||
+    m.includes("create")
+  );
 }
 
 /* =========================
-   🖼️ IMAGE DETECTION (FIXED)
-========================= */
-function isImageRequest(msg) {
-  const m = normalize(msg);
-
-  const keywords = [
-    "image",
-    "img",
-    "imge",
-    "draw",
-    "picture",
-    "photo",
-    "logo",
-    "generate",
-    "generate image",
-    "create image",
-    "make image",
-    "ai image",
-    "art"
-  ];
-
-  return keywords.some(k => m.includes(k));
-}
-
-/* =========================
-   🖼️ PIXAZO GENERATOR
+   🖼️ PIXAZO (FULL ERROR DEBUG)
 ========================= */
 async function generateImage(prompt) {
   console.log("\n================ PIXAZO DEBUG ================");
   console.log("🧠 PROMPT:", prompt);
 
   if (!process.env.PIXAZO_API_KEY) {
-    console.log("❌ PIXAZO_API_KEY MISSING");
-    return null;
+    const err = "PIXAZO_API_KEY is missing";
+    console.log("❌", err);
+    return { error: err };
   }
 
   try {
@@ -76,32 +56,38 @@ async function generateImage(prompt) {
         "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
       },
       body: JSON.stringify({
-        prompt,
-        width: 1024,
-        height: 1024,
-        steps: 25
+        prompt
       })
     });
 
     const raw = await response.text();
 
     console.log("📡 STATUS:", response.status);
-    console.log("📦 RAW:", raw);
-
-    if (!response.ok) {
-      console.log("❌ PIXAZO FAILED REQUEST");
-      return null;
-    }
+    console.log("📦 RAW RESPONSE:", raw);
 
     let data;
     try {
       data = JSON.parse(raw);
-    } catch {
-      console.log("❌ INVALID JSON FROM PIXAZO");
-      return null;
+    } catch (e) {
+      console.log("❌ JSON PARSE ERROR");
+      return {
+        error: "Invalid JSON from API",
+        raw
+      };
     }
 
-    console.log("🧾 DATA:", JSON.stringify(data, null, 2));
+    console.log("🧾 PARSED DATA:", data);
+
+    /* ❌ SHOW REAL API ERROR */
+    if (!response.ok) {
+      console.log("❌ API ERROR RESPONSE DETECTED");
+
+      return {
+        error: "Pixazo API failed",
+        status: response.status,
+        details: data || raw
+      };
+    }
 
     const image =
       data?.image_url ||
@@ -112,13 +98,22 @@ async function generateImage(prompt) {
       data?.output ||
       null;
 
-    console.log("🖼️ FINAL IMAGE:", image);
+    if (!image) {
+      return {
+        error: "No image returned from API",
+        data
+      };
+    }
 
-    return image;
+    return { image };
 
   } catch (err) {
-    console.log("🔥 PIXAZO ERROR:", err);
-    return null;
+    console.log("🔥 CRASH:", err);
+
+    return {
+      error: err.message,
+      stack: err.stack
+    };
   }
 }
 
@@ -126,9 +121,7 @@ async function generateImage(prompt) {
    🚀 MAIN HANDLER
 ========================= */
 export default async function handler(req, res) {
-  console.log("\n==================================");
-  console.log("🚀 REQUEST:", new Date().toISOString());
-  console.log("METHOD:", req.method);
+  console.log("\n================ NEW REQUEST ================");
 
   const ip =
     req.headers["x-forwarded-for"] ||
@@ -138,18 +131,15 @@ export default async function handler(req, res) {
   console.log("IP:", ip);
 
   if (!rateLimit(ip)) {
-    return res.status(429).json({ error: "Too many requests" });
-  }
-
-  /* GET */
-  if (req.method === "GET") {
-    return res.status(200).json({
-      ok: true,
-      message: "API WORKING ✔️"
+    return res.status(429).json({
+      error: "Too many requests"
     });
   }
 
-  /* ONLY POST */
+  if (req.method === "GET") {
+    return res.json({ ok: true });
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Only POST allowed" });
   }
@@ -170,46 +160,37 @@ export default async function handler(req, res) {
     }
 
     /* =========================
-       ROUTING
-    ========================= */
-    const route = isImageRequest(message)
-      ? "image"
-      : "text";
-
-    console.log("🚦 ROUTE:", route);
-
-    /* =========================
        IMAGE FLOW
     ========================= */
-    if (route === "image") {
-      const image = await generateImage(message);
+    if (isImageRequest(message)) {
+      const result = await generateImage(message);
 
-      if (!image) {
+      /* ❌ RETURN FULL ERROR TO CLIENT */
+      if (result.error) {
         return res.status(200).json({
-          reply: "Image generation failed (Pixazo error or invalid response)",
-          type: "error"
+          type: "error",
+          reply: "IMAGE ERROR",
+          debug: result
         });
       }
 
-      return res.status(200).json({
-        reply: image,
-        type: "image"
+      return res.json({
+        type: "image",
+        reply: result.image
       });
     }
 
-    /* =========================
-       TEXT FLOW (simple fallback)
-    ========================= */
-    return res.status(200).json({
-      reply: "This endpoint is configured for image requests only in this version.",
-      type: "text"
+    return res.json({
+      type: "text",
+      reply: "Only image mode active in debug version"
     });
 
   } catch (err) {
     console.log("🔥 GLOBAL ERROR:", err);
 
     return res.status(500).json({
-      error: err.message || "Server crash"
+      error: err.message,
+      stack: err.stack
     });
   }
 }
