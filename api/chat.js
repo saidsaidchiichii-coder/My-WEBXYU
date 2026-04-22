@@ -31,7 +31,7 @@ function cleanPrompt(msg) {
 }
 
 /* =========================
-   🖼️ PIXAZO GENERATION (ROBUST)
+   🖼️ PIXAZO GENERATION (IMPROVED)
 ========================= */
 async function generateImage(prompt) {
   try {
@@ -51,8 +51,8 @@ async function generateImage(prompt) {
 
     const raw = await response.text();
 
-    console.log("STATUS:", response.status);
-    console.log("RAW:", raw);
+    console.log("📡 STATUS:", response.status);
+    console.log("📦 RAW RESPONSE:", raw);
 
     /* =========================
        ❌ HTTP ERROR HANDLING
@@ -67,12 +67,12 @@ async function generateImage(prompt) {
     }
 
     /* =========================
-       JSON PARSE SAFE
+       SAFE JSON PARSE
     ========================= */
     let data;
     try {
       data = JSON.parse(raw);
-    } catch {
+    } catch (e) {
       return {
         ok: false,
         error: "INVALID_JSON_RESPONSE",
@@ -81,7 +81,7 @@ async function generateImage(prompt) {
     }
 
     /* =========================
-       🖼️ MULTI FORMAT IMAGE PICKER
+       🧠 SMART IMAGE EXTRACTION
     ========================= */
     const image =
       data?.image_url ||
@@ -97,7 +97,7 @@ async function generateImage(prompt) {
       return {
         ok: false,
         error: "NO_IMAGE_RETURNED",
-        data
+        debug_data: data
       };
     }
 
@@ -117,10 +117,10 @@ async function generateImage(prompt) {
 }
 
 /* =========================
-   🚀 MAIN VERCEL HANDLER
+   🚀 MAIN HANDLER
 ========================= */
 export default async function handler(req, res) {
-  console.log("\n================ REQUEST ================");
+  console.log("\n================ NEW REQUEST ================");
 
   const ip =
     req.headers["x-forwarded-for"] ||
@@ -155,14 +155,14 @@ export default async function handler(req, res) {
 
     const message = body?.message;
 
-    console.log("MESSAGE:", message);
+    console.log("💬 MESSAGE:", message);
 
     const prompt = cleanPrompt(message);
 
     const result = await generateImage(prompt);
 
     /* =========================
-       ❌ ERROR RESPONSE
+       ERROR RESPONSE
     ========================= */
     if (!result.ok) {
       return res.status(200).json({
@@ -171,12 +171,12 @@ export default async function handler(req, res) {
         error: result.error,
         status: result.status || null,
         raw: result.raw || null,
-        data: result.data || null
+        debug: result.debug_data || null
       });
     }
 
     /* =========================
-       ✅ SUCCESS
+       SUCCESS RESPONSE
     ========================= */
     return res.status(200).json({
       type: "image",
@@ -184,6 +184,8 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
+    console.error("🔥 GLOBAL ERROR:", err);
+
     return res.status(500).json({
       error: "GLOBAL_CRASH",
       message: err.message,
