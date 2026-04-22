@@ -1,9 +1,35 @@
+// If you're on Node < 18:
+// import fetch from "node-fetch";
+
+const ipHits = new Map();
+
+function rateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 10_000;
+  const limit = 5;
+
+  if (!ipHits.has(ip)) ipHits.set(ip, []);
+
+  const hits = ipHits.get(ip).filter(t => now - t < windowMs);
+
+  hits.push(now);
+  ipHits.set(ip, hits);
+
+  return hits.length <= limit;
+}
+
 export default async function handler(req, res) {
 
   console.log("==================================");
   console.log("🚀 NEW REQUEST:", new Date().toISOString());
   console.log("METHOD:", req.method);
   console.log("==================================");
+
+  const ip = req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown";
+
+  if (!rateLimit(ip)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
 
   if (req.method === "GET") {
     return res.status(200).json({
@@ -18,9 +44,15 @@ export default async function handler(req, res) {
 
   try {
 
-    const body = typeof req.body === "string"
-      ? JSON.parse(req.body)
-      : req.body;
+    let body = req.body;
+
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid JSON body" });
+      }
+    }
 
     const message = body?.message;
 
@@ -28,23 +60,16 @@ export default async function handler(req, res) {
     console.log("💬 USER MESSAGE:", message);
 
     if (!message) {
-      console.log("❌ NO MESSAGE RECEIVED");
       return res.status(400).json({ error: "Message required" });
     }
 
     // =========================
-    // SIMPLE ROUTER
+    // ROUTER
     // =========================
     const isImageRequest = (msg) => {
       const m = msg.toLowerCase();
-      return (
-        m.includes("image") ||
-        m.includes("generate") ||
-        m.includes("draw") ||
-        m.includes("picture") ||
-        m.includes("logo") ||
-        m.includes("photo")
-      );
+      const keywords = ["image", "draw", "picture", "logo", "photo", "generate image"];
+      return keywords.some(k => m.includes(k));
     };
 
     const route = {
@@ -55,15 +80,12 @@ export default async function handler(req, res) {
     console.log("🚦 ROUTE RESULT:", route);
 
     // =========================
-    // PIXAZO IMAGE GENERATOR
+    // PIXAZO IMAGE
     // =========================
     async function generateImage(prompt) {
-
       console.log("🖼️ CALLING PIXAZO...");
-      console.log("🖼️ PROMPT:", prompt);
 
       try {
-
         const response = await fetch("https://api.pixazo.ai/v1/generate", {
           method: "POST",
           headers: {
@@ -76,11 +98,10 @@ export default async function handler(req, res) {
         const data = await response.json();
 
         console.log("🖼️ PIXAZO STATUS:", response.status);
-        console.log("🖼️ PIXAZO RESPONSE FULL:");
-        console.log(JSON.stringify(data, null, 2));
+        console.log("🖼️ PIXAZO RESPONSE:", JSON.stringify(data, null, 2));
 
-        if (!response.ok) {
-          console.log("❌ PIXAZO ERROR DETECTED");
+        if (!response.ok || !data) {
+          console.log("❌ PIXAZO ERROR");
           return null;
         }
 
@@ -91,8 +112,6 @@ export default async function handler(req, res) {
           data.result?.[0]?.url ||
           data.output ||
           null;
-
-        console.log("🖼️ EXTRACTED IMAGE:", image);
 
         return image;
 
@@ -107,15 +126,9 @@ export default async function handler(req, res) {
     // =========================
     if (route.type === "image") {
 
-      console.log("🟣 IMAGE FLOW ACTIVATED");
-
       const image = await generateImage(route.prompt);
 
-      console.log("🟣 FINAL IMAGE RESULT:", image);
-
       if (!image) {
-        console.log("❌ IMAGE GENERATION FAILED");
-
         return res.status(200).json({
           reply: "Image generation failed (check server logs)",
           type: "error"
@@ -131,8 +144,6 @@ export default async function handler(req, res) {
     // =========================
     // GROQ TEXT FLOW
     // =========================
-    console.log("🟡 TEXT FLOW ACTIVATED");
-
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -144,14 +155,8 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
           messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant."
-            },
-            {
-              role: "user",
-              content: message
-            }
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: message }
           ],
           temperature: 0.7,
           max_tokens: 1024
@@ -161,14 +166,19 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log("🟡 GROQ RESPONSE:");
-    console.log(JSON.stringify(data, null, 2));
+    console.log("🟡 GROQ RESPONSE:", JSON.stringify(data, null, 2));
+
+    if (!response.ok) {
+      console.log("❌ GROQ ERROR:", data);
+      return res.status(500).json({
+        error: "Groq API failed",
+        details: data
+      });
+    }
 
     const reply =
       data?.choices?.[0]?.message?.content ||
       "No response from AI";
-
-    console.log("🟡 FINAL REPLY:", reply);
 
     return res.status(200).json({
       reply,
@@ -177,8 +187,7 @@ export default async function handler(req, res) {
 
   } catch (err) {
 
-    console.log("🔥 GLOBAL CRASH:");
-    console.log(err);
+    console.log("🔥 GLOBAL CRASH:", err);
 
     return res.status(500).json({
       error: err.message || "Server crash"
