@@ -1,6 +1,10 @@
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
 
-  // GET test
+  // =========================
+  // GET TEST
+  // =========================
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
@@ -25,62 +29,82 @@ export default async function handler(req, res) {
     }
 
     // =========================
-    // 🧠 IMAGE DETECTION
+    // 🧠 IMAGE DETECTION (SAFE)
     // =========================
     const isImageRequest = (msg) => {
       const m = msg.toLowerCase();
-      return (
-        m.includes("image") ||
-        m.includes("generate") ||
-        m.includes("logo") ||
-        m.includes("draw") ||
-        m.includes("picture")
-      );
+
+      const keywords = [
+        "generate",
+        "create image",
+        "draw",
+        "logo",
+        "picture",
+        "image of",
+        "design"
+      ];
+
+      return keywords.some(k => m.includes(k));
     };
 
     // =========================
-    // 🖼️ PIXAZO IMAGE GENERATION
+    // 🖼️ PIXAZO FUNCTION (FIXED)
     // =========================
     async function generateImage(prompt) {
-      const response = await fetch(
-        "https://api.pixazo.ai/v1/generate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
-          },
-          body: JSON.stringify({
-            prompt
-          })
-        }
-      );
+
+      const response = await fetch("https://api.pixazo.ai/v1/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
+        },
+        body: JSON.stringify({
+          prompt
+        })
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "Pixazo error");
+        throw new Error(data?.error || "Pixazo API failed");
       }
 
-      return data.image_url || data.data?.url;
+      const image =
+        data.image_url ||
+        data.url ||
+        data.data?.url ||
+        data.result?.[0]?.url;
+
+      if (!image) {
+        throw new Error("Pixazo returned empty image");
+      }
+
+      return image;
     }
 
     // =========================
-    // 🧠 ROUTING LOGIC
+    // 🔀 ROUTING LOGIC
     // =========================
 
     if (isImageRequest(message)) {
 
-      const image = await generateImage(message);
+      try {
+        const image = await generateImage(message);
 
-      return res.status(200).json({
-        reply: image,
-        type: "image"
-      });
+        return res.status(200).json({
+          reply: image,
+          type: "image"
+        });
+
+      } catch (err) {
+        return res.status(500).json({
+          error: err.message || "Image generation failed"
+        });
+      }
     }
 
     // =========================
-    // 🤖 GROQ API (UNCHANGED LOGIC)
+    // 🤖 GROQ (UNCHANGED CORE LOGIC)
     // =========================
 
     const response = await fetch(
@@ -113,12 +137,16 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error"
+        error: data?.error?.message || "Groq API error"
       });
     }
 
+    const reply =
+      data?.choices?.[0]?.message?.content?.trim() ||
+      "No response";
+
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response",
+      reply,
       type: "text"
     });
 
