@@ -1,3 +1,6 @@
+// If Node < 18:
+// import fetch from "node-fetch";
+
 const ipHits = new Map();
 
 /* =========================
@@ -19,33 +22,27 @@ function rateLimit(ip) {
 }
 
 /* =========================
-   🧠 IMAGE DETECTION
+   🧠 IMAGE PROMPT NORMALIZER
 ========================= */
-function isImageRequest(msg = "") {
-  const m = msg.toLowerCase();
+function buildPrompt(message) {
+  const msg = (message || "").trim();
 
-  return (
-    m.includes("image") ||
-    m.includes("imge") ||
-    m.includes("draw") ||
-    m.includes("picture") ||
-    m.includes("photo") ||
-    m.includes("generate") ||
-    m.includes("create")
-  );
+  if (!msg) return "a creative abstract artwork";
+
+  return msg;
 }
 
 /* =========================
-   🖼️ PIXAZO (FULL ERROR DEBUG)
+   🖼️ PIXAZO IMAGE GENERATOR (FIXED)
 ========================= */
 async function generateImage(prompt) {
   console.log("\n================ PIXAZO DEBUG ================");
   console.log("🧠 PROMPT:", prompt);
 
   if (!process.env.PIXAZO_API_KEY) {
-    const err = "PIXAZO_API_KEY is missing";
-    console.log("❌", err);
-    return { error: err };
+    return {
+      error: "PIXAZO_API_KEY missing"
+    };
   }
 
   try {
@@ -56,36 +53,32 @@ async function generateImage(prompt) {
         "Authorization": `Bearer ${process.env.PIXAZO_API_KEY}`
       },
       body: JSON.stringify({
-        prompt
+        prompt,
+        width: 1024,
+        height: 1024
       })
     });
 
     const raw = await response.text();
 
     console.log("📡 STATUS:", response.status);
-    console.log("📦 RAW RESPONSE:", raw);
+    console.log("📦 RAW:", raw);
 
     let data;
     try {
       data = JSON.parse(raw);
-    } catch (e) {
-      console.log("❌ JSON PARSE ERROR");
+    } catch {
       return {
-        error: "Invalid JSON from API",
+        error: "Invalid JSON response from Pixazo",
         raw
       };
     }
 
-    console.log("🧾 PARSED DATA:", data);
-
-    /* ❌ SHOW REAL API ERROR */
     if (!response.ok) {
-      console.log("❌ API ERROR RESPONSE DETECTED");
-
       return {
-        error: "Pixazo API failed",
+        error: "Pixazo API error",
         status: response.status,
-        details: data || raw
+        details: data
       };
     }
 
@@ -95,21 +88,18 @@ async function generateImage(prompt) {
       data?.data?.url ||
       data?.data?.images?.[0]?.url ||
       data?.result?.[0]?.url ||
-      data?.output ||
       null;
 
     if (!image) {
       return {
-        error: "No image returned from API",
-        data
+        error: "No image returned by Pixazo",
+        response: data
       };
     }
 
     return { image };
 
   } catch (err) {
-    console.log("🔥 CRASH:", err);
-
     return {
       error: err.message,
       stack: err.stack
@@ -118,7 +108,7 @@ async function generateImage(prompt) {
 }
 
 /* =========================
-   🚀 MAIN HANDLER
+   🚀 MAIN HANDLER (FIXED)
 ========================= */
 export default async function handler(req, res) {
   console.log("\n================ NEW REQUEST ================");
@@ -137,11 +127,16 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
-    return res.json({ ok: true });
+    return res.json({
+      ok: true,
+      message: "Image API is running ✔️"
+    });
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Only POST allowed" });
+    return res.status(405).json({
+      error: "Only POST allowed"
+    });
   }
 
   try {
@@ -155,34 +150,31 @@ export default async function handler(req, res) {
 
     console.log("💬 MESSAGE:", message);
 
-    if (!message) {
-      return res.status(400).json({ error: "Message required" });
-    }
+    const prompt = buildPrompt(message);
+
+    console.log("🎯 PROMPT:", prompt);
+
+    const result = await generateImage(prompt);
 
     /* =========================
-       IMAGE FLOW
+       ERROR RESPONSE (VISIBLE)
     ========================= */
-    if (isImageRequest(message)) {
-      const result = await generateImage(message);
+    if (result.error) {
+      console.log("❌ ERROR:", result);
 
-      /* ❌ RETURN FULL ERROR TO CLIENT */
-      if (result.error) {
-        return res.status(200).json({
-          type: "error",
-          reply: "IMAGE ERROR",
-          debug: result
-        });
-      }
-
-      return res.json({
-        type: "image",
-        reply: result.image
+      return res.status(200).json({
+        type: "error",
+        reply: "IMAGE GENERATION FAILED",
+        debug: result
       });
     }
 
-    return res.json({
-      type: "text",
-      reply: "Only image mode active in debug version"
+    /* =========================
+       SUCCESS
+    ========================= */
+    return res.status(200).json({
+      type: "image",
+      reply: result.image
     });
 
   } catch (err) {
