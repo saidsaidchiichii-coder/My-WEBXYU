@@ -1,4 +1,8 @@
 
+export const config = {
+  runtime: "nodejs"
+};
+
 const ipHits = new Map();
 
 /* =========================
@@ -20,17 +24,14 @@ function rateLimit(ip) {
 }
 
 /* =========================
-   🧠 CLEAN PROMPT
+   🧠 PROMPT CLEANER
 ========================= */
-function cleanPrompt(message) {
-  if (!message || typeof message !== "string") {
-    return "a creative high quality artwork";
-  }
-  return message.trim();
+function cleanPrompt(msg) {
+  return (msg || "").trim() || "a high quality artistic image";
 }
 
 /* =========================
-   🖼️ PIXAZO GENERATOR
+   🖼️ PIXAZO GENERATION (ROBUST)
 ========================= */
 async function generateImage(prompt) {
   try {
@@ -42,54 +43,61 @@ async function generateImage(prompt) {
       },
       body: JSON.stringify({
         prompt,
-        model: "default",
         width: 1024,
         height: 1024,
-        steps: 30,
-        guidance_scale: 7.5,
-        quality: "high",
-        style: "realistic"
+        steps: 30
       })
     });
 
     const raw = await response.text();
 
-    console.log("PIXAZO STATUS:", response.status);
-    console.log("PIXAZO RAW:", raw);
+    console.log("STATUS:", response.status);
+    console.log("RAW:", raw);
 
+    /* =========================
+       ❌ HTTP ERROR HANDLING
+    ========================= */
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: "PIXAZO_API_FAILED",
+        status: response.status,
+        raw
+      };
+    }
+
+    /* =========================
+       JSON PARSE SAFE
+    ========================= */
     let data;
     try {
       data = JSON.parse(raw);
     } catch {
       return {
         ok: false,
-        error: "INVALID_JSON",
+        error: "INVALID_JSON_RESPONSE",
         raw
       };
     }
 
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: "API_ERROR",
-        status: response.status,
-        details: data
-      };
-    }
-
+    /* =========================
+       🖼️ MULTI FORMAT IMAGE PICKER
+    ========================= */
     const image =
       data?.image_url ||
       data?.url ||
       data?.data?.url ||
       data?.data?.images?.[0]?.url ||
+      data?.output?.[0]?.url ||
       data?.result?.[0]?.url ||
+      data?.data?.output ||
       null;
 
     if (!image) {
       return {
         ok: false,
         error: "NO_IMAGE_RETURNED",
-        details: data
+        data
       };
     }
 
@@ -109,10 +117,10 @@ async function generateImage(prompt) {
 }
 
 /* =========================
-   🚀 MAIN API HANDLER
+   🚀 MAIN VERCEL HANDLER
 ========================= */
 export default async function handler(req, res) {
-  console.log("\n================ NEW REQUEST ================");
+  console.log("\n================ REQUEST ================");
 
   const ip =
     req.headers["x-forwarded-for"] ||
@@ -128,7 +136,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "PIXAZO IMAGE API RUNNING ✔️"
+      message: "PIXAZO IMAGE API WORKING ✔️"
     });
   }
 
@@ -147,14 +155,14 @@ export default async function handler(req, res) {
 
     const message = body?.message;
 
-    console.log("USER MESSAGE:", message);
+    console.log("MESSAGE:", message);
 
     const prompt = cleanPrompt(message);
 
     const result = await generateImage(prompt);
 
     /* =========================
-       ERROR RESPONSE
+       ❌ ERROR RESPONSE
     ========================= */
     if (!result.ok) {
       return res.status(200).json({
@@ -162,13 +170,13 @@ export default async function handler(req, res) {
         reply: "IMAGE_GENERATION_FAILED",
         error: result.error,
         status: result.status || null,
-        details: result.details || null,
-        raw: result.raw || null
+        raw: result.raw || null,
+        data: result.data || null
       });
     }
 
     /* =========================
-       SUCCESS RESPONSE
+       ✅ SUCCESS
     ========================= */
     return res.status(200).json({
       type: "image",
@@ -176,8 +184,6 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.log("GLOBAL ERROR:", err);
-
     return res.status(500).json({
       error: "GLOBAL_CRASH",
       message: err.message,
