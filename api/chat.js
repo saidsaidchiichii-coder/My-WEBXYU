@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Groq API working ✔️ Use POST"
+      message: "Gemini API working ✔️ Use POST"
     });
   }
 
@@ -24,45 +24,42 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ API CALL
+    // 🤖 GEMINI API CALL
     const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant."
-            },
+          contents: [
             {
               role: "user",
-              content: message
+              parts: [
+                { text: message }
+              ]
             }
-          ],
-          temperature: 0.7,
-          max_tokens: 1024
+          ]
         })
       }
     );
 
     const data = await response.json();
 
-    // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error"
+        error: data?.error?.message || "Gemini API error"
       });
     }
 
-    // ✅ success
+    // 🧠 extract reply
+    const reply =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No response";
+
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response"
+      reply
     });
 
   } catch (err) {
