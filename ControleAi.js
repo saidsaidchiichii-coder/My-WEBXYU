@@ -25,23 +25,20 @@ const AI = {
   user(text) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper";
-    
+
     const div = document.createElement("div");
     div.className = "msg user";
     div.textContent = text;
-    
+
     wrapper.appendChild(div);
     this.messagesBox.appendChild(wrapper);
     this.scroll();
   },
 
-  /* =========================
-     🧠 ADVANCED THINKING EFFECT
-  ========================= */
   thinking() {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
-    
+
     const thinkingDiv = document.createElement("div");
     thinkingDiv.className = "thinking-container";
     thinkingDiv.innerHTML = `
@@ -50,13 +47,16 @@ const AI = {
         </div>
         <span class="thinking-text">Thinking...</span>
     `;
-    
+
     wrapper.appendChild(thinkingDiv);
     this.messagesBox.appendChild(wrapper);
     this.scroll();
     return wrapper;
   },
 
+  /* =========================
+     🤖 GEMINI ASK (FIXED)
+  ========================= */
   async ask(message) {
     const load = this.thinking();
 
@@ -67,53 +67,64 @@ const AI = {
         body: JSON.stringify({ message })
       });
 
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText);
+      }
+
       const data = await res.json();
       load.remove();
-      
-      let reply = data?.reply || "I'm sorry, I couldn't process that.";
+
+      let reply =
+        data?.reply ||
+        "No response from AI.";
 
       this.streamRender(reply);
 
     } catch (e) {
       load.remove();
+
       const wrapper = document.createElement("div");
       wrapper.className = "msg-wrapper ai";
-      
+
       const err = document.createElement("div");
       err.className = "msg ai";
-      err.textContent = "System Error: API Connection Failed.";
-      
+      err.textContent = "API Error: " + e.message;
+
       wrapper.appendChild(err);
       this.messagesBox.appendChild(wrapper);
     }
   },
 
   /* =========================
-     🌊 PIXEL-PERFECT STREAMING
+     🌊 STREAM RENDER
   ========================= */
   async streamRender(fullText) {
     const wrapper = document.createElement("div");
     wrapper.className = "msg-wrapper ai";
-    
+
     const container = document.createElement("div");
     container.className = "msg ai";
     wrapper.appendChild(container);
     this.messagesBox.appendChild(wrapper);
-    
+
     const parts = fullText.split("```");
-    
+
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i];
-      
+
       // CODE BLOCK
       if (i % 2 === 1) {
         const codeBox = document.createElement("div");
         codeBox.className = "code-box";
-        
+
         const header = document.createElement("div");
         header.className = "code-header";
-        header.innerHTML = `<span class="code-lang">code</span><button class="copy-btn">Copy</button>`;
-        
+        header.innerHTML = `
+          <span class="code-lang">code</span>
+          <button class="copy-btn">Copy</button>
+        `;
+
         const copyBtn = header.querySelector(".copy-btn");
         copyBtn.onclick = () => {
           navigator.clipboard.writeText(part.trim());
@@ -124,42 +135,47 @@ const AI = {
         const pre = document.createElement("pre");
         const code = document.createElement("code");
         code.innerHTML = this.highlight(part.trim());
-        
+
         pre.appendChild(code);
         codeBox.appendChild(header);
         codeBox.appendChild(pre);
         container.appendChild(codeBox);
-      } 
-      // TEXT WITH NATURAL TYPING
+      }
+
+      // TEXT
       else {
         const textDiv = document.createElement("div");
         container.appendChild(textDiv);
-        
+
         const paragraphs = part.split("\n");
+
         for (const para of paragraphs) {
           if (para.trim()) {
             const p = document.createElement("p");
             p.style.marginBottom = "0.5rem";
             textDiv.appendChild(p);
-            
+
             const words = para.trim().split(" ");
+
             for (const word of words) {
-                p.textContent += word + " ";
-                this.scroll();
-                await new Promise(r => setTimeout(r, 15 + Math.random() * 20));
+              p.textContent += word + " ";
+              this.scroll();
+              await new Promise(r =>
+                setTimeout(r, 10 + Math.random() * 15)
+              );
             }
           }
         }
       }
+
       this.scroll();
     }
   },
 
   scroll() {
-    const box = this.messagesBox;
-    box.scrollTo({
-        top: box.scrollHeight,
-        behavior: 'smooth'
+    this.messagesBox.scrollTo({
+      top: this.messagesBox.scrollHeight,
+      behavior: "smooth"
     });
   }
 };
