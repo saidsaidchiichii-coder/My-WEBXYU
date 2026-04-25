@@ -1,10 +1,9 @@
 export default async function handler(req, res) {
 
-  // GET test
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Groq API working ✔️ Use POST"
+      message: "Hugging Face API working ✔️ Use POST"
     });
   }
 
@@ -24,45 +23,43 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ API CALL
+    // 🤖 HUGGING FACE API CALL
     const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant."
-            },
-            {
-              role: "user",
-              content: message
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 1024
+          inputs: message
         })
       }
     );
 
     const data = await response.json();
 
-    // ❌ handle errors
+    // ❌ error handling
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error"
+        error: data.error || "Hugging Face API error"
       });
     }
 
-    // ✅ success
+    // ✅ extract reply
+    let reply = "No response";
+
+    if (Array.isArray(data)) {
+      reply = data?.[0]?.generated_text;
+    } else if (data?.generated_text) {
+      reply = data.generated_text;
+    } else if (data?.error) {
+      reply = data.error;
+    }
+
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response"
+      reply
     });
 
   } catch (err) {
