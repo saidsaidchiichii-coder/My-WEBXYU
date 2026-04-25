@@ -1,9 +1,10 @@
 export default async function handler(req, res) {
 
+  // GET test
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Controle AI (Hugging Face) working ✔"
+      message: "Groq API working ✔️ Use POST"
     });
   }
 
@@ -12,6 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
+
     const body = typeof req.body === "string"
       ? JSON.parse(req.body)
       : req.body;
@@ -22,39 +24,45 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 Hugging Face Model
+    // 🤖 GROQ API CALL
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.HF_API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
         },
         body: JSON.stringify({
-          inputs: `You are a helpful assistant.\nUser: ${message}\nAssistant:`
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant."
+            },
+            {
+              role: "user",
+              content: message
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 1024
         })
       }
     );
 
     const data = await response.json();
 
+    // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
-        error: data?.error || "Hugging Face API error"
+        error: data.error?.message || "Groq API error"
       });
     }
 
-    let reply =
-      data?.[0]?.generated_text ||
-      data?.generated_text ||
-      "No response";
-
-    // تنظيف الجواب
-    reply = reply.split("Assistant:").pop().trim();
-
+    // ✅ success
     return res.status(200).json({
-      reply
+      reply: data.choices?.[0]?.message?.content || "No response"
     });
 
   } catch (err) {
