@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Groq API working ✔️ Use POST"
+      message: "Hugging Face API working ✔️ Use POST"
     });
   }
 
@@ -24,29 +24,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ API CALL
+    // 🤖 HUGGING FACE CHAT MODEL
     const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+          "Authorization": `Bearer ${process.env.HF_API_KEY}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant."
-            },
-            {
-              role: "user",
-              content: message
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 1024
+          inputs: `
+You are a helpful assistant.
+
+User: ${message}
+Assistant:
+          `
         })
       }
     );
@@ -56,13 +49,21 @@ export default async function handler(req, res) {
     // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error"
+        error: data?.error || "Hugging Face API error"
       });
     }
 
-    // ✅ success
+    // 🧠 extract reply (HF format)
+    let reply =
+      data?.[0]?.generated_text ||
+      data?.generated_text ||
+      "No response";
+
+    // remove prompt from output if repeated
+    reply = reply.split("Assistant:").pop().trim();
+
     return res.status(200).json({
-      reply: data.choices?.[0]?.message?.content || "No response"
+      reply
     });
 
   } catch (err) {
