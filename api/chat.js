@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
-      message: "Groq API working ✔️ Use POST"
+      message: "DeepSeek API working ✔️ Use POST"
     });
   }
 
@@ -24,17 +24,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Message required" });
     }
 
-    // 🤖 GROQ API CALL
+    // 🤖 DEEPSEEK API CALL
     const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+      "https://api.deepseek.com/chat/completions",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+          "Authorization": `Bearer ${process.env.DEEPSEEK_API_KEY}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "deepseek-chat",
           messages: [
             {
               role: "system",
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     // ❌ handle errors
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Groq API error"
+        error: data.error?.message || "DeepSeek API error"
       });
     }
 
