@@ -12,7 +12,7 @@
 
 <style>
 
-/* ==== UI UPGRADE (WITHOUT BREAKING CODE) ==== */
+/* ==== UI UPGRADE ==== */
 
 #tsparticles{
     position: fixed;
@@ -20,29 +20,81 @@
     z-index: 0;
 }
 
-/* glass effect */
+/* glass */
 .search-box{
     backdrop-filter: blur(20px);
     background: rgba(20,20,20,0.6);
     border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* glow focus */
 .search-box:focus-within{
     box-shadow: 0 0 20px rgba(255,255,255,0.1);
 }
 
-/* bigger particles feel */
 .hero-logo h1{
     letter-spacing: -2px;
 }
 
-/* send button glow */
 .send-btn{
     box-shadow: 0 0 10px rgba(255,255,255,0.2);
 }
 
-/* modal UI */
+/* NEW: hero text */
+.hero-text{
+    text-align:center;
+    margin-top:20px;
+}
+.hero-text h2{
+    font-size:28px;
+    font-weight:700;
+}
+.hero-text p{
+    opacity:0.6;
+}
+
+/* NEW: suggestions */
+.suggestions{
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+.suggestion{
+    background:#111;
+    border:1px solid #2f3336;
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:14px;
+}
+.suggestion:hover{
+    background:#1a1a1a;
+}
+
+/* NEW: features */
+.features{
+    margin-top:60px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+    padding:20px;
+}
+.feature-card{
+    background:#111;
+    border:1px solid #2f3336;
+    padding:20px;
+    border-radius:16px;
+    text-align:center;
+}
+.feature-card i{
+    margin-bottom:10px;
+}
+.feature-card h4{
+    margin-bottom:6px;
+}
+
+/* modal */
 .modal{
     position: fixed;
     inset: 0;
@@ -81,23 +133,28 @@
     cursor:pointer;
 }
 
-/* hover modern */
 button:hover{
     transform: scale(1.05);
 }
 
-/* textarea smooth */
 textarea{
     transition: all .2s ease;
 }
 
-/* message animation smoother */
 .msg-wrapper{
     animation: fadeUp .3s ease;
 }
 @keyframes fadeUp{
     from{opacity:0; transform:translateY(15px);}
     to{opacity:1; transform:translateY(0);}
+}
+
+/* footer */
+.footer{
+    text-align:center;
+    opacity:0.5;
+    margin-top:60px;
+    font-size:12px;
 }
 
 </style>
@@ -134,12 +191,19 @@ textarea{
 <main class="container">
 
 <section id="home" class="home-view">
+
 <div class="hero-section">
     <div class="hero-logo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"></circle>
         </svg>
         <h1>Grok</h1>
+    </div>
+
+    <!-- NEW -->
+    <div class="hero-text">
+        <h2>Your AI Assistant</h2>
+        <p>Ask anything. Get instant smart answers.</p>
     </div>
 </div>
 
@@ -166,6 +230,45 @@ textarea{
 </div>
 </div>
 </div>
+
+<!-- NEW: suggestions -->
+<div class="suggestions">
+    <div class="suggestion" onclick="homeInput.value='Explain AI simply'">Explain AI</div>
+    <div class="suggestion" onclick="homeInput.value='Write a story'">Write a story</div>
+    <div class="suggestion" onclick="homeInput.value='Help me code'">Help me code</div>
+</div>
+
+<!-- NEW: features -->
+<div class="features">
+    <div class="feature-card">
+        <i data-lucide="message-circle"></i>
+        <h4>Chat AI</h4>
+        <p>Talk naturally with AI</p>
+    </div>
+
+    <div class="feature-card">
+        <i data-lucide="zap"></i>
+        <h4>Fast</h4>
+        <p>Instant responses</p>
+    </div>
+
+    <div class="feature-card">
+        <i data-lucide="brain"></i>
+        <h4>Smart</h4>
+        <p>Accurate answers</p>
+    </div>
+
+    <div class="feature-card">
+        <i data-lucide="globe"></i>
+        <h4>Multi-language</h4>
+        <p>Speak any language</p>
+    </div>
+</div>
+
+<div class="footer">
+    © 2026 Grok — AI Experience
+</div>
+
 </section>
 
 <section id="chat" class="chat-view hidden">
@@ -214,7 +317,6 @@ textarea{
 lucide.createIcons();
 AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-/* PARTICLES (FIXED + BIGGER + MOVING) */
 tsParticles.load("tsparticles", {
     particles: {
         number: { value: 80 },
@@ -225,11 +327,9 @@ tsParticles.load("tsparticles", {
     }
 });
 
-/* views */
 const homeView = document.getElementById("home");
 const chatView = document.getElementById("chat");
 
-/* ENTER = SEND (IMPORTANT FIX) */
 document.getElementById("homeInput").addEventListener("keydown", e=>{
     if(e.key==="Enter" && !e.shiftKey){
         e.preventDefault();
@@ -244,17 +344,14 @@ document.getElementById("chatInput").addEventListener("keydown", e=>{
     }
 });
 
-/* auto resize */
 function autoResize(t){
     t.style.height="auto";
     t.style.height=Math.min(t.scrollHeight,180)+"px";
 }
 
-/* attach resize */
 homeInput.oninput=()=>autoResize(homeInput);
 chatInput.oninput=()=>autoResize(chatInput);
 
-/* start chat */
 function startChat(){
     const input = document.getElementById("homeInput");
     const text = input.value.trim();
@@ -269,7 +366,6 @@ function startChat(){
     input.value="";
 }
 
-/* send */
 function send(){
     const input = document.getElementById("chatInput");
     const text = input.value.trim();
@@ -281,7 +377,6 @@ function send(){
     input.value="";
 }
 
-/* SETTINGS */
 document.getElementById("settingsBtn").onclick = () => {
     document.getElementById("settingsModal").classList.remove("hidden");
 };
@@ -289,7 +384,6 @@ function closeSettings(){
     document.getElementById("settingsModal").classList.add("hidden");
 }
 
-/* IMAGINE (WORKING) */
 document.getElementById("imagineBtn").onclick = () => {
     const homeInput = document.getElementById("homeInput");
     if(homeInput.value.trim()){
@@ -299,7 +393,6 @@ document.getElementById("imagineBtn").onclick = () => {
     }
 };
 
-/* UPLOAD (UI WORKING) */
 document.getElementById("uploadBtn").onclick =
 document.getElementById("uploadBtn2").onclick = () => {
     const input = document.createElement("input");
@@ -307,7 +400,6 @@ document.getElementById("uploadBtn2").onclick = () => {
     input.click();
 };
 
-/* AUTH UI */
 document.getElementById("signinBtn").onclick =
 document.getElementById("signupBtn").onclick = () => {
     alert("Auth UI ready");
