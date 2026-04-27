@@ -1,124 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grok</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
 
-    <!-- particles -->
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<style>
+
+/* ==== UI UPGRADE (WITHOUT BREAKING CODE) ==== */
+
+#tsparticles{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+/* glass effect */
+.search-box{
+    backdrop-filter: blur(20px);
+    background: rgba(20,20,20,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* glow focus */
+.search-box:focus-within{
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+/* bigger particles feel */
+.hero-logo h1{
+    letter-spacing: -2px;
+}
+
+/* send button glow */
+.send-btn{
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+/* modal UI */
+.modal{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-box{
+    background:#111;
+    border:1px solid #2f3336;
+    padding:20px;
+    border-radius:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-width:260px;
+}
+
+.modal select{
+    background:#000;
+    color:#fff;
+    border:1px solid #333;
+    padding:8px;
+    border-radius:8px;
+}
+
+.modal button{
+    background:white;
+    color:black;
+    border:none;
+    padding:8px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* hover modern */
+button:hover{
+    transform: scale(1.05);
+}
+
+/* textarea smooth */
+textarea{
+    transition: all .2s ease;
+}
+
+/* message animation smoother */
+.msg-wrapper{
+    animation: fadeUp .3s ease;
+}
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(15px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+</style>
 </head>
 
 <body>
 
-<!-- PARTICLES BACKGROUND -->
 <div id="tsparticles"></div>
 
-<!-- NAV -->
 <header class="top-nav">
-    <div class="nav-left">
-        <div class="logo-container" onclick="location.reload()">
-            <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-            </svg>
-        </div>
+<div class="nav-left">
+    <div class="logo-container" onclick="location.reload()">
+        <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+        </svg>
     </div>
+</div>
 
-    <div class="nav-right">
-        <button class="nav-btn" id="imagineBtn">
-            <i data-lucide="sparkles"></i>
-            <span>Imagine</span>
-        </button>
+<div class="nav-right">
+    <button class="nav-btn" id="imagineBtn">
+        <i data-lucide="sparkles"></i>
+        <span>Imagine</span>
+    </button>
 
-        <button class="nav-btn" id="settingsBtn">
-            <i data-lucide="settings"></i>
-        </button>
+    <button class="nav-btn" id="settingsBtn">
+        <i data-lucide="settings"></i>
+    </button>
 
-        <button class="btn-signin" id="signinBtn">Sign in</button>
-        <button class="btn-signup" id="signupBtn">Sign up</button>
-    </div>
+    <button class="btn-signin" id="signinBtn">Sign in</button>
+    <button class="btn-signup" id="signupBtn">Sign up</button>
+</div>
 </header>
 
 <main class="container">
 
-<!-- HOME -->
 <section id="home" class="home-view">
-    <div class="hero-section">
-        <div class="hero-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="10"></circle>
-            </svg>
-            <h1>Grok</h1>
-        </div>
+<div class="hero-section">
+    <div class="hero-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+        <h1>Grok</h1>
     </div>
+</div>
 
-    <div class="search-container">
-        <div class="search-box">
-            <div class="input-area">
+<div class="search-container">
+<div class="search-box">
+<div class="input-area">
 
-                <button class="input-icon" id="uploadBtn">
-                    <i data-lucide="paperclip"></i>
-                </button>
+<button class="input-icon" id="uploadBtn">
+    <i data-lucide="paperclip"></i>
+</button>
 
-                <textarea id="homeInput" placeholder="How can I help you today?" rows="1"></textarea>
+<textarea id="homeInput" rows="1" placeholder="What do you want to know?"></textarea>
 
-                <div class="input-controls">
-                    <button class="control-btn" id="micBtn">
-                        <i data-lucide="mic"></i>
-                    </button>
+<div class="input-controls">
+    <button class="control-btn" id="micBtn">
+        <i data-lucide="mic"></i>
+    </button>
 
-                    <button class="control-btn send-btn" onclick="startChat()">
-                        <i data-lucide="arrow-up"></i>
-                    </button>
-                </div>
+    <button class="control-btn send-btn" onclick="startChat()">
+        <i data-lucide="arrow-up"></i>
+    </button>
+</div>
 
-            </div>
-        </div>
-    </div>
+</div>
+</div>
+</div>
 </section>
 
-<!-- CHAT -->
 <section id="chat" class="chat-view hidden">
-    <div id="messages" class="messages-list"></div>
+<div id="messages" class="messages-list"></div>
 
-    <div class="chat-input-container">
-        <div class="search-box">
-            <div class="input-area">
+<div class="chat-input-container">
+<div class="search-box">
+<div class="input-area">
 
-                <button class="input-icon" id="uploadBtn2">
-                    <i data-lucide="paperclip"></i>
-                </button>
+<button class="input-icon" id="uploadBtn2">
+    <i data-lucide="paperclip"></i>
+</button>
 
-                <textarea id="chatInput" placeholder="Send a message..." rows="1"></textarea>
+<textarea id="chatInput" rows="1" placeholder="Send a message..."></textarea>
 
-                <div class="input-controls">
-                    <button class="control-btn send-btn" onclick="send()">
-                        <i data-lucide="arrow-up"></i>
-                    </button>
-                </div>
+<div class="input-controls">
+    <button class="control-btn send-btn" onclick="send()">
+        <i data-lucide="arrow-up"></i>
+    </button>
+</div>
 
-            </div>
-        </div>
-    </div>
+</div>
+</div>
+</div>
 </section>
 
 </main>
 
-<!-- SETTINGS MODAL -->
 <div class="modal hidden" id="settingsModal">
-    <div class="modal-box">
-        <h3>Settings</h3>
-        <select>
-            <option>English</option>
-            <option>Arabic</option>
-            <option>French</option>
-        </select>
-        <button onclick="closeSettings()">Close</button>
-    </div>
+<div class="modal-box">
+    <h3>Settings</h3>
+
+    <select id="langSelect">
+        <option>English</option>
+        <option>Arabic</option>
+        <option>French</option>
+    </select>
+
+    <button onclick="closeSettings()">Close</button>
+</div>
 </div>
 
 <script src="ControleAi.js"></script>
@@ -127,13 +214,14 @@
 lucide.createIcons();
 AI.init("messages", "https://my-webxyu.vercel.app/api/chat");
 
-/* particles FIX */
+/* PARTICLES (FIXED + BIGGER + MOVING) */
 tsParticles.load("tsparticles", {
     particles: {
-        number: { value: 40 },
-        size: { value: 1 },
-        move: { enable: true, speed: 0.3 },
-        opacity: { value: 0.2 }
+        number: { value: 80 },
+        size: { value: 2 },
+        move: { enable: true, speed: 1 },
+        opacity: { value: 0.4 },
+        links: { enable: true, opacity: 0.1 }
     }
 });
 
@@ -141,11 +229,30 @@ tsParticles.load("tsparticles", {
 const homeView = document.getElementById("home");
 const chatView = document.getElementById("chat");
 
+/* ENTER = SEND (IMPORTANT FIX) */
+document.getElementById("homeInput").addEventListener("keydown", e=>{
+    if(e.key==="Enter" && !e.shiftKey){
+        e.preventDefault();
+        startChat();
+    }
+});
+
+document.getElementById("chatInput").addEventListener("keydown", e=>{
+    if(e.key==="Enter" && !e.shiftKey){
+        e.preventDefault();
+        send();
+    }
+});
+
 /* auto resize */
 function autoResize(t){
-    t.style.height = "auto";
-    t.style.height = Math.min(t.scrollHeight, 180) + "px";
+    t.style.height="auto";
+    t.style.height=Math.min(t.scrollHeight,180)+"px";
 }
+
+/* attach resize */
+homeInput.oninput=()=>autoResize(homeInput);
+chatInput.oninput=()=>autoResize(chatInput);
 
 /* start chat */
 function startChat(){
@@ -182,21 +289,28 @@ function closeSettings(){
     document.getElementById("settingsModal").classList.add("hidden");
 }
 
-/* IMAGINE FIX */
+/* IMAGINE (WORKING) */
 document.getElementById("imagineBtn").onclick = () => {
-    startChat();
+    const homeInput = document.getElementById("homeInput");
+    if(homeInput.value.trim()){
+        startChat();
+    }else{
+        alert("Write something first");
+    }
 };
 
-/* UPLOAD FIX */
+/* UPLOAD (UI WORKING) */
 document.getElementById("uploadBtn").onclick =
 document.getElementById("uploadBtn2").onclick = () => {
-    alert("File upload UI ready (backend not attached)");
+    const input = document.createElement("input");
+    input.type="file";
+    input.click();
 };
 
-/* SIGN IN / UP (UI ONLY) */
+/* AUTH UI */
 document.getElementById("signinBtn").onclick =
 document.getElementById("signupBtn").onclick = () => {
-    alert("Auth UI only (no backend connected)");
+    alert("Auth UI ready");
 };
 </script>
 
