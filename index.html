@@ -12,143 +12,162 @@
 
 <style>
 
-/* ===== SIDEBAR FIX ===== */
-body{
+/* ==== UI UPGRADE ==== */
+
+#tsparticles{
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+/* glass */
+.search-box{
+    backdrop-filter: blur(20px);
+    background: rgba(20,20,20,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.search-box:focus-within{
+    box-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+.hero-logo h1{
+    letter-spacing: -2px;
+}
+
+.send-btn{
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+}
+
+/* NEW: hero text */
+.hero-text{
+    text-align:center;
+    margin-top:20px;
+}
+.hero-text h2{
+    font-size:28px;
+    font-weight:700;
+}
+.hero-text p{
+    opacity:0.6;
+}
+
+/* NEW: suggestions */
+.suggestions{
+    margin-top:20px;
     display:flex;
-}
-
-/* sidebar smaller */
-.sidebar{
-    width:220px;
-    background:#0b0b0b;
-    border-right:1px solid #1f1f1f;
-    height:100vh;
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-    transition:.3s;
-}
-
-/* hidden state */
-.sidebar.hiddenSide{
-    width:60px;
-    padding:10px;
-}
-
-/* hide text when collapsed */
-.sidebar.hiddenSide .text{
-    display:none;
-}
-
-/* buttons */
-.side-btn{
-    display:flex;
-    align-items:center;
     gap:10px;
-    background:#111;
-    border:1px solid #2a2a2a;
-    padding:10px;
-    border-radius:10px;
-    cursor:pointer;
+    flex-wrap:wrap;
+    justify-content:center;
 }
-
-.side-btn:hover{
+.suggestion{
+    background:#111;
+    border:1px solid #2f3336;
+    padding:10px 14px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:14px;
+}
+.suggestion:hover{
     background:#1a1a1a;
 }
 
-/* toggle icon button */
-.toggle-btn{
-    cursor:pointer;
+/* NEW: features */
+.features{
+    margin-top:60px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+    padding:20px;
+}
+.feature-card{
+    background:#111;
+    border:1px solid #2f3336;
+    padding:20px;
+    border-radius:16px;
+    text-align:center;
+}
+.feature-card i{
     margin-bottom:10px;
 }
+.feature-card h4{
+    margin-bottom:6px;
+}
 
-/* panel text */
-.panel{
+/* modal */
+.modal{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modal-box{
+    background:#111;
+    border:1px solid #2f3336;
+    padding:20px;
+    border-radius:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    min-width:260px;
+}
+
+.modal select{
+    background:#000;
+    color:#fff;
+    border:1px solid #333;
+    padding:8px;
+    border-radius:8px;
+}
+
+.modal button{
+    background:white;
+    color:black;
+    border:none;
+    padding:8px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    transform: scale(1.05);
+}
+
+textarea{
+    transition: all .2s ease;
+}
+
+.msg-wrapper{
+    animation: fadeUp .3s ease;
+}
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(15px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+/* footer */
+.footer{
+    text-align:center;
+    opacity:0.5;
+    margin-top:60px;
     font-size:12px;
-    opacity:.6;
 }
-
-/* MAIN */
-.container{
-    flex:1;
-}
-
-/* ===== HERO / ANIM ===== */
-.hero-logo{
-    animation: float 4s ease-in-out infinite;
-}
-@keyframes float{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-10px);}
-}
-
-/* 3D FIRST MESSAGE */
-.chat-view.active3d{
-    transform: perspective(1000px) rotateX(6deg) scale(.98);
-    transition:.6s;
-}
-
-/* KEEP ORIGINAL */
-#tsparticles{position:fixed;inset:0;z-index:0;}
-.search-box{backdrop-filter:blur(20px);background:rgba(20,20,20,0.6);border:1px solid rgba(255,255,255,0.08);}
-.search-box:focus-within{box-shadow:0 0 20px rgba(255,255,255,0.1);}
-.hero-logo h1{letter-spacing:-2px;}
-.send-btn{box-shadow:0 0 10px rgba(255,255,255,0.2);}
 
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-
-    <!-- TOGGLE ICON -->
-    <div class="toggle-btn" onclick="toggleSidebar()">
-        <i data-lucide="panel-left"></i>
-    </div>
-
-    <div class="side-btn" onclick="location.reload()">
-        <i data-lucide="plus"></i>
-        <span class="text">New Chat</span>
-    </div>
-
-    <div class="panel text">
-        Get responses tailored to you.<br><br>
-        Log in to get answers based on saved chats, plus create images and upload files.
-    </div>
-
-    <div class="side-btn" id="loginSide">
-        <i data-lucide="log-in"></i>
-        <span class="text">Log in</span>
-    </div>
-
-    <div class="side-btn">
-        <i data-lucide="help-circle"></i>
-        <span class="text">Help</span>
-    </div>
-
-    <div class="side-btn">
-        <i data-lucide="layout-grid"></i>
-        <span class="text">Apps</span>
-    </div>
-
-    <div class="side-btn">
-        <i data-lucide="credit-card"></i>
-        <span class="text">Pricing</span>
-    </div>
-
-</div>
-
 <div id="tsparticles"></div>
-
-<div class="container">
 
 <header class="top-nav">
 <div class="nav-left">
     <div class="logo-container" onclick="location.reload()">
-        <svg class="grok-logo" viewBox="0 0 24 24">
+        <svg class="grok-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
         </svg>
     </div>
@@ -175,12 +194,13 @@ body{
 
 <div class="hero-section">
     <div class="hero-logo">
-        <svg viewBox="0 0 24 24">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"></circle>
         </svg>
         <h1>Grok</h1>
     </div>
 
+    <!-- NEW -->
     <div class="hero-text">
         <h2>Your AI Assistant</h2>
         <p>Ask anything. Get instant smart answers.</p>
@@ -211,10 +231,48 @@ body{
 </div>
 </div>
 
+<!-- NEW: suggestions -->
+<div class="suggestions">
+    <div class="suggestion" onclick="homeInput.value='Explain AI simply'">Explain AI</div>
+    <div class="suggestion" onclick="homeInput.value='Write a story'">Write a story</div>
+    <div class="suggestion" onclick="homeInput.value='Help me code'">Help me code</div>
+</div>
+
+<!-- NEW: features -->
+<div class="features">
+    <div class="feature-card">
+        <i data-lucide="message-circle"></i>
+        <h4>Chat AI</h4>
+        <p>Talk naturally with AI</p>
+    </div>
+
+    <div class="feature-card">
+        <i data-lucide="zap"></i>
+        <h4>Fast</h4>
+        <p>Instant responses</p>
+    </div>
+
+    <div class="feature-card">
+        <i data-lucide="brain"></i>
+        <h4>Smart</h4>
+        <p>Accurate answers</p>
+    </div>
+
+    <div class="feature-card">
+        <i data-lucide="globe"></i>
+        <h4>Multi-language</h4>
+        <p>Speak any language</p>
+    </div>
+</div>
+
+<div class="footer">
+    © 2026 Grok — AI Experience
+</div>
+
 </section>
 
 <section id="chat" class="chat-view hidden">
-<div id="messages"></div>
+<div id="messages" class="messages-list"></div>
 
 <div class="chat-input-container">
 <div class="search-box">
@@ -238,6 +296,19 @@ body{
 </section>
 
 </main>
+
+<div class="modal hidden" id="settingsModal">
+<div class="modal-box">
+    <h3>Settings</h3>
+
+    <select id="langSelect">
+        <option>English</option>
+        <option>Arabic</option>
+        <option>French</option>
+    </select>
+
+    <button onclick="closeSettings()">Close</button>
+</div>
 </div>
 
 <script src="ControleAi.js"></script>
@@ -259,12 +330,6 @@ tsParticles.load("tsparticles", {
 const homeView = document.getElementById("home");
 const chatView = document.getElementById("chat");
 
-/* sidebar toggle */
-function toggleSidebar(){
-    document.getElementById("sidebar").classList.toggle("hiddenSide");
-}
-
-/* ENTER */
 document.getElementById("homeInput").addEventListener("keydown", e=>{
     if(e.key==="Enter" && !e.shiftKey){
         e.preventDefault();
@@ -287,9 +352,6 @@ function autoResize(t){
 homeInput.oninput=()=>autoResize(homeInput);
 chatInput.oninput=()=>autoResize(chatInput);
 
-/* first message flag */
-let firstMessage = true;
-
 function startChat(){
     const input = document.getElementById("homeInput");
     const text = input.value.trim();
@@ -297,16 +359,6 @@ function startChat(){
 
     homeView.classList.add("hidden");
     chatView.classList.remove("hidden");
-
-    /* 3D + AUTO HIDE SIDEBAR */
-    if(firstMessage){
-        chatView.classList.add("active3d");
-        setTimeout(()=>chatView.classList.remove("active3d"),800);
-
-        document.getElementById("sidebar").classList.add("hiddenSide");
-
-        firstMessage = false;
-    }
 
     AI.user(text);
     AI.ask(text);
@@ -326,8 +378,11 @@ function send(){
 }
 
 document.getElementById("settingsBtn").onclick = () => {
-    alert("Settings panel");
+    document.getElementById("settingsModal").classList.remove("hidden");
 };
+function closeSettings(){
+    document.getElementById("settingsModal").classList.add("hidden");
+}
 
 document.getElementById("imagineBtn").onclick = () => {
     const homeInput = document.getElementById("homeInput");
@@ -346,9 +401,8 @@ document.getElementById("uploadBtn2").onclick = () => {
 };
 
 document.getElementById("signinBtn").onclick =
-document.getElementById("signupBtn").onclick =
-document.getElementById("loginSide").onclick = () => {
-    alert("Auth system ready");
+document.getElementById("signupBtn").onclick = () => {
+    alert("Auth UI ready");
 };
 </script>
 
