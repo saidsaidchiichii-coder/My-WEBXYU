@@ -1,82 +1,58 @@
-<?php
-// ===== KEEP BACKEND EXACTLY (same as yours) =====
-define('MODEL_CHAT', 'grok-3-beta');
-define('MODEL_VISION', 'grok-2-vision-latest');
-define('MODEL_IMAGE', 'grok-2-image-latest');
-define('MODEL_REASONING', 'grok-3-mini-beta');
-
-function determineModel($requestedModel, $image = null) {
-    if ($image && $image["error"] === 0) return MODEL_VISION;
-    if ($requestedModel === MODEL_IMAGE) return MODEL_IMAGE;
-    if ($requestedModel === MODEL_VISION) return MODEL_VISION;
-    if ($requestedModel === MODEL_REASONING) return MODEL_REASONING;
-    return MODEL_CHAT;
+:root{
+  --bg:#0b0f19;
+  --panel:#111827;
+  --border:#1f2937;
+  --primary:#3b82f6;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
 }
 
-function buildMessageContent($message, $image = null) {
-    $content = [];
-    if ($message) $content[] = ["type"=>"text","text"=>$message];
-
-    if ($image && $image["error"] === 0) {
-        $imageData = base64_encode(file_get_contents($image["tmp_name"]));
-        $content[] = [
-            "type"=>"image_url",
-            "image_url"=>[
-                "url"=>"data:image/jpeg;base64,".$imageData,
-                "detail"=>"high"
-            ]
-        ];
-    }
-    return $content;
-}
-
-require_once 'Parsedown.php';
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ILYASS AI AGENT</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest"></script>
-
-<style>
 body{
   margin:0;
   font-family:Inter;
-  background:#0b0f19;
-  color:white;
+  background:var(--bg);
+  color:var(--text);
 }
 
 /* NAV */
 .top-nav{
   display:flex;
   justify-content:space-between;
-  padding:15px 20px;
-  border-bottom:1px solid #1f2937;
+  padding:14px 20px;
+  border-bottom:1px solid var(--border);
+  background:rgba(17,24,39,0.6);
+  backdrop-filter:blur(10px);
 }
 
-.nav-btn, .btn-signin, .btn-signup{
-  background:#111827;
-  border:1px solid #1f2937;
-  color:white;
-  padding:8px 12px;
+/* BUTTONS */
+button{
+  border:none;
   border-radius:10px;
   cursor:pointer;
+  transition:0.2s;
 }
 
-.btn-signup{background:#2563eb}
+.btn-signup{
+  background:var(--primary);
+  color:white;
+  padding:8px 14px;
+}
+
+.btn-signin{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:8px 14px;
+}
 
 /* LAYOUT */
 .container{
+  height:calc(100vh - 60px);
   display:flex;
   flex-direction:column;
-  height:calc(100vh - 60px);
 }
 
-/* HOME */
+/* HOME CENTER FIX */
 .home-view{
   flex:1;
   display:flex;
@@ -84,11 +60,7 @@ body{
   justify-content:center;
   align-items:center;
   text-align:center;
-}
-
-.hero-logo svg{
-  width:80px;
-  height:80px;
+  gap:25px;
 }
 
 /* CHAT */
@@ -100,140 +72,69 @@ body{
 
 .hidden{display:none}
 
-/* messages */
+/* MESSAGES */
 .messages-list{
   flex:1;
   overflow-y:auto;
   padding:20px;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:12px;
 }
 
 .user{
   align-self:flex-end;
-  background:#2563eb;
+  background:var(--primary);
+  color:white;
   padding:10px 14px;
-  border-radius:15px 15px 0 15px;
-  max-width:60%;
+  border-radius:14px 14px 0 14px;
+  max-width:65%;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
 }
 
 .ai{
   align-self:flex-start;
-  background:#111827;
+  background:var(--panel);
+  border:1px solid var(--border);
   padding:10px 14px;
-  border-radius:15px 15px 15px 0;
-  max-width:60%;
+  border-radius:14px 14px 14px 0;
+  max-width:65%;
 }
 
 /* INPUT */
 .search-box{
-  padding:10px;
-  border-top:1px solid #1f2937;
+  padding:14px;
+  border-top:1px solid var(--border);
+  background:rgba(17,24,39,0.6);
+  backdrop-filter:blur(10px);
 }
 
 .input-area{
   display:flex;
-  gap:10px;
   align-items:center;
-  background:#111827;
+  gap:10px;
+  background:var(--panel);
+  border:1px solid var(--border);
   padding:10px;
-  border-radius:12px;
+  border-radius:14px;
 }
 
 textarea{
   flex:1;
   background:transparent;
   border:none;
-  color:white;
+  color:var(--text);
   outline:none;
   resize:none;
-  max-height:150px;
+  font-size:14px;
+  max-height:140px;
 }
 
 .send-btn{
-  background:#2563eb;
+  background:var(--primary);
+  color:white;
+  padding:10px 12px;
 }
-</style>
-</head>
-
-<body>
-
-<!-- NAV -->
-<header class="top-nav">
-  <div><b>ILYASS AI AGENT</b></div>
-  <div>
-    <button class="btn-signin">Sign in</button>
-    <button class="btn-signup">Sign up</button>
-  </div>
-</header>
-
-<main class="container">
-
-<!-- HOME -->
-<section id="home" class="home-view">
-  <h1>ILYASS AI AGENT</h1>
-
-  <div class="search-box">
-    <div class="input-area">
-      <textarea id="homeInput" placeholder="How can I help you today?"></textarea>
-      <button onclick="startChat()">↑</button>
-    </div>
-  </div>
-</section>
-
-<!-- CHAT -->
-<section id="chat" class="chat-view hidden">
-
-  <div id="messages" class="messages-list"></div>
-
-  <div class="search-box">
-    <div class="input-area">
-      <textarea id="chatInput" placeholder="Send a message..."></textarea>
-      <button onclick="send()" class="send-btn">↑</button>
-    </div>
-  </div>
-
-</section>
-
-</main>
-
-<script>
-// ===== KEEP YOUR ORIGINAL LOGIC =====
-const homeView = document.getElementById("home");
-const chatView = document.getElementById("chat");
-
-function startChat(){
-  const input = document.getElementById("homeInput");
-  const text = input.value.trim();
-  if(!text) return;
-
-  homeView.classList.add("hidden");
-  chatView.classList.remove("hidden");
-
-  addMsg("user", text);
-  input.value="";
+.send-btn:hover{
+  opacity:0.85;
 }
-
-function send(){
-  const input = document.getElementById("chatInput");
-  const text = input.value.trim();
-  if(!text) return;
-
-  addMsg("user", text);
-  input.value="";
-}
-
-function addMsg(role, text){
-  const div = document.createElement("div");
-  div.className = role === "user" ? "user" : "ai";
-  div.innerText = text;
-  document.getElementById("messages").appendChild(div);
-}
-
-// init icons
-lucide.createIcons();
-</script>
-
-</body>
-</html>
